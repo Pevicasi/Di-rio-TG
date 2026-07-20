@@ -281,20 +281,24 @@ function utf8ToBase64(value) {
   return btoa(binary);
 }
 
-async function githubRequest(url, options, token) {
+async function githubRequest(url, options = {}, token) {
   const response = await fetch(url, {
     ...options,
+    cache: "no-store",
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${token}`,
       "X-GitHub-Api-Version": "2022-11-28",
-      ...(options?.headers || {})
+      "Cache-Control": "no-cache",
+      ...(options.headers || {})
     }
   });
   if (!response.ok) {
     let detail = "";
     try { detail = (await response.json()).message || ""; } catch {}
-    throw new Error(`${response.status} ${detail || response.statusText}`.trim());
+    const error = new Error(`${response.status} ${detail || response.statusText}`.trim());
+    error.status = response.status;
+    throw error;
   }
   return response.status === 204 ? null : response.json();
 }
@@ -317,22 +321,50 @@ async function publishPendingData() {
   const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
   const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
 
-  try {
-    let sha;
+  async function getLatestSha() {
     try {
-      const current = await githubRequest(`${apiUrl}?ref=${encodeURIComponent(config.branch)}`, { method: "GET" }, config.token);
-      sha = current.sha;
+      const cacheBust = Date.now();
+      const current = await githubRequest(
+        `${apiUrl}?ref=${encodeURIComponent(config.branch)}&_=${cacheBust}`,
+        { method: "GET" },
+        config.token
+      );
+      return current.sha;
     } catch (error) {
-      if (!String(error.message).startsWith("404")) throw error;
+      if (error.status === 404) return undefined;
+      throw error;
     }
+  }
 
+  async function sendUpdate(sha) {
     const body = {
       message: `Atualiza relatório TirzeTrack - ${pendingData.updatedAt}`,
       content: utf8ToBase64(JSON.stringify(pendingData, null, 2)),
       branch: config.branch,
       ...(sha ? { sha } : {})
     };
-    await githubRequest(apiUrl, { method: "PUT", body: JSON.stringify(body), headers: { "Content-Type": "application/json" } }, config.token);
+    return githubRequest(
+      apiUrl,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" }
+      },
+      config.token
+    );
+  }
+
+  try {
+    let sha = await getLatestSha();
+    try {
+      await sendUpdate(sha);
+    } catch (error) {
+      if (error.status !== 409) throw error;
+      status.textContent = "O arquivo mudou no GitHub. Tentando novamente com a versão mais recente...";
+      sha = await getLatestSha();
+      await sendUpdate(sha);
+    }
+
     saveData(pendingData);
     appData = pendingData;
     pendingData = null;
