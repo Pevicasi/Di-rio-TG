@@ -51,6 +51,17 @@
       </div>
       <p class="security-note">O token fica salvo somente neste navegador e nunca é colocado nos arquivos do site.</p>
       <button class="save-config-button" id="saveGithubConfig" type="button">Salvar configuração</button>
+      <div class="goal-admin-box">
+        <div>
+          <p class="eyebrow">Metas</p>
+          <h3>Definir nova meta</h3>
+          <p>Quando uma meta for alcançada, ela continuará aparecendo no histórico.</p>
+        </div>
+        <div class="goal-admin-form">
+          <label>Novo peso-meta (kg)<input id="newGoalWeight" type="number" inputmode="decimal" min="30" max="300" step="0.1" placeholder="Ex.: 95"></label>
+          <button class="save-config-button" id="setNewGoal" type="button">Adicionar nova meta</button>
+        </div>
+      </div>
     </section>
 
     <section class="hero-grid">
@@ -60,7 +71,7 @@
           <div class="metric"><span>Peso inicial</span><strong id="initialWeight">117,50 kg</strong></div>
           <div class="metric"><span>Peso atual</span><strong id="currentWeight">111,30 kg</strong></div>
           <div class="metric highlight"><span>Perda acumulada</span><strong id="totalLoss">6,20 kg</strong></div>
-          <div class="metric"><span>Meta inicial</span><strong id="goalWeight">100,00 kg</strong></div>
+          <div class="metric"><span>Meta atual</span><strong id="goalWeight">100,00 kg</strong></div>
         </div>
         <div class="goal-box">
           <div class="goal-heading">
@@ -69,6 +80,8 @@
           </div>
           <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
           <div class="goal-scale"><span id="goalScaleStart">117,50 kg</span><span id="goalScaleEnd">100 kg</span></div>
+          <div class="goal-estimate" id="goalEstimate">Calculando estimativa...</div>
+          <div class="goals-history" id="goalsHistory"></div>
         </div>
       </article>
 
@@ -115,6 +128,6 @@
   <footer><div class="container" id="footerText"></div></footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
-  <script src="../script-admin.js?v=20260720-6" type="module"></script>
+  <script src="../script-admin.js?v=20260720-7" type="module"></script>
 </body>
 </html>
