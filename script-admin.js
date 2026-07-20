@@ -258,6 +258,8 @@ async function handlePdfImport(file) {
   status.textContent = `Lendo ${file.name}...`;
   $("publishButton").disabled = true;
   try {
+    publicationComplete = false;
+    $("publishButton").textContent = "Publicar atualização";
     const text = await extractPdfText(file);
     const imported = parsePdfPayload(text);
     pendingData = imported;
@@ -281,38 +283,22 @@ function utf8ToBase64(value) {
   return btoa(binary);
 }
 
-async function githubRequest(url, options = {}, token) {
-  let response;
-  try {
-    response = await fetch(url, {
-      ...options,
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "X-GitHub-Api-Version": "2022-11-28",
-        ...(options.headers || {})
-      }
-    });
-  } catch (cause) {
-    const error = new Error("Não foi possível conectar à API do GitHub. Verifique a internet e tente novamente.");
-    error.cause = cause;
-    error.status = 0;
-    throw error;
-  }
-
+async function githubRequest(url, options, token) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(options?.headers || {})
+    }
+  });
   if (!response.ok) {
     let detail = "";
     try { detail = (await response.json()).message || ""; } catch {}
-    const error = new Error(`${response.status} ${detail || response.statusText}`.trim());
-    error.status = response.status;
-    throw error;
+    throw new Error(`${response.status} ${detail || response.statusText}`.trim());
   }
-
   return response.status === 204 ? null : response.json();
-}
-
-function wait(milliseconds) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 async function publishPendingData() {
@@ -337,16 +323,16 @@ async function publishPendingData() {
   const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
   const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
 
-  async function getLatestSha() {
+  async function getCurrentSha() {
     try {
       const current = await githubRequest(
-        `${apiUrl}?ref=${encodeURIComponent(config.branch)}&t=${Date.now()}`,
-        { method: "GET" },
+        `${apiUrl}?ref=${encodeURIComponent(config.branch)}`,
+        { method: "GET", cache: "no-store" },
         config.token
       );
       return current.sha;
     } catch (error) {
-      if (error.status === 404) return undefined;
+      if (String(error.message).startsWith("404")) return undefined;
       throw error;
     }
   }
@@ -363,26 +349,23 @@ async function publishPendingData() {
       apiUrl,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" }
       },
       config.token
     );
   }
 
   try {
-    let published = false;
+    let sha = await getCurrentSha();
 
-    for (let attempt = 1; attempt <= 3 && !published; attempt++) {
-      const sha = await getLatestSha();
-      try {
-        await sendUpdate(sha);
-        published = true;
-      } catch (error) {
-        if (error.status !== 409 || attempt === 3) throw error;
-        status.textContent = "O arquivo foi alterado no GitHub. Atualizando a versão e tentando novamente...";
-        await wait(700);
-      }
+    try {
+      await sendUpdate(sha);
+    } catch (error) {
+      if (!String(error.message).startsWith("409")) throw error;
+      status.textContent = "Atualizando a versão do arquivo e tentando novamente...";
+      sha = await getCurrentSha();
+      await sendUpdate(sha);
     }
 
     saveData(pendingData);
