@@ -57,6 +57,7 @@ const defaultData = {
 let appData = defaultData;
 let pendingData = null;
 let showAll = false;
+let publicationComplete = false;
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
@@ -251,6 +252,8 @@ function parsePdfPayload(text) {
 
 async function handlePdfImport(file) {
   const status = $("importStatus");
+  publicationComplete = false;
+  $("publishButton").textContent = "Publicar atualização";
   status.className = "import-status loading";
   status.textContent = `Lendo ${file.name}...`;
   $("publishButton").disabled = true;
@@ -333,8 +336,11 @@ async function publishPendingData() {
     saveData(pendingData);
     appData = pendingData;
     pendingData = null;
+    publicationComplete = true;
+    $("publishButton").disabled = false;
+    $("publishButton").textContent = "Ir para o site";
     status.className = "import-status success";
-    status.textContent = "Atualização publicada no GitHub. O site já mostra os novos dados; o GitHub Pages pode levar alguns instantes para liberar o novo dados.json para outros aparelhos.";
+    status.textContent = "Relatório publicado com sucesso. O site pode levar alguns instantes para atualizar em outros dispositivos.";
   } catch (error) {
     console.error(error);
     $("publishButton").disabled = false;
@@ -385,7 +391,13 @@ $("pdfInput").addEventListener("change", event => {
   event.target.value = "";
 });
 
-$("publishButton").addEventListener("click", publishPendingData);
+$("publishButton").addEventListener("click", () => {
+  if (publicationComplete) {
+    window.location.href = "../";
+    return;
+  }
+  publishPendingData();
+});
 $("openAdmin").addEventListener("click", () => { fillGithubForm(); $("adminPanel").classList.remove("hidden"); });
 $("closeAdmin").addEventListener("click", () => $("adminPanel").classList.add("hidden"));
 $("saveGithubConfig").addEventListener("click", persistGithubForm);
