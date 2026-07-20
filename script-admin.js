@@ -282,17 +282,24 @@ function utf8ToBase64(value) {
 }
 
 async function githubRequest(url, options = {}, token) {
-  const response = await fetch(url, {
-    ...options,
-    cache: "no-store",
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Cache-Control": "no-cache",
-      ...(options.headers || {})
-    }
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(options.headers || {})
+      }
+    });
+  } catch (cause) {
+    const error = new Error("Não foi possível conectar à API do GitHub. Verifique a internet e tente novamente.");
+    error.cause = cause;
+    error.status = 0;
+    throw error;
+  }
+
   if (!response.ok) {
     let detail = "";
     try { detail = (await response.json()).message || ""; } catch {}
@@ -300,14 +307,22 @@ async function githubRequest(url, options = {}, token) {
     error.status = response.status;
     throw error;
   }
+
   return response.status === 204 ? null : response.json();
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 async function publishPendingData() {
   if (!pendingData) return;
+
   const status = $("importStatus");
+  const button = $("publishButton");
   const config = loadGithubConfig();
   const required = ["owner", "repo", "branch", "path", "token"];
+
   if (required.some(key => !config[key])) {
     $("adminPanel").classList.remove("hidden");
     status.className = "import-status error";
@@ -316,16 +331,16 @@ async function publishPendingData() {
   }
 
   status.className = "import-status loading";
-  status.textContent = "Publicando dados no GitHub...";
-  $("publishButton").disabled = true;
+  status.textContent = "Publicando o relatório no GitHub...";
+  button.disabled = true;
+
   const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
   const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
 
   async function getLatestSha() {
     try {
-      const cacheBust = Date.now();
       const current = await githubRequest(
-        `${apiUrl}?ref=${encodeURIComponent(config.branch)}&_=${cacheBust}`,
+        `${apiUrl}?ref=${encodeURIComponent(config.branch)}&t=${Date.now()}`,
         { method: "GET" },
         config.token
       );
@@ -343,39 +358,45 @@ async function publishPendingData() {
       branch: config.branch,
       ...(sha ? { sha } : {})
     };
+
     return githubRequest(
       apiUrl,
       {
         method: "PUT",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
       },
       config.token
     );
   }
 
   try {
-    let sha = await getLatestSha();
-    try {
-      await sendUpdate(sha);
-    } catch (error) {
-      if (error.status !== 409) throw error;
-      status.textContent = "O arquivo mudou no GitHub. Tentando novamente com a versão mais recente...";
-      sha = await getLatestSha();
-      await sendUpdate(sha);
+    let published = false;
+
+    for (let attempt = 1; attempt <= 3 && !published; attempt++) {
+      const sha = await getLatestSha();
+      try {
+        await sendUpdate(sha);
+        published = true;
+      } catch (error) {
+        if (error.status !== 409 || attempt === 3) throw error;
+        status.textContent = "O arquivo foi alterado no GitHub. Atualizando a versão e tentando novamente...";
+        await wait(700);
+      }
     }
 
     saveData(pendingData);
     appData = pendingData;
     pendingData = null;
     publicationComplete = true;
-    $("publishButton").disabled = false;
-    $("publishButton").textContent = "Ir para o site";
+
+    button.disabled = false;
+    button.textContent = "Ir para o site";
     status.className = "import-status success";
     status.textContent = "Relatório publicado com sucesso. O site pode levar alguns instantes para atualizar em outros dispositivos.";
   } catch (error) {
     console.error(error);
-    $("publishButton").disabled = false;
+    button.disabled = false;
     status.className = "import-status error";
     status.textContent = `Falha ao publicar: ${error.message}`;
   }
