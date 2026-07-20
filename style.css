@@ -539,3 +539,19 @@ footer {
 .security-note { color: var(--muted); font-size: 12px; margin: 14px 0; }
 .close-button { padding: 9px 12px; background: var(--primary-soft); color: var(--primary-dark); }
 @media (max-width:620px){ .admin-grid{grid-template-columns:1fr}.token-field{grid-column:auto}.publish-area{min-width:0}.admin-button{width:100%} }
+
+
+.goal-estimate { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: #eef8f6; color: var(--text); font-size: 14px; line-height: 1.45; }
+.goal-estimate strong { color: var(--primary); }
+.goals-history { display: grid; gap: 8px; margin-top: 12px; }
+.goal-history-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 13px; }
+.goal-history-item.achieved { background: #eef8f1; border-color: #b7dec2; }
+.goal-history-item span { color: var(--muted); }
+.goal-history-item strong { color: var(--text); }
+.goal-admin-box { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 14px; }
+.goal-admin-box h3 { margin: 2px 0 6px; }
+.goal-admin-box p { margin: 0; color: var(--muted); }
+.goal-admin-form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: end; }
+.goal-admin-form label { display: grid; gap: 7px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.goal-admin-form input { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--text); }
+@media (max-width:620px){ .goal-admin-form{grid-template-columns:1fr}.goal-history-item{align-items:flex-start;flex-direction:column;gap:3px} }

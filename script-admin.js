@@ -122,6 +122,65 @@ function validateData(data) {
   if (errors.length) throw new Error(errors.join("; "));
 }
 
+
+function parseBrDate(value) {
+  const [day, month, year] = String(value || "").split("/").map(Number);
+  if (!day || !month || !year) return null;
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatBrDate(date) {
+  return new Intl.DateTimeFormat("pt-BR").format(date);
+}
+
+function normalizedGoalHistory(data) {
+  const history = Array.isArray(data?.goal?.history) ? data.goal.history.filter(Boolean) : [];
+  return history.map(item => ({
+    targetWeightKg: Number(item.targetWeightKg),
+    createdAt: item.createdAt || data.treatment?.startDate || data.updatedAt,
+    achievedAt: item.achievedAt || null
+  })).filter(item => Number.isFinite(item.targetWeightKg));
+}
+
+function renderGoalExtras(data, current, target) {
+  const estimate = $("goalEstimate");
+  const historyBox = $("goalsHistory");
+  const weights = Array.isArray(data.weights) ? data.weights : [];
+  const recent = weights.slice(-5).map(item => ({ date: parseBrDate(item.date), value: Number(item.valueKg) }))
+    .filter(item => item.date && Number.isFinite(item.value));
+
+  if (current <= target) {
+    estimate.innerHTML = `<strong>Meta alcançada.</strong> Você chegou a ${kg(target)}.`;
+  } else if (recent.length >= 2) {
+    const first = recent[0];
+    const last = recent[recent.length - 1];
+    const elapsedWeeks = Math.max(1 / 7, (last.date - first.date) / 604800000);
+    const weeklyLoss = (first.value - last.value) / elapsedWeeks;
+    if (weeklyLoss > 0.05) {
+      const weeksRemaining = Math.max(1, Math.ceil((current - target) / weeklyLoss));
+      const estimateDate = addDays(last.date, weeksRemaining * 7);
+      estimate.innerHTML = `Estimativa: <strong>${weeksRemaining} ${weeksRemaining === 1 ? "semana" : "semanas"}</strong> — por volta de <strong>${formatBrDate(estimateDate)}</strong>.`;
+    } else {
+      estimate.textContent = "Ainda não há ritmo de perda suficiente para calcular uma estimativa.";
+    }
+  } else {
+    estimate.textContent = "A estimativa aparecerá após pelo menos duas pesagens.";
+  }
+
+  const history = normalizedGoalHistory(data);
+  historyBox.innerHTML = history.length ? history.map(item => {
+    const achieved = Boolean(item.achievedAt);
+    const status = achieved ? `Alcançada em ${escapeHtml(item.achievedAt)}` : `Criada em ${escapeHtml(item.createdAt)}`;
+    return `<div class="goal-history-item${achieved ? " achieved" : ""}"><strong>${kg(item.targetWeightKg)}</strong><span>${status}</span></div>`;
+  }).join("") : "";
+}
+
 function renderAll() {
   const d = appData;
   const initial = Number(d.goal.initialWeightKg);
@@ -145,6 +204,7 @@ function renderAll() {
   $("progressBar").style.width = `${progress}%`;
   $("goalScaleStart").textContent = kg(initial);
   $("goalScaleEnd").textContent = `${String(target).replace(".", ",")} kg`;
+  renderGoalExtras(d, current, target);
 
   const treatmentRows = [
     ["Medicamento", d.treatment.medication], ["Concentração", d.treatment.concentration],
@@ -385,6 +445,45 @@ async function publishPendingData() {
   }
 }
 
+
+function setNewGoal() {
+  const input = $("newGoalWeight");
+  const newTarget = Number(String(input.value).replace(",", "."));
+  if (!Number.isFinite(newTarget) || newTarget < 30 || newTarget > 300) {
+    $("importStatus").className = "import-status error";
+    $("importStatus").textContent = "Informe uma nova meta válida entre 30 e 300 kg.";
+    return;
+  }
+
+  const base = pendingData ? structuredClone(pendingData) : structuredClone(appData);
+  const current = Number(base.goal.currentWeightKg);
+  const oldTarget = Number(base.goal.targetWeightKg);
+  const history = normalizedGoalHistory(base);
+  const alreadyStored = history.some(item => Math.abs(item.targetWeightKg - oldTarget) < 0.001);
+  if (!alreadyStored) {
+    history.push({
+      targetWeightKg: oldTarget,
+      createdAt: base.treatment?.startDate || base.updatedAt,
+      achievedAt: current <= oldTarget ? base.updatedAt : null
+    });
+  } else if (current <= oldTarget) {
+    const old = history.find(item => Math.abs(item.targetWeightKg - oldTarget) < 0.001);
+    if (old && !old.achievedAt) old.achievedAt = base.updatedAt;
+  }
+
+  base.goal.history = history;
+  base.goal.targetWeightKg = newTarget;
+  pendingData = base;
+  appData = base;
+  renderAll();
+  input.value = "";
+  $("publishButton").disabled = false;
+  $("publishButton").textContent = "Publicar atualização";
+  publicationComplete = false;
+  $("importStatus").className = "import-status success";
+  $("importStatus").textContent = `Nova meta de ${kg(newTarget)} preparada. Toque em Publicar atualização.`;
+}
+
 function fillGithubForm() {
   const config = loadGithubConfig();
   const pagesOwner = location.hostname.endsWith("github.io") ? location.hostname.split(".")[0] : "";
@@ -437,6 +536,7 @@ $("publishButton").addEventListener("click", () => {
 $("openAdmin").addEventListener("click", () => { fillGithubForm(); $("adminPanel").classList.remove("hidden"); });
 $("closeAdmin").addEventListener("click", () => $("adminPanel").classList.add("hidden"));
 $("saveGithubConfig").addEventListener("click", persistGithubForm);
+$("setNewGoal").addEventListener("click", setNewGoal);
 
 window.addEventListener("resize", () => {
   clearTimeout(window.__chartTimer);
