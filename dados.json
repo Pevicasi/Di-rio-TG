@@ -10,8 +10,14 @@
   "goal": {
     "initialWeightKg": 117.5,
     "currentWeightKg": 111.3,
-    "targetWeightKg": 100,
-    "history": []
+    "targetWeightKg": 85,
+    "history": [
+      {
+        "targetWeightKg": 100,
+        "createdAt": "06/07/2026",
+        "achievedAt": null
+      }
+    ]
   },
   "treatment": {
     "medication": "TG (Indufar)",
