@@ -10,7 +10,7 @@
   "goal": {
     "initialWeightKg": 117.5,
     "currentWeightKg": 100,
-    "targetWeightKg": 90,
+    "targetWeightKg": 75,
     "history": [
       {
         "targetWeightKg": 100,
