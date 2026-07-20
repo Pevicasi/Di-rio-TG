@@ -1,0 +1,4 @@
+SITE PÚBLICO: https://SEUUSUARIO.github.io/SEUREPOSITORIO/
+ADMINISTRAÇÃO: https://SEUUSUARIO.github.io/SEUREPOSITORIO/admin/
+
+Envie todos os arquivos e a pasta admin para a raiz do repositório.

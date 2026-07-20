@@ -17,41 +17,12 @@
       </div>
       <div class="topbar-actions">
         <div class="status-pill" id="updatedAt">Atualizado em 20/07/2026</div>
-        <button class="admin-button" id="openAdmin" type="button">Configurar publicação</button>
-        <label class="import-button" for="pdfInput">Selecionar relatório PDF</label>
-        <input id="pdfInput" type="file" accept="application/pdf,.pdf" hidden />
       </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="import-panel card" id="importPanel">
-      <div>
-        <p class="eyebrow">Atualização</p>
-        <h2>Importar relatório</h2>
-        <p>Escolha um PDF criado no formato TirzeTrack. Os dados serão validados antes da atualização.</p>
-      </div>
-      <div class="publish-area">
-        <div class="import-status" id="importStatus" role="status" aria-live="polite">Carregando dados publicados...</div>
-        <button class="publish-button" id="publishButton" type="button" disabled>Publicar atualização</button>
-      </div>
-    </section>
-
-    <section class="admin-panel card hidden" id="adminPanel">
-      <div class="section-header">
-        <div><p class="eyebrow">Administrador</p><h2>Configuração do GitHub</h2></div>
-        <button class="close-button" id="closeAdmin" type="button">Fechar</button>
-      </div>
-      <div class="admin-grid">
-        <label>Usuário ou organização<input id="githubOwner" autocomplete="off" placeholder="Ex.: Pevicasi"></label>
-        <label>Repositório<input id="githubRepo" autocomplete="off" placeholder="Nome do repositório"></label>
-        <label>Branch<input id="githubBranch" autocomplete="off" value="main"></label>
-        <label>Arquivo de dados<input id="githubPath" autocomplete="off" value="dados.json"></label>
-        <label class="token-field">Token do GitHub<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..."></label>
-      </div>
-      <p class="security-note">O token fica salvo somente neste navegador e nunca é colocado nos arquivos do site.</p>
-      <button class="save-config-button" id="saveGithubConfig" type="button">Salvar configuração</button>
-    </section>
+    <div id="importStatus" hidden></div>
 
     <section class="hero-grid">
       <article class="card profile-card">
@@ -115,6 +86,6 @@
   <footer><div class="container" id="footerText"></div></footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
-  <script src="script.js" type="module"></script>
+  <script src="script-public.js" type="module"></script>
 </body>
 </html>
