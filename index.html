@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>Acompanhamento com Tirzepatida</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-content">
+      <div>
+        <p class="eyebrow">Diário de tratamento</p>
+        <h1>Acompanhamento com Tirzepatida</h1>
+        <p class="subtitle">Petrônio Vieira • 42 anos • 1,59 m</p>
+      </div>
+      <div class="status-pill">Atualizado em 20/07/2026</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-grid">
+      <article class="card profile-card">
+        <div class="section-title">
+          <span>Resumo geral</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <span>Peso inicial</span>
+            <strong>117,50 kg</strong>
+          </div>
+          <div class="metric">
+            <span>Peso atual</span>
+            <strong>111,30 kg</strong>
+          </div>
+          <div class="metric highlight">
+            <span>Perda acumulada</span>
+            <strong>6,20 kg</strong>
+          </div>
+          <div class="metric">
+            <span>Meta inicial</span>
+            <strong>100,00 kg</strong>
+          </div>
+        </div>
+
+        <div class="goal-box">
+          <div class="goal-heading">
+            <div>
+              <span>Progresso até 100 kg</span>
+              <strong id="goalPercent">35,4%</strong>
+            </div>
+            <small>Faltam <b>11,30 kg</b></small>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="goal-scale">
+            <span>117,50 kg</span>
+            <span>100 kg</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="card treatment-card">
+        <div class="section-title">
+          <span>Tratamento</span>
+        </div>
+        <dl class="details-list">
+          <div><dt>Medicamento</dt><dd>TG (Indufar)</dd></div>
+          <div><dt>Concentração</dt><dd>15 mg / 0,5 mL</dd></div>
+          <div><dt>Dose semanal</dt><dd>8 UI</dd></div>
+          <div><dt>Início</dt><dd>06/07/2026</dd></div>
+          <div><dt>Aplicações</dt><dd>3 registradas</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Evolução</p>
+          <h2>Peso ao longo do tratamento</h2>
+        </div>
+        <div class="chart-legend"><span></span>Peso em kg</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="weightChart" aria-label="Gráfico da evolução do peso"></canvas>
+      </div>
+      <div class="weight-summary">
+        <span>1ª semana: <b>-3,55 kg</b></span>
+        <span>2ª semana: <b>-2,65 kg</b></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Aplicações</p>
+          <h2>Linha do tempo</h2>
+        </div>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item">
+          <div class="timeline-dot">1</div>
+          <div>
+            <h3>1ª aplicação</h3>
+            <p>06/07/2026 às 10:00</p>
+            <span>8 UI • Abdômen, lado esquerdo do umbigo</span>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-dot">2</div>
+          <div>
+            <h3>2ª aplicação</h3>
+            <p>13/07/2026 às 18:50</p>
+            <span>8 UI • Abdômen, lado direito do umbigo</span>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-dot">3</div>
+          <div>
+            <h3>3ª aplicação</h3>
+            <p>20/07/2026 às 15:15</p>
+            <span>8 UI • Abdômen, abaixo do umbigo</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Análise</p>
+          <h2>Resumo semanal</h2>
+        </div>
+      </div>
+
+      <div class="weeks-grid">
+        <article class="week-card">
+          <div class="week-header">
+            <span>Semana 1</span>
+            <strong>06/07 a 12/07</strong>
+          </div>
+          <p><b>Peso:</b> 117,50 → 113,95 kg</p>
+          <p><b>Resultado:</b> -3,55 kg</p>
+          <p><b>Fome:</b> intensa no início e progressivamente menor.</p>
+          <p><b>Efeitos:</b> boca seca, estufamento, arrotos com odor e salivação durante o sono.</p>
+          <p><b>Observação:</b> sintomas melhoraram ao longo dos dias.</p>
+        </article>
+
+        <article class="week-card">
+          <div class="week-header">
+            <span>Semana 2</span>
+            <strong>13/07 a 19/07</strong>
+          </div>
+          <p><b>Peso:</b> 113,95 → 111,30 kg</p>
+          <p><b>Resultado:</b> -2,65 kg</p>
+          <p><b>Fome:</b> ausência de fome na maior parte dos dias.</p>
+          <p><b>Efeitos:</b> praticamente nenhum efeito colateral relevante.</p>
+          <p><b>Observação:</b> apenas um episódio de fome leve em 19/07.</p>
+        </article>
+
+        <article class="week-card current">
+          <div class="week-header">
+            <span>Semana 3</span>
+            <strong>Iniciada em 20/07</strong>
+          </div>
+          <p><b>Peso inicial:</b> 111,30 kg</p>
+          <p><b>Aplicação:</b> 20/07 às 15:15</p>
+          <p><b>Fome:</b> sem fome no momento do registro.</p>
+          <p><b>Efeitos:</b> nenhum relatado.</p>
+          <p><b>Observação:</b> aplicação abaixo do umbigo.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Diário</p>
+          <h2>Registros diários</h2>
+        </div>
+        <button class="filter-button" id="toggleAll">Mostrar todos</button>
+      </div>
+
+      <div class="diary-list" id="diaryList"></div>
+    </section>
+
+    <section class="card note-card">
+      <h2>Observação geral</h2>
+      <p>
+        Até 20/07/2026, o tratamento apresenta perda de peso consistente,
+        forte controle do apetite e melhor tolerância após a segunda aplicação.
+      </p>
+      <small>Este site organiza os registros informados e não substitui acompanhamento médico.</small>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      Acompanhamento iniciado em 06/07/2026
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
