@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "20/07/2026",
+  "updatedAt": "03/08/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "age": 42,
@@ -9,9 +9,8 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 111.3,
-    "targetWeightKg": 100,
-    "history": []
+    "currentWeightKg": 108.4,
+    "targetWeightKg": 100
   },
   "treatment": {
     "medication": "TG (Indufar)",
@@ -31,6 +30,14 @@
     {
       "date": "20/07/2026",
       "valueKg": 111.3
+    },
+    {
+      "date": "27/07/2026",
+      "valueKg": 109.8
+    },
+    {
+      "date": "03/08/2026",
+      "valueKg": 108.4
     }
   ],
   "applications": [
@@ -54,6 +61,20 @@
       "time": "15:15",
       "dose": "8 UI",
       "location": "Abdômen, abaixo do umbigo"
+    },
+    {
+      "number": 4,
+      "date": "27/07/2026",
+      "time": "15:30",
+      "dose": "8 UI",
+      "location": "Abdômen, lado esquerdo inferior"
+    },
+    {
+      "number": 5,
+      "date": "03/08/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Abdômen, lado direito inferior"
     }
   ],
   "weeks": [
@@ -84,13 +105,37 @@
     {
       "title": "Semana 3",
       "period": "Iniciada em 20/07",
-      "current": true,
+      "current": false,
       "lines": [
         "Peso inicial: 111,30 kg",
         "Aplicação: 20/07 às 15:15",
         "Fome: sem fome no momento do registro.",
         "Efeitos: nenhum relatado.",
         "Observação: aplicação abaixo do umbigo."
+      ]
+    },
+    {
+      "title": "Semana 4",
+      "period": "20/07 a 26/07",
+      "current": false,
+      "lines": [
+        "Peso: 111,30 → 109,80 kg",
+        "Resultado: -1,50 kg",
+        "Fome: bem controlada, com leve aumento antes do jantar em dois dias.",
+        "Efeitos: boca seca leve em um dia, sem sintomas digestivos importantes.",
+        "Observação: dados fictícios adicionados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 5",
+      "period": "27/07 a 03/08",
+      "current": true,
+      "lines": [
+        "Peso: 109,80 → 108,40 kg",
+        "Resultado: -1,40 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante relatado.",
+        "Observação: dados fictícios adicionados exclusivamente para teste."
       ]
     }
   ],
@@ -199,8 +244,106 @@
       "hunger": "Sem fome.",
       "effects": "Sem efeitos colaterais.",
       "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
+    },
+    {
+      "date": "21/07/2026",
+      "meals": "13:30: arroz, feijão, frango e legumes; 20:10: omelete com tomate.",
+      "hunger": "Sem fome antes do almoço; fome leve no início da noite.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "22/07/2026",
+      "meals": "14:00: carne moída, batata e salada; 20:30: pão com ovo.",
+      "hunger": "Fome baixa durante todo o dia.",
+      "effects": "Boca seca leve à noite.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "23/07/2026",
+      "meals": "13:45: frango, arroz e chuchu; 19:50: sopa de legumes.",
+      "hunger": "Sem fome pela manhã; fome moderada antes do jantar.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "24/07/2026",
+      "meals": "14:15: macarrão com carne e legumes; 21:00: banana e iogurte.",
+      "hunger": "Pouca fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "25/07/2026",
+      "meals": "13:20: feijão, arroz, frango e abóbora; 20:40: omelete.",
+      "hunger": "Sem fome antes das refeições.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "26/07/2026",
+      "meals": "14:00: carne assada, batata e salada; 20:15: pão com frango.",
+      "hunger": "Leve vontade de comer à noite, sem fome forte.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Fim fictício da Semana 4."
+    },
+    {
+      "date": "27/07/2026",
+      "meals": "13:50: arroz, feijão, frango e legumes; 20:10: sopa.",
+      "hunger": "Sem fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Peso fictício de 109,80 kg. 4ª aplicação fictícia às 15:30."
+    },
+    {
+      "date": "28/07/2026",
+      "meals": "14:10: carne moída, purê e salada; 20:30: omelete.",
+      "hunger": "Fome baixa.",
+      "effects": "Leve sensação de estômago cheio após o almoço.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "29/07/2026",
+      "meals": "13:35: frango, arroz e legumes; 20:00: banana e iogurte.",
+      "hunger": "Sem fome pela manhã; fome leve à noite.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "30/07/2026",
+      "meals": "14:20: feijão, arroz, carne e abóbora; 20:45: pão com ovo.",
+      "hunger": "Pouca fome.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "31/07/2026",
+      "meals": "13:40: macarrão com frango e legumes; 20:20: omelete.",
+      "hunger": "Sem fome antes do almoço.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "01/08/2026",
+      "meals": "14:00: carne, batata e salada; 21:00: fruta.",
+      "hunger": "Fome leve antes do jantar.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "02/08/2026",
+      "meals": "13:30: arroz, feijão, frango e legumes; 20:00: sopa.",
+      "hunger": "Fome bem controlada.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Registro fictício para teste."
+    },
+    {
+      "date": "03/08/2026",
+      "meals": "14:10: frango, arroz, cenoura e chuchu; 20:15: omelete.",
+      "hunger": "Sem fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Peso fictício de 108,40 kg. 5ª aplicação fictícia às 15:20."
     }
   ],
-  "generalObservation": "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "RELATÓRIO DE TESTE: todos os dados entre 21/07/2026 e 03/08/2026 são fictícios e foram criados apenas para validar a importação e a publicação no site.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico."
 }
