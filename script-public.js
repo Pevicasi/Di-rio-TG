@@ -142,17 +142,38 @@ function normalizedGoalHistory(data) {
   const history = Array.isArray(data?.goal?.history) ? data.goal.history.filter(Boolean) : [];
   return history.map(item => ({
     targetWeightKg: Number(item.targetWeightKg),
+    startWeightKg: Number(item.startWeightKg),
     createdAt: item.createdAt || data.treatment?.startDate || data.updatedAt,
     achievedAt: item.achievedAt || null
   })).filter(item => Number.isFinite(item.targetWeightKg));
 }
 
-function renderGoalExtras(data, current, target) {
+function currentGoalStage(data, current, target) {
+  const history = normalizedGoalHistory(data);
+  const configuredStart = Number(data?.goal?.stageStartWeightKg);
+  let startWeight = Number.isFinite(configuredStart) ? configuredStart : Number(data?.goal?.initialWeightKg);
+  let startDate = data?.goal?.stageStartDate || data?.treatment?.startDate || data?.updatedAt;
+
+  if (!Number.isFinite(configuredStart) && history.length) {
+    const latestAchieved = [...history].reverse().find(item => item.achievedAt);
+    if (latestAchieved) {
+      startWeight = latestAchieved.targetWeightKg;
+      startDate = latestAchieved.achievedAt;
+    }
+  }
+
+  if (!Number.isFinite(startWeight) || startWeight <= target) startWeight = Math.max(current, target);
+  return { startWeight, startDate, history };
+}
+
+function renderGoalExtras(data, current, target, stage) {
   const estimate = $("goalEstimate");
   const historyBox = $("goalsHistory");
   const weights = Array.isArray(data.weights) ? data.weights : [];
-  const recent = weights.slice(-5).map(item => ({ date: parseBrDate(item.date), value: Number(item.valueKg) }))
-    .filter(item => item.date && Number.isFinite(item.value));
+  const stageStartDate = parseBrDate(stage.startDate);
+  const stageWeights = weights.map(item => ({ date: parseBrDate(item.date), value: Number(item.valueKg) }))
+    .filter(item => item.date && Number.isFinite(item.value) && (!stageStartDate || item.date >= stageStartDate));
+  const recent = stageWeights.slice(-5);
 
   if (current <= target) {
     estimate.innerHTML = `<strong>Meta alcançada.</strong> Você chegou a ${kg(target)}.`;
@@ -166,28 +187,28 @@ function renderGoalExtras(data, current, target) {
       const estimateDate = addDays(last.date, weeksRemaining * 7);
       estimate.innerHTML = `Estimativa: <strong>${weeksRemaining} ${weeksRemaining === 1 ? "semana" : "semanas"}</strong> — por volta de <strong>${formatBrDate(estimateDate)}</strong>.`;
     } else {
-      estimate.textContent = "Ainda não há ritmo de perda suficiente para calcular uma estimativa.";
+      estimate.textContent = "Ainda não há ritmo de perda suficiente nesta nova etapa para calcular uma estimativa.";
     }
   } else {
-    estimate.textContent = "A estimativa aparecerá após pelo menos duas pesagens.";
+    estimate.textContent = "A estimativa desta etapa aparecerá após pelo menos duas pesagens.";
   }
 
-  const history = normalizedGoalHistory(data);
-  historyBox.innerHTML = history.length ? history.map(item => {
+  historyBox.innerHTML = stage.history.length ? stage.history.map(item => {
     const achieved = Boolean(item.achievedAt);
     const status = achieved ? `Alcançada em ${escapeHtml(item.achievedAt)}` : `Criada em ${escapeHtml(item.createdAt)}`;
     return `<div class="goal-history-item${achieved ? " achieved" : ""}"><strong>${kg(item.targetWeightKg)}</strong><span>${status}</span></div>`;
   }).join("") : "";
 }
-
 function renderAll() {
   const d = appData;
   const initial = Number(d.goal.initialWeightKg);
   const current = Number(d.goal.currentWeightKg);
   const target = Number(d.goal.targetWeightKg);
   const loss = initial - current;
-  const totalGoal = initial - target;
-  const progress = totalGoal > 0 ? Math.max(0, Math.min(100, (loss / totalGoal) * 100)) : 0;
+  const stage = currentGoalStage(d, current, target);
+  const stageTotal = stage.startWeight - target;
+  const stageLoss = stage.startWeight - current;
+  const progress = stageTotal > 0 ? Math.max(0, Math.min(100, (stageLoss / stageTotal) * 100)) : (current <= target ? 100 : 0);
   const remaining = Math.max(0, current - target);
 
   $("siteTitle").textContent = d.title || "Acompanhamento com Tirzepatida";
@@ -201,9 +222,9 @@ function renderAll() {
   $("goalPercent").textContent = `${progress.toFixed(1).replace(".", ",")}%`;
   $("remainingWeight").textContent = kg(remaining);
   $("progressBar").style.width = `${progress}%`;
-  $("goalScaleStart").textContent = kg(initial);
+  $("goalScaleStart").textContent = kg(stage.startWeight);
   $("goalScaleEnd").textContent = `${String(target).replace(".", ",")} kg`;
-  renderGoalExtras(d, current, target);
+  renderGoalExtras(d, current, target, stage);
 
   const treatmentRows = [
     ["Medicamento", d.treatment.medication], ["Concentração", d.treatment.concentration],
