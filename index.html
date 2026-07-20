@@ -12,198 +12,109 @@
     <div class="container topbar-content">
       <div>
         <p class="eyebrow">Diário de tratamento</p>
-        <h1>Acompanhamento com Tirzepatida</h1>
-        <p class="subtitle">Petrônio Vieira • 42 anos • 1,59 m</p>
+        <h1 id="siteTitle">Acompanhamento com Tirzepatida</h1>
+        <p class="subtitle" id="profileSubtitle">Petrônio Vieira • 42 anos • 1,59 m</p>
       </div>
-      <div class="status-pill">Atualizado em 20/07/2026</div>
+      <div class="topbar-actions">
+        <div class="status-pill" id="updatedAt">Atualizado em 20/07/2026</div>
+        <button class="admin-button" id="openAdmin" type="button">Configurar publicação</button>
+        <label class="import-button" for="pdfInput">Selecionar relatório PDF</label>
+        <input id="pdfInput" type="file" accept="application/pdf,.pdf" hidden />
+      </div>
     </div>
   </header>
 
   <main class="container">
+    <section class="import-panel card" id="importPanel">
+      <div>
+        <p class="eyebrow">Atualização</p>
+        <h2>Importar relatório</h2>
+        <p>Escolha um PDF criado no formato TirzeTrack. Os dados serão validados antes da atualização.</p>
+      </div>
+      <div class="publish-area">
+        <div class="import-status" id="importStatus" role="status" aria-live="polite">Carregando dados publicados...</div>
+        <button class="publish-button" id="publishButton" type="button" disabled>Publicar atualização</button>
+      </div>
+    </section>
+
+    <section class="admin-panel card hidden" id="adminPanel">
+      <div class="section-header">
+        <div><p class="eyebrow">Administrador</p><h2>Configuração do GitHub</h2></div>
+        <button class="close-button" id="closeAdmin" type="button">Fechar</button>
+      </div>
+      <div class="admin-grid">
+        <label>Usuário ou organização<input id="githubOwner" autocomplete="off" placeholder="Ex.: Pevicasi"></label>
+        <label>Repositório<input id="githubRepo" autocomplete="off" placeholder="Nome do repositório"></label>
+        <label>Branch<input id="githubBranch" autocomplete="off" value="main"></label>
+        <label>Arquivo de dados<input id="githubPath" autocomplete="off" value="dados.json"></label>
+        <label class="token-field">Token do GitHub<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..."></label>
+      </div>
+      <p class="security-note">O token fica salvo somente neste navegador e nunca é colocado nos arquivos do site.</p>
+      <button class="save-config-button" id="saveGithubConfig" type="button">Salvar configuração</button>
+    </section>
+
     <section class="hero-grid">
       <article class="card profile-card">
-        <div class="section-title">
-          <span>Resumo geral</span>
-        </div>
-
+        <div class="section-title"><span>Resumo geral</span></div>
         <div class="metrics-grid">
-          <div class="metric">
-            <span>Peso inicial</span>
-            <strong>117,50 kg</strong>
-          </div>
-          <div class="metric">
-            <span>Peso atual</span>
-            <strong>111,30 kg</strong>
-          </div>
-          <div class="metric highlight">
-            <span>Perda acumulada</span>
-            <strong>6,20 kg</strong>
-          </div>
-          <div class="metric">
-            <span>Meta inicial</span>
-            <strong>100,00 kg</strong>
-          </div>
+          <div class="metric"><span>Peso inicial</span><strong id="initialWeight">117,50 kg</strong></div>
+          <div class="metric"><span>Peso atual</span><strong id="currentWeight">111,30 kg</strong></div>
+          <div class="metric highlight"><span>Perda acumulada</span><strong id="totalLoss">6,20 kg</strong></div>
+          <div class="metric"><span>Meta inicial</span><strong id="goalWeight">100,00 kg</strong></div>
         </div>
-
         <div class="goal-box">
           <div class="goal-heading">
-            <div>
-              <span>Progresso até 100 kg</span>
-              <strong id="goalPercent">35,4%</strong>
-            </div>
-            <small>Faltam <b>11,30 kg</b></small>
+            <div><span id="goalLabel">Progresso até 100 kg</span><strong id="goalPercent">35,4%</strong></div>
+            <small>Faltam <b id="remainingWeight">11,30 kg</b></small>
           </div>
-          <div class="progress-track">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
-          <div class="goal-scale">
-            <span>117,50 kg</span>
-            <span>100 kg</span>
-          </div>
+          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="goal-scale"><span id="goalScaleStart">117,50 kg</span><span id="goalScaleEnd">100 kg</span></div>
         </div>
       </article>
 
       <article class="card treatment-card">
-        <div class="section-title">
-          <span>Tratamento</span>
-        </div>
-        <dl class="details-list">
-          <div><dt>Medicamento</dt><dd>TG (Indufar)</dd></div>
-          <div><dt>Concentração</dt><dd>15 mg / 0,5 mL</dd></div>
-          <div><dt>Dose semanal</dt><dd>8 UI</dd></div>
-          <div><dt>Início</dt><dd>06/07/2026</dd></div>
-          <div><dt>Aplicações</dt><dd>3 registradas</dd></div>
-        </dl>
+        <div class="section-title"><span>Tratamento</span></div>
+        <dl class="details-list" id="treatmentDetails"></dl>
       </article>
     </section>
 
     <section class="card">
       <div class="section-header">
-        <div>
-          <p class="eyebrow">Evolução</p>
-          <h2>Peso ao longo do tratamento</h2>
-        </div>
+        <div><p class="eyebrow">Evolução</p><h2>Peso ao longo do tratamento</h2></div>
         <div class="chart-legend"><span></span>Peso em kg</div>
       </div>
-      <div class="chart-wrap">
-        <canvas id="weightChart" aria-label="Gráfico da evolução do peso"></canvas>
-      </div>
-      <div class="weight-summary">
-        <span>1ª semana: <b>-3,55 kg</b></span>
-        <span>2ª semana: <b>-2,65 kg</b></span>
-      </div>
+      <div class="chart-wrap"><canvas id="weightChart" aria-label="Gráfico da evolução do peso"></canvas></div>
+      <div class="weight-summary" id="weightSummary"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-header"><div><p class="eyebrow">Aplicações</p><h2>Linha do tempo</h2></div></div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumo semanal</h2></div></div>
+      <div class="weeks-grid" id="weeksGrid"></div>
     </section>
 
     <section class="card">
       <div class="section-header">
-        <div>
-          <p class="eyebrow">Aplicações</p>
-          <h2>Linha do tempo</h2>
-        </div>
-      </div>
-      <div class="timeline">
-        <article class="timeline-item">
-          <div class="timeline-dot">1</div>
-          <div>
-            <h3>1ª aplicação</h3>
-            <p>06/07/2026 às 10:00</p>
-            <span>8 UI • Abdômen, lado esquerdo do umbigo</span>
-          </div>
-        </article>
-        <article class="timeline-item">
-          <div class="timeline-dot">2</div>
-          <div>
-            <h3>2ª aplicação</h3>
-            <p>13/07/2026 às 18:50</p>
-            <span>8 UI • Abdômen, lado direito do umbigo</span>
-          </div>
-        </article>
-        <article class="timeline-item">
-          <div class="timeline-dot">3</div>
-          <div>
-            <h3>3ª aplicação</h3>
-            <p>20/07/2026 às 15:15</p>
-            <span>8 UI • Abdômen, abaixo do umbigo</span>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Análise</p>
-          <h2>Resumo semanal</h2>
-        </div>
-      </div>
-
-      <div class="weeks-grid">
-        <article class="week-card">
-          <div class="week-header">
-            <span>Semana 1</span>
-            <strong>06/07 a 12/07</strong>
-          </div>
-          <p><b>Peso:</b> 117,50 → 113,95 kg</p>
-          <p><b>Resultado:</b> -3,55 kg</p>
-          <p><b>Fome:</b> intensa no início e progressivamente menor.</p>
-          <p><b>Efeitos:</b> boca seca, estufamento, arrotos com odor e salivação durante o sono.</p>
-          <p><b>Observação:</b> sintomas melhoraram ao longo dos dias.</p>
-        </article>
-
-        <article class="week-card">
-          <div class="week-header">
-            <span>Semana 2</span>
-            <strong>13/07 a 19/07</strong>
-          </div>
-          <p><b>Peso:</b> 113,95 → 111,30 kg</p>
-          <p><b>Resultado:</b> -2,65 kg</p>
-          <p><b>Fome:</b> ausência de fome na maior parte dos dias.</p>
-          <p><b>Efeitos:</b> praticamente nenhum efeito colateral relevante.</p>
-          <p><b>Observação:</b> apenas um episódio de fome leve em 19/07.</p>
-        </article>
-
-        <article class="week-card current">
-          <div class="week-header">
-            <span>Semana 3</span>
-            <strong>Iniciada em 20/07</strong>
-          </div>
-          <p><b>Peso inicial:</b> 111,30 kg</p>
-          <p><b>Aplicação:</b> 20/07 às 15:15</p>
-          <p><b>Fome:</b> sem fome no momento do registro.</p>
-          <p><b>Efeitos:</b> nenhum relatado.</p>
-          <p><b>Observação:</b> aplicação abaixo do umbigo.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Diário</p>
-          <h2>Registros diários</h2>
-        </div>
+        <div><p class="eyebrow">Diário</p><h2>Registros diários</h2></div>
         <button class="filter-button" id="toggleAll">Mostrar todos</button>
       </div>
-
       <div class="diary-list" id="diaryList"></div>
     </section>
 
     <section class="card note-card">
       <h2>Observação geral</h2>
-      <p>
-        Até 20/07/2026, o tratamento apresenta perda de peso consistente,
-        forte controle do apetite e melhor tolerância após a segunda aplicação.
-      </p>
-      <small>Este site organiza os registros informados e não substitui acompanhamento médico.</small>
+      <p id="generalObservation"></p>
+      <small id="medicalNotice"></small>
     </section>
   </main>
 
-  <footer>
-    <div class="container">
-      Acompanhamento iniciado em 06/07/2026
-    </div>
-  </footer>
+  <footer><div class="container" id="footerText"></div></footer>
 
-  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>

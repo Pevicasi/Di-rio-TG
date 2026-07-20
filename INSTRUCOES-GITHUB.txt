@@ -1,0 +1,29 @@
+TIRZETRACK — PUBLICAÇÃO PELO PDF
+
+1. Envie todos estes arquivos para a raiz do repositório:
+   index.html
+   style.css
+   script.js
+   dados.json
+
+2. No GitHub, crie um token Fine-grained:
+   Settings > Developer settings > Personal access tokens > Fine-grained tokens.
+
+3. Dê acesso somente ao repositório deste site.
+
+4. Em Repository permissions, defina:
+   Contents: Read and write
+
+5. Abra o site e toque em "Configurar publicação".
+
+6. Confira usuário, repositório, branch main e arquivo dados.json.
+   Cole o token e salve.
+
+7. Para atualizar:
+   - toque em "Selecionar relatório PDF";
+   - escolha o PDF TirzeTrack;
+   - após a validação, toque em "Publicar atualização".
+
+O site atualizará dados.json no GitHub. O GitHub Pages publicará essa alteração para todos.
+O token fica salvo somente no navegador usado para administrar o site.
+Nunca coloque o token dentro de index.html, script.js ou dados.json.

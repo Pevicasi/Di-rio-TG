@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "title": "Acompanhamento com Tirzepatida",
+  "updatedAt": "20/07/2026",
+  "profile": {
+    "name": "Petrônio Vieira",
+    "age": 42,
+    "heightM": 1.59
+  },
+  "goal": {
+    "initialWeightKg": 117.5,
+    "currentWeightKg": 111.3,
+    "targetWeightKg": 100
+  },
+  "treatment": {
+    "medication": "TG (Indufar)",
+    "concentration": "15 mg / 0,5 mL",
+    "weeklyDose": "8 UI",
+    "startDate": "06/07/2026"
+  },
+  "weights": [
+    {
+      "date": "06/07/2026",
+      "valueKg": 117.5
+    },
+    {
+      "date": "13/07/2026",
+      "valueKg": 113.95
+    },
+    {
+      "date": "20/07/2026",
+      "valueKg": 111.3
+    }
+  ],
+  "applications": [
+    {
+      "number": 1,
+      "date": "06/07/2026",
+      "time": "10:00",
+      "dose": "8 UI",
+      "location": "Abdômen, lado esquerdo do umbigo"
+    },
+    {
+      "number": 2,
+      "date": "13/07/2026",
+      "time": "18:50",
+      "dose": "8 UI",
+      "location": "Abdômen, lado direito do umbigo"
+    },
+    {
+      "number": 3,
+      "date": "20/07/2026",
+      "time": "15:15",
+      "dose": "8 UI",
+      "location": "Abdômen, abaixo do umbigo"
+    }
+  ],
+  "weeks": [
+    {
+      "title": "Semana 1",
+      "period": "06/07 a 12/07",
+      "current": false,
+      "lines": [
+        "Peso: 117,50 → 113,95 kg",
+        "Resultado: -3,55 kg",
+        "Fome: intensa no início e progressivamente menor.",
+        "Efeitos: boca seca, estufamento, arrotos com odor e salivação durante o sono.",
+        "Observação: sintomas melhoraram ao longo dos dias."
+      ]
+    },
+    {
+      "title": "Semana 2",
+      "period": "13/07 a 19/07",
+      "current": false,
+      "lines": [
+        "Peso: 113,95 → 111,30 kg",
+        "Resultado: -2,65 kg",
+        "Fome: ausência de fome na maior parte dos dias.",
+        "Efeitos: praticamente nenhum efeito colateral relevante.",
+        "Observação: apenas um episódio de fome leve em 19/07."
+      ]
+    },
+    {
+      "title": "Semana 3",
+      "period": "Iniciada em 20/07",
+      "current": true,
+      "lines": [
+        "Peso inicial: 111,30 kg",
+        "Aplicação: 20/07 às 15:15",
+        "Fome: sem fome no momento do registro.",
+        "Efeitos: nenhum relatado.",
+        "Observação: aplicação abaixo do umbigo."
+      ]
+    }
+  ],
+  "diary": [
+    {
+      "date": "06/07/2026",
+      "meals": "09:30: pesagem inicial; 20:00: jantar normal.",
+      "hunger": "Fome intensa à tarde, menor no jantar e forte vontade de comer às 22:39.",
+      "effects": "Leve dor de cabeça e boca muito seca.",
+      "notes": "1ª aplicação às 10:00, no lado esquerdo do umbigo."
+    },
+    {
+      "date": "07/07/2026",
+      "meals": "14:00: primeira refeição após longo jejum, em quantidade menor que a habitual.",
+      "hunger": "Fome forte antes do almoço.",
+      "effects": "Muita sede, salivação durante o sono, estufamento e arrotos com odor.",
+      "notes": "Dia com os sintomas digestivos mais marcantes."
+    },
+    {
+      "date": "08/07/2026",
+      "meals": "Almoço com carne, legumes e banana; jantar com talharim, carne e legumes.",
+      "hunger": "Menor que no dia anterior; jantar mais por vontade de comer.",
+      "effects": "Sem estufamento após o almoço.",
+      "notes": "Início de melhora clara dos sintomas."
+    },
+    {
+      "date": "09/07/2026",
+      "meals": "Pão com ovo; almoço; macarrão com frango e legumes; pão com frango e chá.",
+      "hunger": "Pouca fome ao acordar, moderada no jantar e lanche noturno por vontade.",
+      "effects": "Salivação muito menor e sem desconforto relevante.",
+      "notes": "Porções em torno de 40% a 50% do padrão anterior."
+    },
+    {
+      "date": "10/07/2026",
+      "meals": "Pão de queijo; almoço; pão doce com ovo e mortadela; pão doce com mortadela.",
+      "hunger": "Leve fome antes do almoço; demais refeições sem fome ou por vontade.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Apetite já bastante reduzido."
+    },
+    {
+      "date": "11/07/2026",
+      "meals": "13:40: almoço; 21:15: jantar semelhante ao almoço.",
+      "hunger": "Sem fome antes das refeições.",
+      "effects": "Sem efeitos relevantes.",
+      "notes": "Comeu as refeições completas apesar da ausência de fome."
+    },
+    {
+      "date": "12/07/2026",
+      "meals": "Bebida láctea; frango, batatas, talharim e legumes; jantar semelhante.",
+      "hunger": "Sem fome.",
+      "effects": "Salivação excessiva considerada resolvida.",
+      "notes": "Fim da 1ª semana com boa adaptação."
+    },
+    {
+      "date": "13/07/2026",
+      "meals": "Feijão, macarrão, abóbora e verduras; pão francês com ovo e mortadela.",
+      "hunger": "Sem fome.",
+      "effects": "Dor de garganta, sem efeitos digestivos importantes.",
+      "notes": "Peso 113,95 kg. 2ª aplicação às 18:50."
+    },
+    {
+      "date": "14/07/2026",
+      "meals": "Pão de queijo; frango, batatas e legumes; frango, tomate e banana.",
+      "hunger": "Sem fome durante todo o dia.",
+      "effects": "Boca seca e garganta melhorando.",
+      "notes": "2ª aplicação melhor tolerada."
+    },
+    {
+      "date": "15/07/2026",
+      "meals": "Pão francês com mortadela; frango grelhado, legumes e vinagrete; jantar semelhante.",
+      "hunger": "Sem fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Dia estável."
+    },
+    {
+      "date": "16/07/2026",
+      "meals": "14:10: almoço; 20:00: jantar.",
+      "hunger": "Não informado.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Dia corrido; registro apenas dos horários."
+    },
+    {
+      "date": "17/07/2026",
+      "meals": "Bolinhos de caco e salsicha; carne moída, banana e legumes; jantar semelhante.",
+      "hunger": "Sem fome durante todo o dia.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Boa tolerância e controle do apetite."
+    },
+    {
+      "date": "18/07/2026",
+      "meals": "Pão carteira com omelete; omelete com batata assada; 2 bolinhos de caco.",
+      "hunger": "Sem fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Lanche noturno feito mesmo sem fome."
+    },
+    {
+      "date": "19/07/2026",
+      "meals": "Banana, pão com fiambre e bolinho de caco; pipoca; omelete com legumes.",
+      "hunger": "Um pouco de fome às 16:30.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Primeiro episódio de fome em vários dias."
+    },
+    {
+      "date": "20/07/2026",
+      "meals": "14:15: frango, batata, cenoura, chuchu, cebola e pimentão.",
+      "hunger": "Sem fome.",
+      "effects": "Sem efeitos colaterais.",
+      "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
+    }
+  ],
+  "generalObservation": "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico."
+}

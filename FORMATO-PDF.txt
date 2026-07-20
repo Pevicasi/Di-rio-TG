@@ -1,0 +1,78 @@
+FORMATO OBRIGATÓRIO DO PDF — TIRZETRACK v1
+
+O PDF pode ter qualquer aparência nas páginas visíveis do relatório.
+No final do documento, deve existir uma seção de texto com exatamente estas três partes:
+
+TIRZETRACK_DATA_START
+<JSON COMPLETO CODIFICADO EM BASE64 UTF-8>
+TIRZETRACK_DATA_END
+
+Regras:
+1. Os marcadores devem ser escritos exatamente como acima, em letras maiúsculas.
+2. Entre os marcadores deve haver somente o Base64 do JSON.
+3. O Base64 pode ser dividido em várias linhas.
+4. schemaVersion deve ser 1.
+5. Datas devem usar DD/MM/AAAA.
+6. Pesos devem ser números em kg usando ponto no JSON, por exemplo 111.30.
+7. Todos os registros anteriores devem continuar no novo PDF; a importação substitui o conjunto inteiro de dados.
+
+ESTRUTURA DO JSON:
+{
+  "schemaVersion": 1,
+  "title": "Acompanhamento com Tirzepatida",
+  "updatedAt": "20/07/2026",
+  "profile": {
+    "name": "Petrônio Vieira",
+    "age": 42,
+    "heightM": 1.59
+  },
+  "goal": {
+    "initialWeightKg": 117.50,
+    "currentWeightKg": 111.30,
+    "targetWeightKg": 100
+  },
+  "treatment": {
+    "medication": "TG (Indufar)",
+    "concentration": "15 mg / 0,5 mL",
+    "weeklyDose": "8 UI",
+    "startDate": "06/07/2026"
+  },
+  "weights": [
+    { "date": "06/07/2026", "valueKg": 117.50 }
+  ],
+  "applications": [
+    {
+      "number": 1,
+      "date": "06/07/2026",
+      "time": "10:00",
+      "dose": "8 UI",
+      "location": "Abdômen, lado esquerdo do umbigo"
+    }
+  ],
+  "weeks": [
+    {
+      "title": "Semana 1",
+      "period": "06/07 a 12/07",
+      "current": false,
+      "lines": [
+        "Peso: 117,50 → 113,95 kg",
+        "Resultado: -3,55 kg"
+      ]
+    }
+  ],
+  "diary": [
+    {
+      "date": "06/07/2026",
+      "meals": "Descrição das refeições.",
+      "hunger": "Descrição da fome.",
+      "effects": "Descrição dos efeitos.",
+      "notes": "Observações do dia."
+    }
+  ],
+  "generalObservation": "Resumo geral atualizado.",
+  "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico."
+}
+
+IMPORTANTE SOBRE O GITHUB PAGES:
+A importação salva os dados no navegador do aparelho usando localStorage.
+Ela não modifica os arquivos do repositório nem atualiza automaticamente o site para outros aparelhos.
