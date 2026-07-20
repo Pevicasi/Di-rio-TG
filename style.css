@@ -555,3 +555,6 @@ footer {
 .goal-admin-form label { display: grid; gap: 7px; font-size: 13px; font-weight: 800; color: var(--muted); }
 .goal-admin-form input { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--text); }
 @media (max-width:620px){ .goal-admin-form{grid-template-columns:1fr}.goal-history-item{align-items:flex-start;flex-direction:column;gap:3px} }
+
+.goal-admin-visible { margin-top: 0; border-top: 0; }
+.goal-admin-visible .save-config-button { width: 100%; }
