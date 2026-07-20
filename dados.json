@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "03/08/2026",
+  "updatedAt": "12/10/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "age": 42,
@@ -9,7 +9,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 108.4,
+    "currentWeightKg": 100,
     "targetWeightKg": 100
   },
   "treatment": {
@@ -38,6 +38,46 @@
     {
       "date": "03/08/2026",
       "valueKg": 108.4
+    },
+    {
+      "date": "10/08/2026",
+      "valueKg": 107.1
+    },
+    {
+      "date": "17/08/2026",
+      "valueKg": 105.9
+    },
+    {
+      "date": "24/08/2026",
+      "valueKg": 104.8
+    },
+    {
+      "date": "31/08/2026",
+      "valueKg": 103.8
+    },
+    {
+      "date": "07/09/2026",
+      "valueKg": 102.9
+    },
+    {
+      "date": "14/09/2026",
+      "valueKg": 102.1
+    },
+    {
+      "date": "21/09/2026",
+      "valueKg": 101.4
+    },
+    {
+      "date": "28/09/2026",
+      "valueKg": 100.8
+    },
+    {
+      "date": "05/10/2026",
+      "valueKg": 100.3
+    },
+    {
+      "date": "12/10/2026",
+      "valueKg": 100
     }
   ],
   "applications": [
@@ -65,7 +105,7 @@
     {
       "number": 4,
       "date": "27/07/2026",
-      "time": "15:30",
+      "time": "15:20",
       "dose": "8 UI",
       "location": "Abdômen, lado esquerdo inferior"
     },
@@ -75,6 +115,76 @@
       "time": "15:20",
       "dose": "8 UI",
       "location": "Abdômen, lado direito inferior"
+    },
+    {
+      "number": 6,
+      "date": "10/08/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa esquerda, região externa"
+    },
+    {
+      "number": 7,
+      "date": "17/08/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa direita, região externa"
+    },
+    {
+      "number": 8,
+      "date": "24/08/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Abdômen, lado esquerdo inferior"
+    },
+    {
+      "number": 9,
+      "date": "31/08/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Abdômen, lado direito inferior"
+    },
+    {
+      "number": 10,
+      "date": "07/09/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa esquerda, região externa"
+    },
+    {
+      "number": 11,
+      "date": "14/09/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa direita, região externa"
+    },
+    {
+      "number": 12,
+      "date": "21/09/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Abdômen, lado esquerdo inferior"
+    },
+    {
+      "number": 13,
+      "date": "28/09/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Abdômen, lado direito inferior"
+    },
+    {
+      "number": 14,
+      "date": "05/10/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa esquerda, região externa"
+    },
+    {
+      "number": 15,
+      "date": "12/10/2026",
+      "time": "15:20",
+      "dose": "8 UI",
+      "location": "Coxa direita, região externa"
     }
   ],
   "weeks": [
@@ -121,21 +231,141 @@
       "lines": [
         "Peso: 111,30 → 109,80 kg",
         "Resultado: -1,50 kg",
-        "Fome: bem controlada, com leve aumento antes do jantar em dois dias.",
-        "Efeitos: boca seca leve em um dia, sem sintomas digestivos importantes.",
-        "Observação: dados fictícios adicionados exclusivamente para teste."
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: leve boca seca em um dia, sem outros sintomas relevantes.",
+        "Observação: dados fictícios criados exclusivamente para teste."
       ]
     },
     {
       "title": "Semana 5",
-      "period": "27/07 a 03/08",
-      "current": true,
+      "period": "27/07 a 02/08",
+      "current": false,
       "lines": [
         "Peso: 109,80 → 108,40 kg",
         "Resultado: -1,40 kg",
         "Fome: baixa na maior parte da semana.",
-        "Efeitos: nenhum efeito colateral relevante relatado.",
-        "Observação: dados fictícios adicionados exclusivamente para teste."
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 6",
+      "period": "03/08 a 09/08",
+      "current": false,
+      "lines": [
+        "Peso: 108,40 → 107,10 kg",
+        "Resultado: -1,30 kg",
+        "Fome: bem controlada, com leve aumento próximo ao dia da aplicação.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 7",
+      "period": "10/08 a 16/08",
+      "current": false,
+      "lines": [
+        "Peso: 107,10 → 105,90 kg",
+        "Resultado: -1,20 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 8",
+      "period": "17/08 a 23/08",
+      "current": false,
+      "lines": [
+        "Peso: 105,90 → 104,80 kg",
+        "Resultado: -1,10 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: leve boca seca em um dia, sem outros sintomas relevantes.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 9",
+      "period": "24/08 a 30/08",
+      "current": false,
+      "lines": [
+        "Peso: 104,80 → 103,80 kg",
+        "Resultado: -1,00 kg",
+        "Fome: bem controlada, com leve aumento próximo ao dia da aplicação.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 10",
+      "period": "31/08 a 06/09",
+      "current": false,
+      "lines": [
+        "Peso: 103,80 → 102,90 kg",
+        "Resultado: -0,90 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 11",
+      "period": "07/09 a 13/09",
+      "current": false,
+      "lines": [
+        "Peso: 102,90 → 102,10 kg",
+        "Resultado: -0,80 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 12",
+      "period": "14/09 a 20/09",
+      "current": false,
+      "lines": [
+        "Peso: 102,10 → 101,40 kg",
+        "Resultado: -0,70 kg",
+        "Fome: bem controlada, com leve aumento próximo ao dia da aplicação.",
+        "Efeitos: leve boca seca em um dia, sem outros sintomas relevantes.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 13",
+      "period": "21/09 a 27/09",
+      "current": false,
+      "lines": [
+        "Peso: 101,40 → 100,80 kg",
+        "Resultado: -0,60 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 14",
+      "period": "28/09 a 04/10",
+      "current": false,
+      "lines": [
+        "Peso: 100,80 → 100,30 kg",
+        "Resultado: -0,50 kg",
+        "Fome: baixa na maior parte da semana.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
+      ]
+    },
+    {
+      "title": "Semana 15",
+      "period": "05/10 a 12/10",
+      "current": true,
+      "lines": [
+        "Peso: 100,30 → 100,00 kg",
+        "Resultado: -0,30 kg",
+        "Fome: bem controlada, com leve aumento próximo ao dia da aplicação.",
+        "Efeitos: nenhum efeito colateral relevante.",
+        "Observação: dados fictícios criados exclusivamente para teste."
       ]
     }
   ],
@@ -246,104 +476,90 @@
       "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
     },
     {
-      "date": "21/07/2026",
-      "meals": "13:30: arroz, feijão, frango e legumes; 20:10: omelete com tomate.",
-      "hunger": "Sem fome antes do almoço; fome leve no início da noite.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "22/07/2026",
-      "meals": "14:00: carne moída, batata e salada; 20:30: pão com ovo.",
-      "hunger": "Fome baixa durante todo o dia.",
-      "effects": "Boca seca leve à noite.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "23/07/2026",
-      "meals": "13:45: frango, arroz e chuchu; 19:50: sopa de legumes.",
-      "hunger": "Sem fome pela manhã; fome moderada antes do jantar.",
-      "effects": "Sem efeitos relevantes.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "24/07/2026",
-      "meals": "14:15: macarrão com carne e legumes; 21:00: banana e iogurte.",
-      "hunger": "Pouca fome.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "25/07/2026",
-      "meals": "13:20: feijão, arroz, frango e abóbora; 20:40: omelete.",
-      "hunger": "Sem fome antes das refeições.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "26/07/2026",
-      "meals": "14:00: carne assada, batata e salada; 20:15: pão com frango.",
-      "hunger": "Leve vontade de comer à noite, sem fome forte.",
-      "effects": "Sem efeitos relevantes.",
-      "notes": "Fim fictício da Semana 4."
-    },
-    {
       "date": "27/07/2026",
-      "meals": "13:50: arroz, feijão, frango e legumes; 20:10: sopa.",
-      "hunger": "Sem fome.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Peso fictício de 109,80 kg. 4ª aplicação fictícia às 15:30."
-    },
-    {
-      "date": "28/07/2026",
-      "meals": "14:10: carne moída, purê e salada; 20:30: omelete.",
-      "hunger": "Fome baixa.",
-      "effects": "Leve sensação de estômago cheio após o almoço.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "29/07/2026",
-      "meals": "13:35: frango, arroz e legumes; 20:00: banana e iogurte.",
-      "hunger": "Sem fome pela manhã; fome leve à noite.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "30/07/2026",
-      "meals": "14:20: feijão, arroz, carne e abóbora; 20:45: pão com ovo.",
-      "hunger": "Pouca fome.",
-      "effects": "Sem efeitos relevantes.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "31/07/2026",
-      "meals": "13:40: macarrão com frango e legumes; 20:20: omelete.",
-      "hunger": "Sem fome antes do almoço.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "01/08/2026",
-      "meals": "14:00: carne, batata e salada; 21:00: fruta.",
-      "hunger": "Fome leve antes do jantar.",
-      "effects": "Sem efeitos relevantes.",
-      "notes": "Registro fictício para teste."
-    },
-    {
-      "date": "02/08/2026",
-      "meals": "13:30: arroz, feijão, frango e legumes; 20:00: sopa.",
-      "hunger": "Fome bem controlada.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Registro fictício para teste."
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Leve boca seca em um dia, sem outros sintomas relevantes.",
+      "notes": "Peso fictício de 109,80 kg. 4ª semana de teste; aplicação registrada às 15:20."
     },
     {
       "date": "03/08/2026",
-      "meals": "14:10: frango, arroz, cenoura e chuchu; 20:15: omelete.",
-      "hunger": "Sem fome.",
-      "effects": "Sem efeitos colaterais.",
-      "notes": "Peso fictício de 108,40 kg. 5ª aplicação fictícia às 15:20."
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 108,40 kg. 5ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "10/08/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Bem controlada, com leve aumento próximo ao dia da aplicação.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 107,10 kg. 6ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "17/08/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 105,90 kg. 7ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "24/08/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Leve boca seca em um dia, sem outros sintomas relevantes.",
+      "notes": "Peso fictício de 104,80 kg. 8ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "31/08/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Bem controlada, com leve aumento próximo ao dia da aplicação.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 103,80 kg. 9ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "07/09/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 102,90 kg. 10ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "14/09/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 102,10 kg. 11ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "21/09/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Bem controlada, com leve aumento próximo ao dia da aplicação.",
+      "effects": "Leve boca seca em um dia, sem outros sintomas relevantes.",
+      "notes": "Peso fictício de 101,40 kg. 12ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "28/09/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 100,80 kg. 13ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "05/10/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Baixa na maior parte da semana.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 100,30 kg. 14ª semana de teste; aplicação registrada às 15:20."
+    },
+    {
+      "date": "12/10/2026",
+      "meals": "Resumo semanal fictício: refeições com porções moderadas, proteína, legumes e carboidrato em pequena quantidade.",
+      "hunger": "Bem controlada, com leve aumento próximo ao dia da aplicação.",
+      "effects": "Nenhum efeito colateral relevante.",
+      "notes": "Peso fictício de 100,00 kg. 15ª semana de teste; aplicação registrada às 15:20."
     }
   ],
-  "generalObservation": "RELATÓRIO DE TESTE: todos os dados entre 21/07/2026 e 03/08/2026 são fictícios e foram criados apenas para validar a importação e a publicação no site.",
+  "generalObservation": "RELATÓRIO INTEGRALMENTE FICTÍCIO APÓS 20/07/2026: a progressão semanal foi criada somente para testar o funcionamento do site até a meta inicial de 100 kg. Não representa resultados reais nem previsão de emagrecimento.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico."
 }
