@@ -467,7 +467,7 @@ async function publishPendingData() {
 }
 
 
-function setNewGoal() {
+async function setNewGoal() {
   const input = $("newGoalWeight");
   const newTarget = Number(String(input.value).replace(",", "."));
   if (!Number.isFinite(newTarget) || newTarget < 30 || newTarget > 300) {
@@ -503,8 +503,11 @@ function setNewGoal() {
   $("publishButton").disabled = false;
   $("publishButton").textContent = "Publicar atualização";
   publicationComplete = false;
-  $("importStatus").className = "import-status success";
-  $("importStatus").textContent = `Nova meta de ${kg(newTarget)} preparada. Toque em Publicar atualização.`;
+  $("importStatus").className = "import-status loading";
+  $("importStatus").textContent = `Salvando a nova meta de ${kg(newTarget)}...`;
+
+  // Publica imediatamente para que a nova meta permaneça após atualizar a página.
+  await publishPendingData();
 }
 
 function fillGithubForm() {
