@@ -267,39 +267,183 @@ function renderDiary() {
 
 function drawChart() {
   const canvas = $("weightChart");
-  const rect = canvas.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
+  const wrap = canvas.closest(".chart-wrap");
+  const weights = Array.isArray(appData.weights) ? appData.weights : [];
+  if (!weights.length || !wrap) return;
+
+  const minPointSpacing = 42;
+  const visibleWidth = Math.max(320, wrap.clientWidth || 320);
+  const cssWidth = Math.max(visibleWidth, 120 + (weights.length - 1) * minPointSpacing);
+  const cssHeight = Math.max(280, wrap.clientHeight || 300);
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
   const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
-  const width = rect.width, height = rect.height;
-  const pad = { top: 38, right: 28, bottom: 50, left: 58 };
-  const data = appData.weights.map(w => ({ label: w.date.slice(0, 5), value: Number(w.valueKg) }));
-  const values = data.map(d => d.value);
-  let min = Math.floor(Math.min(...values) - 2), max = Math.ceil(Math.max(...values) + 2);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const width = cssWidth;
+  const height = cssHeight;
+  const pad = { top: 42, right: 34, bottom: 54, left: 58 };
+  const data = weights.map((w, index) => ({
+    index,
+    label: String(w.date || "").slice(0, 5),
+    fullDate: String(w.date || ""),
+    value: Number(w.valueKg)
+  })).filter(item => Number.isFinite(item.value));
+  if (!data.length) return;
+
+  const values = data.map(item => item.value);
+  const goalValues = [];
+  const currentTarget = Number(appData?.goal?.targetWeightKg);
+  if (Number.isFinite(currentTarget)) goalValues.push(currentTarget);
+  const history = Array.isArray(appData?.goal?.history) ? appData.goal.history : [];
+  history.forEach(item => {
+    const target = Number(item?.targetWeightKg);
+    if (Number.isFinite(target)) goalValues.push(target);
+  });
+
+  let min = Math.floor(Math.min(...values, ...goalValues) - 2);
+  let max = Math.ceil(Math.max(...values, ...goalValues) + 2);
   if (min === max) { min -= 1; max += 1; }
-  const chartW = width - pad.left - pad.right, chartH = height - pad.top - pad.bottom;
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+  const xFor = index => data.length === 1 ? pad.left + chartW / 2 : pad.left + (index / (data.length - 1)) * chartW;
+  const yFor = value => pad.top + ((max - value) / (max - min)) * chartH;
+
   ctx.clearRect(0, 0, width, height);
   ctx.font = "12px system-ui";
-  ctx.fillStyle = "#667b78"; ctx.strokeStyle = "#d8e3e1"; ctx.lineWidth = 1;
+  ctx.fillStyle = "#667b78";
+  ctx.strokeStyle = "#d8e3e1";
+  ctx.lineWidth = 1;
   for (let i = 0; i <= 5; i++) {
     const value = min + (max - min) * (i / 5);
     const y = pad.top + chartH - (i / 5) * chartH;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
-    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(value.toFixed(0), pad.left - 10, y);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(value.toFixed(0), pad.left - 10, y);
   }
-  const points = data.map((item, index) => ({ ...item, x: data.length === 1 ? pad.left + chartW/2 : pad.left + (index/(data.length-1))*chartW, y: pad.top + ((max-item.value)/(max-min))*chartH }));
-  ctx.strokeStyle = "#0f766e"; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.beginPath();
-  points.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y)); ctx.stroke();
-  points.forEach(p => {
-    ctx.beginPath(); ctx.fillStyle="#fff"; ctx.strokeStyle="#0f766e"; ctx.lineWidth=4; ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle="#17312f"; ctx.font="700 12px system-ui"; ctx.textAlign="center"; ctx.textBaseline="bottom"; ctx.fillText(`${p.value.toFixed(2).replace(".",",")} kg`, p.x, p.y-12);
-    ctx.fillStyle="#667b78"; ctx.font="12px system-ui"; ctx.textBaseline="top"; ctx.fillText(p.label,p.x,height-pad.bottom+14);
-  });
-}
 
+  const uniqueGoals = [...new Set(goalValues)].sort((a, b) => b - a);
+  uniqueGoals.forEach(goal => {
+    if (goal < min || goal > max) return;
+    const y = yFor(goal);
+    ctx.save();
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = "#8aa9a5";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = "#55716d";
+    ctx.font = "700 11px system-ui";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`Meta ${String(goal).replace(".", ",")} kg`, pad.left + 6, y - 4);
+  });
+
+  const points = data.map((item, index) => ({ ...item, x: xFor(index), y: yFor(item.value) }));
+  const stageTargets = uniqueGoals;
+  const colors = ["#0f766e", "#159a8c", "#3182a0", "#7a6bb7"];
+  const colorForSegment = (a, b) => {
+    const mid = (a.value + b.value) / 2;
+    let stage = 0;
+    for (const target of stageTargets) if (mid <= target) stage += 1;
+    return colors[Math.min(stage, colors.length - 1)];
+  };
+
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.lineWidth = 4;
+  for (let i = 1; i < points.length; i++) {
+    ctx.strokeStyle = colorForSegment(points[i - 1], points[i]);
+    ctx.beginPath();
+    ctx.moveTo(points[i - 1].x, points[i - 1].y);
+    ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+  }
+
+  points.forEach((point, index) => {
+    const isLast = index === points.length - 1;
+    ctx.beginPath();
+    ctx.fillStyle = isLast ? "#0f766e" : "#ffffff";
+    ctx.strokeStyle = "#0f766e";
+    ctx.lineWidth = isLast ? 4 : 3;
+    ctx.arc(point.x, point.y, isLast ? 7 : 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  });
+
+  const maxLabels = Math.max(2, Math.floor(chartW / 85));
+  const labelStep = Math.max(1, Math.ceil((data.length - 1) / (maxLabels - 1)));
+  data.forEach((item, index) => {
+    if (index !== 0 && index !== data.length - 1 && index % labelStep !== 0) return;
+    const x = xFor(index);
+    ctx.fillStyle = "#667b78";
+    ctx.font = "11px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(item.label, x, height - pad.bottom + 15);
+  });
+
+  const last = points[points.length - 1];
+  ctx.fillStyle = "#17312f";
+  ctx.font = "700 12px system-ui";
+  ctx.textAlign = last.x > width - 110 ? "right" : "left";
+  ctx.textBaseline = "bottom";
+  const labelX = last.x > width - 110 ? last.x - 10 : last.x + 10;
+  ctx.fillText(`${last.value.toFixed(2).replace(".", ",")} kg (atual)`, labelX, last.y - 9);
+
+  canvas.__chartPoints = points;
+  if (!canvas.__tooltipBound) {
+    const showTooltip = event => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = event.touches?.[0]?.clientX ?? event.clientX;
+      const clientY = event.touches?.[0]?.clientY ?? event.clientY;
+      if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) return;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const candidates = canvas.__chartPoints || [];
+      let nearest = null;
+      let distance = Infinity;
+      candidates.forEach(point => {
+        const d = Math.hypot(point.x - x, point.y - y);
+        if (d < distance) { nearest = point; distance = d; }
+      });
+      if (!nearest || distance > 28) return;
+      let tooltip = wrap.querySelector(".chart-tooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.className = "chart-tooltip";
+        wrap.appendChild(tooltip);
+      }
+      tooltip.innerHTML = `<strong>${nearest.value.toFixed(2).replace(".", ",")} kg</strong><span>${escapeHtml(nearest.fullDate)}</span>`;
+      const left = Math.min(Math.max(nearest.x - 55, 8), canvas.offsetWidth - 118);
+      const top = Math.max(8, nearest.y - 66);
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.classList.add("show");
+      clearTimeout(canvas.__tooltipTimer);
+      canvas.__tooltipTimer = setTimeout(() => tooltip.classList.remove("show"), 2600);
+    };
+    canvas.addEventListener("click", showTooltip);
+    canvas.addEventListener("touchstart", showTooltip, { passive: true });
+    canvas.__tooltipBound = true;
+  }
+
+  if (!wrap.dataset.initialScrollDone && width > visibleWidth) {
+    wrap.scrollLeft = width - visibleWidth;
+    wrap.dataset.initialScrollDone = "1";
+  }
+}
 async function extractPdfText(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
