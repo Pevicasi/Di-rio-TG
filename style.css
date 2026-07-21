@@ -230,12 +230,10 @@ main {
 
 .chart-wrap {
   position: relative;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  overflow: hidden;
   width: 100%;
-  height: 340px;
+  max-width: 100%;
+  height: 300px;
 }
 
 #weightChart {
@@ -463,7 +461,7 @@ footer {
   .metric { padding: 14px; }
   .metric strong { font-size: 18px; }
   .goal-heading { align-items: flex-start; }
-  .chart-wrap { height: 270px; }
+  .chart-wrap { height: 280px; }
   .section-header { align-items: flex-start; }
   .diary-grid { grid-template-columns: 1fr; }
 }
@@ -566,8 +564,10 @@ footer {
 
 .chart-wrap canvas {
   display: block;
-  max-width: none;
-  touch-action: pan-x;
+  width: 100% !important;
+  max-width: 100%;
+  height: 100%;
+  touch-action: manipulation;
 }
 .chart-tooltip {
   position: absolute;
