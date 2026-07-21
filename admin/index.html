@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
   <title>Acompanhamento com Tirzepatida</title>
-  <link rel="stylesheet" href="../style.css?v=20260720-8" />
+  <link rel="stylesheet" href="../style.css?v=20260720-9" />
 </head>
 <body>
   <header class="topbar">
@@ -95,19 +95,19 @@
     <section class="card">
       <div class="section-header">
         <div><p class="eyebrow">Evolução</p><h2>Peso ao longo do tratamento</h2></div>
-        <div class="chart-legend"><span></span>Peso em kg</div>
+        <div class="section-actions"><div class="chart-legend"><span></span>Peso em kg</div><button class="filter-button" id="toggleWeightSummary" type="button">Mostrar todos</button></div>
       </div>
       <div class="chart-wrap"><canvas id="weightChart" aria-label="Gráfico da evolução do peso"></canvas></div>
       <div class="weight-summary" id="weightSummary"></div>
     </section>
 
     <section class="card">
-      <div class="section-header"><div><p class="eyebrow">Aplicações</p><h2>Linha do tempo</h2></div></div>
+      <div class="section-header"><div><p class="eyebrow">Aplicações</p><h2>Linha do tempo</h2></div><button class="filter-button" id="toggleApplications" type="button">Mostrar todos</button></div>
       <div class="timeline" id="timeline"></div>
     </section>
 
     <section class="card">
-      <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumo semanal</h2></div></div>
+      <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumo semanal</h2></div><button class="filter-button" id="toggleWeeks" type="button">Mostrar todos</button></div>
       <div class="weeks-grid" id="weeksGrid"></div>
     </section>
 
