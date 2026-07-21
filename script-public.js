@@ -271,10 +271,11 @@ function drawChart() {
   const weights = Array.isArray(appData.weights) ? appData.weights : [];
   if (!weights.length || !wrap) return;
 
-  const visibleWidth = Math.max(280, wrap.clientWidth || 280);
-  const cssWidth = visibleWidth;
-  const cssHeight = Math.max(260, Math.min(320, wrap.clientHeight || 280));
-  canvas.style.width = "100%";
+  const minPointSpacing = 42;
+  const visibleWidth = Math.max(320, wrap.clientWidth || 320);
+  const cssWidth = Math.max(visibleWidth, 120 + (weights.length - 1) * minPointSpacing);
+  const cssHeight = Math.max(280, wrap.clientHeight || 300);
+  canvas.style.width = `${cssWidth}px`;
   canvas.style.height = `${cssHeight}px`;
 
   const dpr = window.devicePixelRatio || 1;
@@ -438,6 +439,10 @@ function drawChart() {
     canvas.__tooltipBound = true;
   }
 
+  if (!wrap.dataset.initialScrollDone && width > visibleWidth) {
+    wrap.scrollLeft = width - visibleWidth;
+    wrap.dataset.initialScrollDone = "1";
+  }
 }
 async function extractPdfText(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
