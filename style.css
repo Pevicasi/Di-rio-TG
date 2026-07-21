@@ -244,6 +244,15 @@ main {
   display: block;
 }
 
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .chart-legend {
   font-size: 12px;
   color: var(--muted);

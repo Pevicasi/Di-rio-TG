@@ -57,6 +57,9 @@ const defaultData = {
 let appData = defaultData;
 let pendingData = null;
 let showAll = false;
+let showAllApplications = false;
+let showAllWeeks = false;
+let showAllWeightSummary = false;
 let publicationComplete = false;
 
 const $ = (id) => document.getElementById(id);
@@ -234,9 +237,8 @@ function renderAll() {
   ];
   $("treatmentDetails").innerHTML = treatmentRows.map(([k,v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join("");
 
-  $("timeline").innerHTML = d.applications.map((a, i) => `<article class="timeline-item"><div class="timeline-dot">${escapeHtml(a.number ?? i + 1)}</div><div><h3>${escapeHtml(a.number ?? i + 1)}ª aplicação</h3><p>${escapeHtml(a.date)} às ${escapeHtml(a.time)}</p><span>${escapeHtml(a.dose)} • ${escapeHtml(a.location)}</span></div></article>`).join("");
-
-  $("weeksGrid").innerHTML = d.weeks.map(w => `<article class="week-card${w.current ? " current" : ""}"><div class="week-header"><span>${escapeHtml(w.title)}</span><strong>${escapeHtml(w.period)}</strong></div>${w.lines.map(line => { const idx = line.indexOf(":"); return idx > -1 ? `<p><b>${escapeHtml(line.slice(0, idx + 1))}</b>${escapeHtml(line.slice(idx + 1))}</p>` : `<p>${escapeHtml(line)}</p>`; }).join("")}</article>`).join("");
+  renderApplications();
+  renderWeeks();
 
   $("generalObservation").textContent = d.generalObservation || "";
   $("medicalNotice").textContent = d.medicalNotice || "";
@@ -247,12 +249,29 @@ function renderAll() {
   renderWeightSummary();
 }
 
+function renderApplications() {
+  const applications = showAllApplications ? appData.applications : appData.applications.slice(-5);
+  $("timeline").innerHTML = applications.map((a, index) => {
+    const fallbackNumber = showAllApplications ? index + 1 : appData.applications.length - applications.length + index + 1;
+    return `<article class="timeline-item"><div class="timeline-dot">${escapeHtml(a.number ?? fallbackNumber)}</div><div><h3>${escapeHtml(a.number ?? fallbackNumber)}ª aplicação</h3><p>${escapeHtml(a.date)} às ${escapeHtml(a.time)}</p><span>${escapeHtml(a.dose)} • ${escapeHtml(a.location)}</span></div></article>`;
+  }).join("");
+}
+
+function renderWeeks() {
+  const weeks = showAllWeeks ? appData.weeks : appData.weeks.slice(-5);
+  $("weeksGrid").innerHTML = weeks.map(w => `<article class="week-card${w.current ? " current" : ""}"><div class="week-header"><span>${escapeHtml(w.title)}</span><strong>${escapeHtml(w.period)}</strong></div>${w.lines.map(line => { const idx = line.indexOf(":"); return idx > -1 ? `<p><b>${escapeHtml(line.slice(0, idx + 1))}</b>${escapeHtml(line.slice(idx + 1))}</p>` : `<p>${escapeHtml(line)}</p>`; }).join("")}</article>`).join("");
+}
+
 function renderWeightSummary() {
   const weights = appData.weights;
-  $("weightSummary").innerHTML = weights.slice(1).map((item, i) => {
+  const losses = weights.slice(1).map((item, i) => {
     const delta = Number(item.valueKg) - Number(weights[i].valueKg);
-    const sign = delta > 0 ? "+" : "";
-    return `<span>${i + 1}ª semana: <b>${sign}${delta.toFixed(2).replace(".", ",")} kg</b></span>`;
+    return { week: i + 1, delta };
+  });
+  const visibleLosses = showAllWeightSummary ? losses : losses.slice(-5);
+  $("weightSummary").innerHTML = visibleLosses.map(item => {
+    const sign = item.delta > 0 ? "+" : "";
+    return `<span>${item.week}ª semana: <b>${sign}${item.delta.toFixed(2).replace(".", ",")} kg</b></span>`;
   }).join("");
 }
 
@@ -688,6 +707,24 @@ $("toggleAll").addEventListener("click", event => {
   showAll = !showAll;
   event.currentTarget.textContent = showAll ? "Mostrar recentes" : "Mostrar todos";
   renderDiary();
+});
+
+$("toggleApplications").addEventListener("click", event => {
+  showAllApplications = !showAllApplications;
+  event.currentTarget.textContent = showAllApplications ? "Mostrar recentes" : "Mostrar todos";
+  renderApplications();
+});
+
+$("toggleWeeks").addEventListener("click", event => {
+  showAllWeeks = !showAllWeeks;
+  event.currentTarget.textContent = showAllWeeks ? "Mostrar recentes" : "Mostrar todos";
+  renderWeeks();
+});
+
+$("toggleWeightSummary").addEventListener("click", event => {
+  showAllWeightSummary = !showAllWeightSummary;
+  event.currentTarget.textContent = showAllWeightSummary ? "Mostrar recentes" : "Mostrar todos";
+  renderWeightSummary();
 });
 
 $("pdfInput").addEventListener("change", event => {
