@@ -296,8 +296,8 @@
     "treatment": true,
     "weights": true,
     "applications": true,
-    "weeks": true,
-    "analysis": true,
+    "weeks": false,
+    "analysis": false,
     "diary": true,
     "notes": true
   }
