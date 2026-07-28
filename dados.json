@@ -68,6 +68,13 @@
       "time": "15:15",
       "dose": "8 UI",
       "location": "Abdômen, abaixo do umbigo"
+    },
+    {
+      "number": 4,
+      "date": "27/07/2026",
+      "time": "09:30",
+      "dose": "8 UI",
+      "location": "Coxa"
     }
   ],
   "weeks": [
@@ -131,28 +138,53 @@
       "title": "Semana 3",
       "period": "20/07 a 26/07",
       "current": false,
-      "weight": "111,30 → aguardando nova pesagem",
-      "result": "aguardando nova pesagem",
+      "weight": "111,30 → 109,80 kg",
+      "result": "-1,50 kg",
       "application": "20/07 às 15:15",
       "hunger": "sem fome no momento do registro.",
       "effects": "nenhum relatado.",
       "observation": "aplicação abaixo do umbigo.",
       "additional": "",
       "generatedFields": {
-        "weight": "111,30 → aguardando nova pesagem",
-        "result": "aguardando nova pesagem",
+        "weight": "111,30 → 109,80 kg",
+        "result": "-1,50 kg",
         "application": "20/07/2026 às 15:15",
         "hunger": "Sem fome.",
         "effects": "Sem efeitos colaterais.",
         "observation": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
       },
       "lines": [
-        "Peso: 111,30 → aguardando nova pesagem",
-        "Resultado: aguardando nova pesagem",
+        "Peso: 111,30 → 109,80 kg",
+        "Resultado: -1,50 kg",
         "Aplicação: 20/07 às 15:15",
         "Fome: sem fome no momento do registro.",
         "Efeitos: nenhum relatado.",
         "Observação: aplicação abaixo do umbigo."
+      ]
+    },
+    {
+      "title": "Semana 4",
+      "period": "Iniciada em 27/07",
+      "current": true,
+      "weight": "109,80 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
+      "application": "27/07/2026 às 09:30",
+      "hunger": "",
+      "effects": "",
+      "observation": "",
+      "additional": "",
+      "generatedFields": {
+        "weight": "109,80 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
+        "application": "27/07/2026 às 09:30",
+        "hunger": "",
+        "effects": "",
+        "observation": ""
+      },
+      "lines": [
+        "Peso: 109,80 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
+        "Aplicação: 27/07/2026 às 09:30"
       ]
     }
   ],
