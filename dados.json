@@ -161,22 +161,25 @@
       "weight": "109,80 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
-      "hunger": "",
-      "effects": "",
-      "observation": "",
+      "hunger": "Sem",
+      "effects": "A",
+      "observation": "A",
       "additional": "",
       "generatedFields": {
         "weight": "109,80 → aguardando nova pesagem",
         "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
-        "hunger": "",
-        "effects": "",
-        "observation": ""
+        "hunger": "Sem",
+        "effects": "A",
+        "observation": "A"
       },
       "lines": [
         "Peso: 109,80 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
-        "Aplicação: 27/07/2026 às 09:30"
+        "Aplicação: 27/07/2026 às 09:30",
+        "Fome: Sem",
+        "Efeitos: A",
+        "Observação: A"
       ]
     }
   ],
@@ -285,6 +288,13 @@
       "hunger": "Sem fome.",
       "effects": "Sem efeitos colaterais.",
       "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
+    },
+    {
+      "date": "28/07/2026",
+      "meals": "A",
+      "hunger": "Sem",
+      "effects": "A",
+      "notes": "A"
     }
   ],
   "generalObservation": "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
