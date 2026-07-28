@@ -438,7 +438,7 @@ function renderAll() {
   const remaining = Math.max(0, current - target);
 
   setText("siteTitle", d.title || "Acompanhamento com Tirzepatida");
-  setText("profileSubtitle", `${d.profile.name} • ${d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`);
+  setText("profileSubtitle", `${d.profile.name} • ${calculateAge(d.profile.birthDate) || d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`);
   setText("updatedAt", `Atualizado em ${d.updatedAt}`);
   setText("initialWeight", kg(initial));
   setText("currentWeight", kg(current));
@@ -907,4 +907,16 @@ window.addEventListener("resize", () => {
   window.__chartTimer = setTimeout(drawChart, 150);
 });
 
-loadPublishedData().finally(startSyncMonitor);
+loadPublishedData().finally(startSyncMonitor);  function calculateAge(value) {
+    if (!value) return "";
+    const match = String(value).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return "";
+    const born = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+    const today = new Date();
+    if (Number.isNaN(born.getTime()) || born > today) return "";
+    let age = today.getFullYear() - born.getFullYear();
+    if (today.getMonth() < born.getMonth() || (today.getMonth() === born.getMonth() && today.getDate() < born.getDate())) age--;
+    return age >= 0 ? age : "";
+  }
+
+

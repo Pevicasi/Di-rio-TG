@@ -807,3 +807,6 @@ body.header-hidden .hero-grid { margin-top: 0; }
 .pdf-extra-option { margin-top:.75rem; }
 .pdf-options-actions { display:flex; justify-content:flex-end; gap:.75rem; margin-top:1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
 @media (max-width:640px){ .pdf-options-grid{grid-template-columns:1fr}.pdf-options-actions{position:sticky;bottom:-1.25rem;margin-inline:-1.25rem;padding:1rem 1.25rem 1.25rem;background:#fff}.pdf-options-actions button{flex:1}.pdf-options-header h2{font-size:1.35rem} }
+
+/* TirzeTrack 3.1.0 */
+.effects-selector{grid-column:1/-1;border:1px solid #c9ddda;border-radius:18px;padding:16px;margin:0}.effects-selector legend{font-weight:800;color:#155e57;padding:0 8px}.effects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}.effect-option{display:flex!important;align-items:center;gap:8px;background:#f3f9f8;border:1px solid #dbeae8;border-radius:12px;padding:10px;font-weight:600}.effect-option input{width:20px;height:20px;flex:0 0 auto}.effects-selector textarea{margin-top:7px}.admin-grid select{width:100%;box-sizing:border-box}input[readonly]{background:#f4f7f6;color:#506764}

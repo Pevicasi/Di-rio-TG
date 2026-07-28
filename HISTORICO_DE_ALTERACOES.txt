@@ -255,3 +255,13 @@ VERSÃO 3.0.0 — 28/07/2026
 - Adicionados cabeçalho, tabelas, gráfico vetorial, quebras automáticas de página e paginação.
 - O gerador não depende de bibliotecas externas, CDN, pop-up ou pasta vendor.
 - O dados.json não foi incluído nem alterado.
+
+
+VERSÃO 3.1.0 — 28/07/2026
+- Perfil: substituído o campo de idade pela data de nascimento, com cálculo automático da idade.
+- Compatibilidade mantida com registros antigos que possuem somente a idade.
+- Tratamento: medicamento passou a ser escolhido em lista, com opção para cadastrar outro.
+- Tratamento: concentrações comuns de tirzepatida adicionadas: 2,5; 5; 7,5; 10; 12,5 e 15 mg por 0,5 mL, além de opção personalizada.
+- Diário: fome passou a ter seleção rápida (sem fome, pouca fome ou bastante fome), mantendo descrição personalizada.
+- Diário: adicionada seleção múltipla de efeitos colaterais, com campo para outros efeitos.
+- Relatório PDF e site público atualizados para calcular a idade pela data de nascimento.
