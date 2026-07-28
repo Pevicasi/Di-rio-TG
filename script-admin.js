@@ -73,6 +73,30 @@
     return (appData?.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).map(food => `<option value="${escapeHtml(food)}"></option>`).join("");
   }
 
+  const foodCategoryMap = {
+    "Pão":"Pães e massas", "Arroz":"Pães e massas", "Macarrão":"Pães e massas",
+    "Feijão":"Grãos e leguminosas",
+    "Frango":"Proteínas", "Carne bovina":"Proteínas", "Peixe":"Proteínas", "Ovo":"Proteínas",
+    "Banana":"Frutas", "Maçã":"Frutas",
+    "Tomate":"Verduras e legumes", "Alface":"Verduras e legumes", "Cenoura":"Verduras e legumes",
+    "Café":"Bebidas", "Chá":"Bebidas", "Água":"Bebidas", "Suco":"Bebidas"
+  };
+
+  function renderFoodCatalog() {
+    const list = $("foodCatalogList");
+    if (!list) return;
+    const query = String($("foodCatalogSearch")?.value || "").trim().toLocaleLowerCase("pt-BR");
+    const foods = (appData?.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).filter(food => food.toLocaleLowerCase("pt-BR").includes(query));
+    const groups = {};
+    foods.forEach(food => {
+      const category = foodCategoryMap[food] || "Outros";
+      (groups[category] ||= []).push(food);
+    });
+    $("foodCatalogCount").textContent = `${appData?.foods?.length || 0} alimento${(appData?.foods?.length || 0) === 1 ? "" : "s"}`;
+    list.innerHTML = foods.length ? Object.entries(groups).map(([category, items]) => `
+      <div class="food-category"><h4>${escapeHtml(category)}</h4><div class="food-chips">${items.map(food => `<span class="food-chip"><span>${escapeHtml(food)}</span><button type="button" data-remove-food="${escapeHtml(food)}" aria-label="Excluir ${escapeHtml(food)}">×</button></span>`).join("")}</div></div>`).join("") : '<p class="empty-list">Nenhum alimento encontrado.</p>';
+  }
+
   function parseBRDate(value) {
     if (!value) return "";
     const text = String(value).trim();
@@ -546,6 +570,7 @@
       selectedDiaryIndex = -1;
       $("diaryDateSelector").innerHTML = '<option value="">Nenhum registro</option>';
       $("diarySingleEditor").innerHTML = '<p class="empty-list">Nenhum registro diário cadastrado.</p>';
+      renderFoodCatalog();
       return;
     }
     if (selectedDiaryIndex < 0 || selectedDiaryIndex >= appData.diary.length) selectedDiaryIndex = appData.diary.length - 1;
@@ -579,6 +604,7 @@
           <label class="wide-field">Observações<textarea data-field="notes" rows="4">${escapeHtml(item.notes)}</textarea></label>
         </div>
       </article>`;
+    renderFoodCatalog();
   }
 
   function collectDataFromDOM() {
@@ -1131,8 +1157,35 @@
     renderDiary();
   });
 
+  $("foodCatalogSearch")?.addEventListener("input", renderFoodCatalog);
+
+  $("addFoodCatalog")?.addEventListener("click", () => {
+    const input = $("newFoodName");
+    const food = String(input?.value || "").trim();
+    if (!food) return showToast("Digite o nome do alimento.", "error");
+    if (appData.foods.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"))) return showToast("Esse alimento já está cadastrado.", "error");
+    appData.foods.push(food);
+    input.value = "";
+    renderFoodCatalog();
+    renderDiary();
+    markDirty();
+    showToast("Alimento cadastrado com sucesso.");
+  });
+
+  $("newFoodName")?.addEventListener("keydown", event => {
+    if (event.key === "Enter") { event.preventDefault(); $("addFoodCatalog")?.click(); }
+  });
+
   // Botões criados dinamicamente: refeições, alimentos e registros.
   document.addEventListener("click", event => {
+    const removeFoodButton = event.target.closest("[data-remove-food]");
+    if (removeFoodButton) {
+      event.preventDefault();
+      const food = removeFoodButton.dataset.removeFood;
+      appData.foods = appData.foods.filter(item => item !== food);
+      renderFoodCatalog(); renderDiary(); markDirty();
+      showToast("Alimento excluído."); return;
+    }
     const addMealButton = event.target.closest("[data-add-meal]");
     if (addMealButton) {
       event.preventDefault(); collectDiaryFromDOM();

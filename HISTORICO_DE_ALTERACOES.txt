@@ -294,3 +294,9 @@ PRESERVADO SEM ALTERAÇÕES
 • Sistema de efeitos colaterais.
 • Demais funcionalidades validadas na versão 3.1.0.
 
+
+AJUSTE DA VERSÃO 3.2.0
+• Mensagem de aniversário refeita como cartão destacado, responsivo e integrado ao visual do site público.
+• Cadastro de alimentos passou a exibir a lista inicial de forma visível, organizada por categorias.
+• Adicionados campo de pesquisa, campo para novo alimento, botão de cadastro e opção de exclusão.
+• Alimentos cadastrados continuam reutilizáveis nas refeições e são salvos no dados.json ao publicar.

@@ -815,3 +815,36 @@ body.header-hidden .hero-grid { margin-top: 0; }
 /* TirzeTrack 3.2.0 */
 .birthday-message{margin:22px 0 0;padding:18px 22px;border:1px solid #f2cf76;border-radius:18px;background:linear-gradient(135deg,#fff8dc,#fffdf5);box-shadow:0 10px 28px rgba(176,121,14,.12);font-size:clamp(1.1rem,3vw,1.45rem);font-weight:900;color:#8a5b00;text-align:center}.birthday-message[hidden]{display:none!important}
 .meals-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}.meals-list{display:grid;gap:14px}.meal-editor{border:1px solid #c9ddda;border-radius:18px;padding:15px;background:#f9fcfb}.meal-editor-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#155e57}.food-quick-add{display:grid!important;grid-template-columns:1fr auto;align-items:end;gap:8px}.food-quick-add input{grid-column:1}.food-quick-add button{grid-column:2;grid-row:1/3;align-self:end;margin-bottom:0}.food-catalog-info{margin-top:18px;padding:14px 16px;border-radius:14px;background:#eef8f7;color:#315f5b}.food-catalog-info p{margin:.35rem 0 0;font-size:.92rem}.public-meal{padding:10px 0;border-bottom:1px solid #e1ecea}.public-meal:last-child{border-bottom:0}.public-meal>div{display:flex;justify-content:space-between;gap:10px}.public-meal span{font-weight:700;color:#52706d}.public-meal p{margin:.35rem 0}.public-meal small{display:block;color:#667f7c}.diary-meals{grid-column:1/-1}@media(max-width:640px){.food-quick-add{grid-template-columns:1fr}.food-quick-add button{grid-column:1;grid-row:auto;width:100%}.meal-editor-header{align-items:flex-start;flex-direction:column}.meals-toolbar{align-items:stretch;flex-direction:column}}
+
+/* Versão 3.2.0 — ajustes visuais de aniversário e cadastro de alimentos */
+.birthday-card{margin:22px 0;display:flex;align-items:center;gap:16px;padding:20px 22px;border:1px solid rgba(15,118,110,.18);border-radius:22px;background:linear-gradient(135deg,#fff8dc 0%,#fffdf7 55%,#ecfdf5 100%);box-shadow:0 12px 34px rgba(15,76,70,.12);color:#244b47}
+.birthday-card[hidden]{display:none!important}
+.birthday-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border-radius:18px;background:#fff;border:1px solid #f0d88f;font-size:2rem;box-shadow:0 8px 18px rgba(138,91,0,.12)}
+.birthday-card small{display:block;margin-bottom:3px;color:#8a6500;font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.birthday-card strong{display:block;color:#11665f;font-size:clamp(1.2rem,3vw,1.65rem);line-height:1.2}
+.birthday-card p{margin:.35rem 0 0;color:#58706d;font-size:.95rem}
+
+.food-catalog-manager{margin-top:22px;padding:20px;border:1px solid #c9ddda;border-radius:20px;background:#f9fcfb}
+.food-catalog-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:4px}
+.food-catalog-heading h3{margin:.1rem 0 0;color:#155e57;font-size:1.35rem}
+.catalog-count{white-space:nowrap;padding:7px 11px;border-radius:999px;background:#dff3f0;color:#11665f;font-size:.82rem;font-weight:800}
+.food-catalog-controls{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px;margin:18px 0}
+.food-catalog-controls label{margin:0}
+.food-catalog-controls button{min-height:48px}
+.food-catalog-list{display:grid;gap:16px}
+.food-category{padding-top:4px}
+.food-category h4{margin:0 0 9px;color:#456b67;font-size:.92rem}
+.food-chips{display:flex;flex-wrap:wrap;gap:8px}
+.food-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 8px 8px 12px;border:1px solid #c7dfdc;border-radius:999px;background:#fff;color:#245a55;font-weight:700}
+.food-chip button{display:grid;place-items:center;width:25px;height:25px;padding:0;border:0;border-radius:50%;background:#fbe8e8;color:#a52d2d;font-size:1.15rem;line-height:1;cursor:pointer}
+.food-chip button:hover{background:#f6cccc}
+
+@media(max-width:700px){
+  .birthday-card{align-items:flex-start;margin:16px 0;padding:17px 16px;border-radius:18px}
+  .birthday-icon{flex-basis:48px;width:48px;height:48px;border-radius:14px;font-size:1.6rem}
+  .birthday-card p{font-size:.88rem}
+  .food-catalog-manager{padding:16px}
+  .food-catalog-heading{align-items:flex-start;flex-direction:column}
+  .food-catalog-controls{grid-template-columns:1fr}
+  .food-catalog-controls button{width:100%}
+}

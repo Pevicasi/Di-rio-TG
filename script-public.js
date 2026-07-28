@@ -455,7 +455,8 @@ function renderAll() {
   setText("updatedAt", `Atualizado em ${d.updatedAt}`);
   const birthday = $("birthdayMessage");
   if (birthday) {
-    birthday.textContent = `🎉 Feliz Aniversário, ${d.profile.name || ""}!`;
+    const birthdayText = $("birthdayText");
+    if (birthdayText) birthdayText.textContent = `Feliz aniversário, ${d.profile.name || ""}!`;
     birthday.hidden = !d.profile.name || !isBirthdayToday(d.profile.birthDate);
   }
   setText("initialWeight", kg(initial));
