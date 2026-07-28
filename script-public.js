@@ -235,6 +235,19 @@ function validateData(data) {
 }
 
 
+function normalizeDiaryItem(item = {}) {
+  let mealEntries = Array.isArray(item.mealEntries) ? item.mealEntries : [];
+  if (!mealEntries.length && item.meals) mealEntries = [{ type: "Outro", time: "", foods: [String(item.meals)], note: "" }];
+  return { ...item, mealEntries };
+}
+
+function isBirthdayToday(birthDate) {
+  const date = parseBrDate(birthDate);
+  if (!date) return false;
+  const today = new Date();
+  return date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
+}
+
 function parseBrDate(value) {
   const [day, month, year] = String(value || "").split("/").map(Number);
   if (!day || !month || !year) return null;
@@ -440,6 +453,11 @@ function renderAll() {
   setText("siteTitle", d.title || "Acompanhamento com Tirzepatida");
   setText("profileSubtitle", `${d.profile.name} • ${calculateAge(d.profile.birthDate) || d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`);
   setText("updatedAt", `Atualizado em ${d.updatedAt}`);
+  const birthday = $("birthdayMessage");
+  if (birthday) {
+    birthday.textContent = `🎉 Feliz Aniversário, ${d.profile.name || ""}!`;
+    birthday.hidden = !d.profile.name || !isBirthdayToday(d.profile.birthDate);
+  }
   setText("initialWeight", kg(initial));
   setText("currentWeight", kg(current));
   setText("totalLoss", kg(loss));
@@ -533,7 +551,10 @@ function renderWeightSummary() {
 
 function renderDiary() {
   const list = showAll ? [...appData.diary].reverse() : appData.diary.slice(-5).reverse();
-  $("diaryList").innerHTML = list.map(item => `<article class="diary-item"><button class="diary-toggle"><strong>${escapeHtml(item.date)}</strong><span>Ver detalhes</span></button><div class="diary-content"><div class="diary-grid"><div class="diary-field"><b>Refeições</b><p>${escapeHtml(item.meals)}</p></div><div class="diary-field"><b>Fome</b><p>${escapeHtml(item.hunger)}</p></div><div class="diary-field"><b>Efeitos</b><p>${escapeHtml(item.effects)}</p></div><div class="diary-field"><b>Observações</b><p>${escapeHtml(item.notes)}</p></div></div></div></article>`).join("");
+  $("diaryList").innerHTML = list.map(item => {
+    const meals = (item.mealEntries || []).map(meal => `<div class="public-meal"><div><b>${escapeHtml(meal.type || "Refeição")}</b>${meal.time ? `<span>${escapeHtml(meal.time)}</span>` : ""}</div><p>${escapeHtml((meal.foods || []).join(", ") || "Sem alimentos informados")}</p>${meal.note ? `<small>${escapeHtml(meal.note)}</small>` : ""}</div>`).join("") || `<p>${escapeHtml(item.meals || "Nenhuma refeição cadastrada.")}</p>`;
+    return `<article class="diary-item"><button class="diary-toggle"><strong>${escapeHtml(item.date)}</strong><span>Ver detalhes</span></button><div class="diary-content"><div class="diary-grid"><div class="diary-field diary-meals"><b>Refeições</b>${meals}</div><div class="diary-field"><b>Fome</b><p>${escapeHtml(item.hunger)}</p></div><div class="diary-field"><b>Efeitos</b><p>${escapeHtml(item.effects)}</p></div><div class="diary-field"><b>Observações</b><p>${escapeHtml(item.notes)}</p></div></div></div></article>`;
+  }).join("");
   document.querySelectorAll(".diary-toggle").forEach(button => button.addEventListener("click", () => {
     const item = button.closest(".diary-item");
     item.classList.toggle("open");

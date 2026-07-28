@@ -265,3 +265,32 @@ VERSÃO 3.1.0 — 28/07/2026
 - Diário: fome passou a ter seleção rápida (sem fome, pouca fome ou bastante fome), mantendo descrição personalizada.
 - Diário: adicionada seleção múltipla de efeitos colaterais, com campo para outros efeitos.
 - Relatório PDF e site público atualizados para calcular a idade pela data de nascimento.
+
+
+VERSÃO 3.2.0 — 28/07/2026
+
+NOVAS FUNCIONALIDADES
+• Mensagem automática de aniversário no site público usando a data de nascimento e o nome cadastrados no perfil.
+• Diário com várias refeições por dia, contendo tipo, horário, lista de alimentos e observação.
+• Refeições podem ser adicionadas, editadas e excluídas individualmente.
+• Registros antigos do campo único de refeições são preservados e convertidos automaticamente para o novo formato.
+• Cadastro inicial de alimentos com pesquisa, inclusão de novos itens e reutilização nos próximos registros.
+• Os alimentos cadastrados ficam armazenados no dados.json junto com os demais dados do sistema.
+
+BASES ESTÁVEIS
+• A versão 2.4.0 permanece como base estável do sistema.
+• A versão 3.0.0 permanece como base estável do módulo de PDF.
+
+PASTA DE DADOS
+• Criada a pasta “Dados” com uma cópia de dados.json e o arquivo LEIA-ME.txt.
+• O site continua utilizando exclusivamente o dados.json localizado na raiz do projeto.
+• A cópia da pasta Dados serve apenas para backup e restauração manual.
+
+PRESERVADO SEM ALTERAÇÕES
+• PDF.
+• Tratamento.
+• Medicamentos e concentrações.
+• Sistema de fome.
+• Sistema de efeitos colaterais.
+• Demais funcionalidades validadas na versão 3.1.0.
+
