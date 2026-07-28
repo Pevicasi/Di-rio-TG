@@ -9,7 +9,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 111.3,
+    "currentWeightKg": 108.8,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -33,6 +33,14 @@
     {
       "date": "20/07/2026",
       "valueKg": 111.3
+    },
+    {
+      "date": "27/07/2026",
+      "valueKg": 109.8
+    },
+    {
+      "date": "03/08/2026",
+      "valueKg": 108.8
     }
   ],
   "applications": [
@@ -56,6 +64,13 @@
       "time": "15:15",
       "dose": "8 UI",
       "location": "Abdômen, abaixo do umbigo"
+    },
+    {
+      "number": 4,
+      "date": "27/07/2026",
+      "time": "09:30",
+      "dose": "8 UI",
+      "location": "Coxa direita na parte de cima"
     }
   ],
   "weeks": [
