@@ -31,10 +31,6 @@
       "date": "20/07/2026",
       "valueKg": 111.3
     }
-    {
-      "date": "27/07/2026",
-      "valueKg": 109.8
-    }
   ],
   "applications": [
     {
@@ -58,13 +54,6 @@
       "dose": "8 UI",
       "location": "Abdômen, abaixo do umbigo"
     }
-        {
-      "number": 4,
-      "date": "27/07/2026",
-      "time": "09:30",
-      "dose": "8 UI",
-      "location": "Coxa esquerda na parte de cima"
-        }
   ],
   "weeks": [
     {
