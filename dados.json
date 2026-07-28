@@ -294,15 +294,15 @@
   "generalObservation": "Até 28/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
-    "header": false,
-    "profile": true,
+    "header": true,
+    "profile": false,
     "summary": true,
-    "treatment": false,
-    "weights": true,
-    "applications": false,
-    "weeks": false,
-    "analysis": true,
-    "diary": true,
+    "treatment": true,
+    "weights": false,
+    "applications": true,
+    "weeks": true,
+    "analysis": false,
+    "diary": false,
     "notes": false
   }
 }
