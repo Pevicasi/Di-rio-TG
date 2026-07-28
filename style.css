@@ -706,3 +706,51 @@ footer {
 .analysis-note { margin: 16px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .goal-estimate small { display: inline-block; margin-top: 6px; color: var(--muted); }
 @media (max-width: 720px) { .analysis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .analysis-item { padding: 15px; } .analysis-item strong { font-size: 18px; } }
+
+/* Versão 2.2.0 — resumo semanal por campos e token sem prompt de senha */
+.token-masked-input {
+  -webkit-text-security: disc;
+  font-family: monospace;
+}
+.weekly-fields-grid textarea {
+  min-height: 7rem;
+}
+@media (max-width: 720px) {
+  .weekly-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  .weekly-fields-grid .wide-field {
+    grid-column: auto;
+  }
+}
+
+/* Controles de visibilidade do site público */
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 999px;
+  background: #eef8f7;
+  color: #155e59;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.visibility-toggle input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: #0f766e;
+}
+@media (max-width: 720px) {
+  .section-header-actions { width: 100%; justify-content: flex-start; }
+  .visibility-toggle { border-radius: 14px; }
+}

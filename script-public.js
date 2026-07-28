@@ -51,7 +51,8 @@ const defaultData = {
     { date: "20/07/2026", meals: "14:15: frango, batata, cenoura, chuchu, cebola e pimentão.", hunger: "Sem fome.", effects: "Sem efeitos colaterais.", notes: "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo." }
   ],
   generalObservation: "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
-  medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico."
+  medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico.",
+  visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
 };
 
 let appData = defaultData;
@@ -288,6 +289,28 @@ function renderGoalExtras(data, current, target, stage) {
     return `<div class="goal-history-item${achieved ? " achieved" : ""}"><strong>${kg(item.targetWeightKg)}</strong><span>${status}</span></div>`;
   }).join("") : "";
 }
+
+function setSectionVisible(element, visible) {
+  if (!element) return;
+  element.hidden = !visible;
+  element.style.display = visible ? "" : "none";
+}
+
+function applyVisibility(data) {
+  const v = { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true, ...(data.visibility || {}) };
+  setSectionVisible(document.querySelector("header.topbar"), v.header);
+  setSectionVisible($("profileSubtitle"), v.profile);
+  setSectionVisible($("initialWeight")?.closest(".card"), v.summary);
+  setSectionVisible($("treatmentDetails")?.closest(".card"), v.treatment);
+  setSectionVisible($("weightChart")?.closest("section.card"), v.weights);
+  setSectionVisible($("timeline")?.closest("section.card"), v.applications);
+  setSectionVisible($("weeksGrid")?.closest("section.card"), v.weeks);
+  setSectionVisible($("analysisGrid")?.closest("section.card"), v.analysis);
+  setSectionVisible($("diaryList")?.closest("section.card"), v.diary);
+  setSectionVisible($("generalObservation")?.closest("section.card"), v.notes);
+  setSectionVisible(document.querySelector("footer"), v.notes);
+}
+
 function renderAll() {
   const d = synchronizeWeightFields(appData);
   const summary = weightSummary(d);
@@ -334,6 +357,7 @@ function renderAll() {
   renderDiary();
   drawChart();
   renderWeightSummary();
+  applyVisibility(d);
 }
 
 
