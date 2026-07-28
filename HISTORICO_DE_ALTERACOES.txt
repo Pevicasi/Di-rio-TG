@@ -127,3 +127,43 @@ Melhorias
 • Indicador discreto de sincronização no rodapé do site público.
 • Verificação automática do dados.json a cada 15 segundos, sem depender do cache do navegador.
 • A versão interna do formato ficou somente leitura e recebeu uma explicação no painel.
+
+
+--------------------------------------------------
+Versão 2.3.7
+Data: 28/07/2026
+
+Correções
+• O monitor de atualização deixou de depender apenas do cache do GitHub Pages.
+• A consulta agora tenta primeiro o dados.json bruto do repositório e usa o arquivo do site como alternativa.
+• O indicador passou a mostrar horário da última conferência e contagem regressiva para a próxima verificação.
+• Quando novos dados são encontrados, a página é redesenhada sem precisar de recarregamento manual.
+
+--------------------------------------------------
+
+Versão 2.3.8
+Data: 28/07/2026
+
+CORREÇÕES
+• Corrigido o controle de visibilidade das seções do site público.
+• As seções agora usam identificadores fixos e nunca são removidas do HTML.
+• Ocultar o cabeçalho não interrompe mais a renderização das demais informações.
+• O perfil só é exibido quando o cabeçalho também estiver visível.
+• Ajustado o espaçamento do site quando o cabeçalho estiver oculto.
+• Mantida a estimativa da meta sem alterações.
+
+VALIDAÇÕES
+• Revisados todos os controles “Exibir no site”.
+• Validada a sintaxe dos arquivos JavaScript.
+• Validado o arquivo dados.json.
+• Mantido um único arquivo de histórico em português.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• index.html
+• script-public.js
+• admin/index.html
+• script-admin.js
+• admin/script-admin.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt
+

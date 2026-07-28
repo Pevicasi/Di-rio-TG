@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.6";
+  const ADMIN_BUILD = "2.3.8";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;

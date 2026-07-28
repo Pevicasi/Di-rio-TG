@@ -759,3 +759,7 @@ footer {
 .footer-row { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
 .sync-indicator { display:inline-flex; align-items:center; min-height:30px; padding:6px 10px; border:1px solid rgba(15,118,110,.18); border-radius:999px; background:rgba(255,255,255,.72); color:#52706d; font-size:12px; white-space:nowrap; }
 @media (max-width:620px){ .footer-row{align-items:flex-start;flex-direction:column}.sync-indicator{font-size:11px} }
+
+/* Versão 2.3.8 — mantém o espaçamento correto quando o cabeçalho público é ocultado. */
+body.header-hidden main.container { padding-top: 28px; }
+body.header-hidden .hero-grid { margin-top: 0; }

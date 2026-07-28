@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
+  <header class="topbar" id="publicHeader">
     <div class="container topbar-content">
       <div>
         <p class="eyebrow">Diário de tratamento</p>
@@ -25,7 +25,7 @@
     <div id="importStatus" hidden></div>
 
     <section class="hero-grid">
-      <article class="card profile-card">
+      <article class="card profile-card" id="summarySection">
         <div class="section-title"><span>Resumo geral</span></div>
         <div class="metrics-grid">
           <div class="metric"><span>Peso inicial</span><strong id="initialWeight">117,50 kg</strong></div>
@@ -45,13 +45,13 @@
         </div>
       </article>
 
-      <article class="card treatment-card">
+      <article class="card treatment-card" id="treatmentSection">
         <div class="section-title"><span>Tratamento</span></div>
         <dl class="details-list" id="treatmentDetails"></dl>
       </article>
     </section>
 
-    <section class="card">
+    <section class="card" id="weightsSection">
       <div class="section-header">
         <div><p class="eyebrow">Evolução</p><h2>Peso ao longo do tratamento</h2></div>
         <div class="section-actions"><div class="chart-legend"><span></span>Peso em kg</div><button class="filter-button" id="toggleWeightSummary" type="button">Mostrar todos</button></div>
@@ -60,23 +60,23 @@
       <div class="weight-summary" id="weightSummary"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="applicationsSection">
       <div class="section-header"><div><p class="eyebrow">Aplicações</p><h2>Linha do tempo</h2></div><button class="filter-button" id="toggleApplications" type="button">Mostrar todos</button></div>
       <div class="timeline" id="timeline"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="weeksSection">
       <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumo semanal</h2></div><button class="filter-button" id="toggleWeeks" type="button">Mostrar todos</button></div>
       <div class="weeks-grid" id="weeksGrid"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="analysisSection">
       <div class="section-header"><div><p class="eyebrow">Indicadores</p><h2>Análise da evolução</h2></div></div>
       <div class="analysis-grid" id="analysisGrid"></div>
       <p class="analysis-note">As projeções são estimativas matemáticas baseadas nos registros e não substituem avaliação profissional.</p>
     </section>
 
-    <section class="card">
+    <section class="card" id="diarySection">
       <div class="section-header">
         <div><p class="eyebrow">Diário</p><h2>Registros diários</h2></div>
         <button class="filter-button" id="toggleAll">Mostrar todos</button>
@@ -84,15 +84,15 @@
       <div class="diary-list" id="diaryList"></div>
     </section>
 
-    <section class="card note-card">
+    <section class="card note-card" id="notesSection">
       <h2>Observação geral</h2>
       <p id="generalObservation"></p>
       <small id="medicalNotice"></small>
     </section>
   </main>
 
-  <footer><div class="container footer-row"><div id="footerText"></div><div id="syncIndicator" class="sync-indicator" aria-live="polite">Verificando atualização…</div></div></footer>
+  <footer id="publicFooter"><div class="container footer-row"><div id="footerText"></div><div id="syncIndicator" class="sync-indicator" aria-live="polite">Verificando atualização…</div></div></footer>
 
-  <script src="script-public.js?v=20260728-v2-3-6" type="module"></script>
+  <script src="script-public.js?v=20260728-v2-3-8" type="module"></script>
 </body>
 </html>

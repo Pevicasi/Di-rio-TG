@@ -85,70 +85,129 @@ function dataSignature(data) {
 }
 
 function formatElapsed(seconds) {
-  const safe = Math.max(0, Math.floor(seconds));
+  const safe = Math.max(0, Math.ceil(seconds));
   const minutes = Math.floor(safe / 60);
   const secs = safe % 60;
   return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function updateSyncIndicator(message = "") {
+const SYNC_INTERVAL_SECONDS = 15;
+let nextSyncAt = null;
+let lastSuccessfulSyncAt = null;
+let syncMessageUntil = 0;
+let syncMessage = "";
+
+function currentClockTime(date = new Date()) {
+  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function updateSyncIndicator(message = "", messageDurationMs = 0) {
   const indicator = $("syncIndicator");
   if (!indicator) return;
+
   if (message) {
-    indicator.textContent = message;
+    syncMessage = message;
+    syncMessageUntil = messageDurationMs ? Date.now() + messageDurationMs : 0;
+  }
+
+  if (syncMessage && (!syncMessageUntil || Date.now() < syncMessageUntil)) {
+    indicator.textContent = syncMessage;
     return;
   }
-  if (!lastSyncCheckAt) {
-    indicator.textContent = "Verificando atualização…";
-    return;
+
+  syncMessage = "";
+  syncMessageUntil = 0;
+  const remaining = nextSyncAt ? Math.max(0, (nextSyncAt - Date.now()) / 1000) : 0;
+  if (lastSuccessfulSyncAt) {
+    indicator.textContent = `Atualizado às ${currentClockTime(lastSuccessfulSyncAt)} • nova verificação em ${formatElapsed(remaining)}`;
+  } else {
+    indicator.textContent = `Verificando atualização em ${formatElapsed(remaining)}`;
   }
-  const elapsed = (Date.now() - lastSyncCheckAt) / 1000;
-  indicator.textContent = `Sincronizado há ${formatElapsed(elapsed)}`;
+}
+
+function inferGithubRawUrls() {
+  if (!location.hostname.endsWith("github.io")) return [];
+  const owner = location.hostname.split(".")[0];
+  const parts = location.pathname.split("/").filter(Boolean);
+  const repo = parts[0];
+  if (!owner || !repo) return [];
+  const stamp = Date.now();
+  return [
+    `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/main/dados.json?ts=${stamp}`,
+    `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/master/dados.json?ts=${stamp}`
+  ];
+}
+
+async function fetchFreshPublishedData() {
+  const candidates = [
+    ...inferGithubRawUrls(),
+    `dados.json?sync=${Date.now()}`
+  ];
+  let lastError = null;
+  for (const url of candidates) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const published = await response.json();
+      validateData(published);
+      return published;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Não foi possível consultar os dados publicados.");
 }
 
 async function checkForPublishedUpdate() {
+  nextSyncAt = null;
+  updateSyncIndicator("Verificando atualização…");
   try {
-    const response = await fetch(`dados.json?sync=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const published = await response.json();
-    validateData(published);
+    const published = await fetchFreshPublishedData();
     const signature = dataSignature(published);
+    const changed = Boolean(lastPublishedSignature && signature !== lastPublishedSignature);
+    lastSuccessfulSyncAt = new Date();
     lastSyncCheckAt = Date.now();
-    if (lastPublishedSignature && signature !== lastPublishedSignature) {
+
+    if (changed) {
       appData = synchronizeWeightFields(published);
       saveData(appData);
       lastPublishedSignature = signature;
       renderAll();
-      updateSyncIndicator("Nova atualização carregada agora");
-      setTimeout(() => updateSyncIndicator(), 3500);
-      return;
+      updateSyncIndicator(`Nova atualização carregada às ${currentClockTime()}`, 5000);
+    } else {
+      lastPublishedSignature = signature;
+      updateSyncIndicator(`Página conferida às ${currentClockTime()}`, 2500);
     }
-    lastPublishedSignature = signature;
-    updateSyncIndicator();
   } catch (_) {
-    updateSyncIndicator("Aguardando sincronização…");
+    updateSyncIndicator("Não foi possível verificar agora", 4000);
+  } finally {
+    nextSyncAt = Date.now() + SYNC_INTERVAL_SECONDS * 1000;
   }
 }
 
 function startSyncMonitor() {
   clearInterval(syncTimer);
-  syncTimer = setInterval(checkForPublishedUpdate, 15000);
+  nextSyncAt = Date.now() + SYNC_INTERVAL_SECONDS * 1000;
+  syncTimer = setInterval(checkForPublishedUpdate, SYNC_INTERVAL_SECONDS * 1000);
   setInterval(() => updateSyncIndicator(), 1000);
+  updateSyncIndicator();
 }
 
 async function loadPublishedData() {
   const status = $("importStatus");
   try {
-    const response = await fetch(`dados.json?v=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const published = await response.json();
+    const published = await fetchFreshPublishedData();
     validateData(published);
     appData = synchronizeWeightFields(published);
     saveData(appData);
     lastPublishedSignature = dataSignature(published);
     lastSyncCheckAt = Date.now();
+    lastSuccessfulSyncAt = new Date();
     renderAll();
-    updateSyncIndicator();
+    updateSyncIndicator(`Página carregada às ${currentClockTime()}`, 2500);
     status.className = "import-status success";
     status.textContent = `Dados publicados carregados: ${published.updatedAt}.`;
   } catch (error) {
@@ -355,17 +414,21 @@ function setSectionVisible(element, visible) {
 
 function applyVisibility(data) {
   const v = { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true, ...(data.visibility || {}) };
-  setSectionVisible(document.querySelector("header.topbar"), v.header);
-  setSectionVisible($("profileSubtitle"), v.profile);
-  setSectionVisible($("initialWeight")?.closest(".card"), v.summary);
-  setSectionVisible($("treatmentDetails")?.closest(".card"), v.treatment);
-  setSectionVisible($("weightChart")?.closest("section.card"), v.weights);
-  setSectionVisible($("timeline")?.closest("section.card"), v.applications);
-  setSectionVisible($("weeksGrid")?.closest("section.card"), v.weeks);
-  setSectionVisible($("analysisGrid")?.closest("section.card"), v.analysis);
-  setSectionVisible($("diaryList")?.closest("section.card"), v.diary);
-  setSectionVisible($("generalObservation")?.closest("section.card"), v.notes);
-  setSectionVisible(document.querySelector("footer"), v.notes);
+
+  // Usa contêineres fixos. Nenhuma seção é removida do DOM; ela apenas é ocultada.
+  setSectionVisible($("publicHeader"), v.header);
+  setSectionVisible($("profileSubtitle"), v.profile && v.header);
+  setSectionVisible($("summarySection"), v.summary);
+  setSectionVisible($("treatmentSection"), v.treatment);
+  setSectionVisible($("weightsSection"), v.weights);
+  setSectionVisible($("applicationsSection"), v.applications);
+  setSectionVisible($("weeksSection"), v.weeks);
+  setSectionVisible($("analysisSection"), v.analysis);
+  setSectionVisible($("diarySection"), v.diary);
+  setSectionVisible($("notesSection"), v.notes);
+  setSectionVisible($("publicFooter"), v.notes);
+
+  document.body.classList.toggle("header-hidden", !v.header);
 }
 
 function renderAll() {

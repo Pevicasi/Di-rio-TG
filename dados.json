@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "28/07/2026",
+  "updatedAt": "20/07/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "age": 42,
@@ -9,7 +9,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 108,
+    "currentWeightKg": 111.3,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -33,18 +33,6 @@
     {
       "date": "20/07/2026",
       "valueKg": 111.3
-    },
-    {
-      "date": "27/07/2026",
-      "valueKg": 109.8
-    },
-    {
-      "date": "03/08/2026",
-      "valueKg": 108.8
-    },
-    {
-      "date": "10/08/2026",
-      "valueKg": 108
     }
   ],
   "applications": [
@@ -68,13 +56,6 @@
       "time": "15:15",
       "dose": "8 UI",
       "location": "Abdômen, abaixo do umbigo"
-    },
-    {
-      "number": 4,
-      "date": "27/07/2026",
-      "time": "09:30",
-      "dose": "8 UI",
-      "location": "Coxa"
     }
   ],
   "weeks": [
@@ -82,25 +63,9 @@
       "title": "Semana 1",
       "period": "06/07 a 12/07",
       "current": false,
-      "weight": "117,50 → 113,95 kg",
-      "result": "-3,55 kg",
-      "application": "06/07/2026 às 10:00",
-      "hunger": "intensa no início e progressivamente menor.",
-      "effects": "boca seca, estufamento, arrotos com odor e salivação durante o sono.",
-      "observation": "sintomas melhoraram ao longo dos dias.",
-      "additional": "",
-      "generatedFields": {
-        "weight": "117,50 → 113,95 kg",
-        "result": "-3,55 kg",
-        "application": "06/07/2026 às 10:00",
-        "hunger": "Fome intensa à tarde, menor no jantar e forte vontade de comer às 22:39. • Fome forte antes do almoço. • Menor que no dia anterior; jantar mais por vontade de comer. • Pouca fome ao acordar, moderada no jantar e lanche noturno por vontade. • Leve fome antes do almoço; demais refeições sem fome ou por vontade. • Sem fome antes das refeições. • Sem fome.",
-        "effects": "Leve dor de cabeça e boca muito seca. • Muita sede, salivação durante o sono, estufamento e arrotos com odor. • Sem estufamento após o almoço. • Salivação muito menor e sem desconforto relevante. • Sem efeitos relevantes. • Salivação excessiva considerada resolvida.",
-        "observation": "1ª aplicação às 10:00, no lado esquerdo do umbigo. • Dia com os sintomas digestivos mais marcantes. • Início de melhora clara dos sintomas. • Porções em torno de 40% a 50% do padrão anterior. • Apetite já bastante reduzido. • Comeu as refeições completas apesar da ausência de fome. • Fim da 1ª semana com boa adaptação."
-      },
       "lines": [
         "Peso: 117,50 → 113,95 kg",
         "Resultado: -3,55 kg",
-        "Aplicação: 06/07/2026 às 10:00",
         "Fome: intensa no início e progressivamente menor.",
         "Efeitos: boca seca, estufamento, arrotos com odor e salivação durante o sono.",
         "Observação: sintomas melhoraram ao longo dos dias."
@@ -110,25 +75,9 @@
       "title": "Semana 2",
       "period": "13/07 a 19/07",
       "current": false,
-      "weight": "113,95 → 111,30 kg",
-      "result": "-2,65 kg",
-      "application": "13/07/2026 às 18:50",
-      "hunger": "ausência de fome na maior parte dos dias.",
-      "effects": "praticamente nenhum efeito colateral relevante.",
-      "observation": "apenas um episódio de fome leve em 19/07.",
-      "additional": "",
-      "generatedFields": {
-        "weight": "113,95 → 111,30 kg",
-        "result": "-2,65 kg",
-        "application": "13/07/2026 às 18:50",
-        "hunger": "Sem fome. • Sem fome durante todo o dia. • Não informado. • Um pouco de fome às 16:30.",
-        "effects": "Dor de garganta, sem efeitos digestivos importantes. • Boca seca e garganta melhorando. • Sem efeitos colaterais.",
-        "observation": "Peso 113,95 kg. 2ª aplicação às 18:50. • 2ª aplicação melhor tolerada. • Dia estável. • Dia corrido; registro apenas dos horários. • Boa tolerância e controle do apetite. • Lanche noturno feito mesmo sem fome. • Primeiro episódio de fome em vários dias."
-      },
       "lines": [
         "Peso: 113,95 → 111,30 kg",
         "Resultado: -2,65 kg",
-        "Aplicação: 13/07/2026 às 18:50",
         "Fome: ausência de fome na maior parte dos dias.",
         "Efeitos: praticamente nenhum efeito colateral relevante.",
         "Observação: apenas um episódio de fome leve em 19/07."
@@ -136,55 +85,15 @@
     },
     {
       "title": "Semana 3",
-      "period": "20/07 a 26/07",
-      "current": false,
-      "weight": "111,30 → 109,80 kg",
-      "result": "-1,50 kg",
-      "application": "20/07 às 15:15",
-      "hunger": "sem fome no momento do registro.",
-      "effects": "nenhum relatado.",
-      "observation": "aplicação abaixo do umbigo.",
-      "additional": "",
-      "generatedFields": {
-        "weight": "111,30 → 109,80 kg",
-        "result": "-1,50 kg",
-        "application": "20/07/2026 às 15:15",
-        "hunger": "Sem fome.",
-        "effects": "Sem efeitos colaterais.",
-        "observation": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
-      },
+      "period": "Iniciada em 20/07",
+      "current": true,
       "lines": [
-        "Peso: 111,30 → 109,80 kg",
-        "Resultado: -1,50 kg",
+        "Peso: 111,30 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
         "Aplicação: 20/07 às 15:15",
         "Fome: sem fome no momento do registro.",
         "Efeitos: nenhum relatado.",
         "Observação: aplicação abaixo do umbigo."
-      ]
-    },
-    {
-      "title": "Semana 4",
-      "period": "Iniciada em 27/07",
-      "current": true,
-      "weight": "109,80 → aguardando nova pesagem",
-      "result": "aguardando nova pesagem",
-      "application": "27/07/2026 às 09:30",
-      "hunger": "",
-      "effects": "",
-      "observation": "",
-      "additional": "",
-      "generatedFields": {
-        "weight": "109,80 → aguardando nova pesagem",
-        "result": "aguardando nova pesagem",
-        "application": "27/07/2026 às 09:30",
-        "hunger": "",
-        "effects": "",
-        "observation": ""
-      },
-      "lines": [
-        "Peso: 109,80 → aguardando nova pesagem",
-        "Resultado: aguardando nova pesagem",
-        "Aplicação: 27/07/2026 às 09:30"
       ]
     }
   ],
@@ -295,7 +204,7 @@
       "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo."
     }
   ],
-  "generalObservation": "Até 28/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
