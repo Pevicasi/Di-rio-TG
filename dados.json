@@ -297,7 +297,7 @@
     "header": true,
     "profile": true,
     "summary": true,
-    "treatment": true,
+    "treatment": false,
     "weights": true,
     "applications": false,
     "weeks": false,
