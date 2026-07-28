@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.1.0";
+  const ADMIN_BUILD = "3.2.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -21,6 +21,7 @@
     },
     treatment: { medication: "", concentration: "", weeklyDose: "", startDate: "" },
     weights: [], applications: [], weeks: [], diary: [],
+    foods: ["Pão", "Arroz", "Feijão", "Macarrão", "Frango", "Carne bovina", "Peixe", "Ovo", "Banana", "Maçã", "Tomate", "Alface", "Cenoura", "Café", "Chá", "Água", "Suco"],
     generalObservation: "",
     medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico.",
     visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
@@ -38,9 +39,38 @@
       weights: Array.isArray(data.weights) ? data.weights : [],
       applications: Array.isArray(data.applications) ? data.applications : [],
       weeks: Array.isArray(data.weeks) ? data.weeks : [],
-      diary: Array.isArray(data.diary) ? data.diary : [],
+      diary: Array.isArray(data.diary) ? data.diary.map(normalizeDiaryItem) : [],
+      foods: Array.isArray(data.foods) ? [...new Set([...base.foods, ...data.foods.map(value => String(value).trim()).filter(Boolean)])] : base.foods,
       visibility: { ...base.visibility, ...(data.visibility || {}) }
     };
+  }
+
+
+  function normalizeMeal(meal = {}) {
+    return {
+      type: meal.type || "Outro",
+      time: meal.time || "",
+      foods: Array.isArray(meal.foods) ? meal.foods.map(String).filter(Boolean) : String(meal.foods || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean),
+      note: meal.note || ""
+    };
+  }
+
+  function normalizeDiaryItem(item = {}) {
+    let mealEntries = Array.isArray(item.mealEntries) ? item.mealEntries.map(normalizeMeal) : [];
+    if (!mealEntries.length && item.meals) mealEntries = [{ type: "Outro", time: "", foods: [String(item.meals)], note: "Registro importado do campo antigo de refeições." }];
+    return { ...item, mealEntries };
+  }
+
+  function mealText(meals = []) {
+    return meals.map(meal => {
+      const heading = [meal.type, meal.time].filter(Boolean).join(" — ");
+      const foods = (meal.foods || []).join(", ");
+      return [heading, foods, meal.note].filter(Boolean).join(": ");
+    }).filter(Boolean).join("\n");
+  }
+
+  function foodOptions() {
+    return (appData?.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).map(food => `<option value="${escapeHtml(food)}"></option>`).join("");
   }
 
   function parseBRDate(value) {
@@ -486,12 +516,21 @@
   function collectDiaryFromDOM() {
     const editor = $("diarySingleEditor");
     if (!editor || selectedDiaryIndex < 0 || !appData.diary[selectedDiaryIndex]) return;
-    const obj = {};
-    editor.querySelectorAll("[data-field]").forEach(input => {
+    const previous = appData.diary[selectedDiaryIndex];
+    const obj = { ...previous };
+    editor.querySelectorAll(":scope > article [data-field]").forEach(input => {
+      if (input.closest("[data-meal-index]")) return;
       const key = input.dataset.field;
       if (input.dataset.date) obj[key] = formatBRDate(input.value);
       else obj[key] = input.value.trim();
     });
+    obj.mealEntries = Array.from(editor.querySelectorAll("[data-meal-index]")).map(card => ({
+      type: card.querySelector('[data-meal-field="type"]')?.value || "Outro",
+      time: card.querySelector('[data-meal-field="time"]')?.value || "",
+      foods: String(card.querySelector('[data-meal-field="foods"]')?.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean),
+      note: card.querySelector('[data-meal-field="note"]')?.value.trim() || ""
+    }));
+    obj.meals = mealText(obj.mealEntries);
     if (obj.hunger === "__custom__") obj.hunger = editor.querySelector("[data-hunger-custom]")?.value.trim() || "";
     const selectedEffects = Array.from(editor.querySelectorAll("[data-effect]:checked")).map(input => input.dataset.effect);
     const otherEffects = editor.querySelector("[data-effects-other]")?.value.trim();
@@ -511,21 +550,29 @@
     }
     if (selectedDiaryIndex < 0 || selectedDiaryIndex >= appData.diary.length) selectedDiaryIndex = appData.diary.length - 1;
     $("diaryDateSelector").innerHTML = appData.diary.map((item, index) => `<option value="${index}" ${index === selectedDiaryIndex ? "selected" : ""}>${escapeHtml(item.date || `Registro ${index + 1}`)}</option>`).join("");
-    const item = appData.diary[selectedDiaryIndex];
+    const item = normalizeDiaryItem(appData.diary[selectedDiaryIndex]);
+    appData.diary[selectedDiaryIndex] = item;
+    const meals = item.mealEntries.map((meal, mealIndex) => `
+      <article class="meal-editor" data-meal-index="${mealIndex}">
+        <div class="meal-editor-header"><strong>Refeição ${mealIndex + 1}</strong><button type="button" class="delete-button" data-delete-meal="${mealIndex}">Excluir refeição</button></div>
+        <div class="admin-grid two-columns">
+          <label>Tipo<select data-meal-field="type">${["Café da manhã","Lanche da manhã","Almoço","Lanche da tarde","Jantar","Ceia","Outro"].map(type => `<option ${meal.type===type?'selected':''}>${type}</option>`).join('')}</select></label>
+          <label>Horário<input data-meal-field="time" type="time" value="${escapeHtml(meal.time)}"></label>
+          <label class="wide-field">Lista de alimentos<textarea data-meal-field="foods" rows="3" placeholder="Digite ou selecione alimentos separados por vírgula">${escapeHtml((meal.foods||[]).join(', '))}</textarea></label>
+          <label class="wide-field food-quick-add">Pesquisar alimento<input type="search" list="foodCatalogOptions" data-food-search placeholder="Ex.: arroz"><button type="button" class="secondary-button" data-add-food-to-meal="${mealIndex}">Adicionar à refeição</button></label>
+          <label class="wide-field">Observação da refeição<textarea data-meal-field="note" rows="2">${escapeHtml(meal.note)}</textarea></label>
+        </div>
+      </article>`).join("");
     $("diarySingleEditor").innerHTML = `
+      <datalist id="foodCatalogOptions">${foodOptions()}</datalist>
       <article class="editable-item" data-type="diary" data-index="${selectedDiaryIndex}">
         ${itemHeader(item.date || `Registro ${selectedDiaryIndex + 1}`, selectedDiaryIndex, "diary")}
         <div class="admin-grid two-columns">
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
-          <label>Refeições<textarea data-field="meals" rows="4">${escapeHtml(item.meals)}</textarea></label>
+          <div class="wide-field meals-toolbar"><strong>Refeições do dia</strong><button type="button" class="add-button" data-add-meal>+ Adicionar refeição</button></div>
+          <div class="wide-field meals-list">${meals || '<p class="empty-list">Nenhuma refeição cadastrada neste dia.</p>'}</div>
           <label>Fome
-            <select data-field="hunger">
-              <option value="" ${!item.hunger ? "selected" : ""}>Selecione</option>
-              <option value="Sem fome" ${item.hunger === "Sem fome" ? "selected" : ""}>Sem fome</option>
-              <option value="Pouca fome" ${item.hunger === "Pouca fome" ? "selected" : ""}>Pouca fome</option>
-              <option value="Bastante fome" ${item.hunger === "Bastante fome" ? "selected" : ""}>Bastante fome</option>
-              <option value="__custom__" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "selected" : ""}>Descrição personalizada</option>
-            </select>
+            <select data-field="hunger"><option value="" ${!item.hunger ? "selected" : ""}>Selecione</option><option value="Sem fome" ${item.hunger === "Sem fome" ? "selected" : ""}>Sem fome</option><option value="Pouca fome" ${item.hunger === "Pouca fome" ? "selected" : ""}>Pouca fome</option><option value="Bastante fome" ${item.hunger === "Bastante fome" ? "selected" : ""}>Bastante fome</option><option value="__custom__" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "selected" : ""}>Descrição personalizada</option></select>
             <textarea data-hunger-custom rows="2" placeholder="Descreva a fome" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "" : "hidden"}>${escapeHtml(item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? item.hunger : "")}</textarea>
           </label>
           ${renderEffectsSelector(item.effects)}
@@ -612,7 +659,7 @@
         selectedDiaryIndex = existingIndex;
         showToast("O registro de hoje já existe e foi aberto para edição.", "error");
       } else {
-        appData.diary.push({ date: today, meals: "", hunger: "", effects: "", notes: "" });
+        appData.diary.push({ date: today, meals: "", mealEntries: [], hunger: "", effects: "", notes: "" });
         sortByDate(appData.diary);
         selectedDiaryIndex = appData.diary.findIndex(item => item.date === today);
       }
@@ -1084,8 +1131,34 @@
     renderDiary();
   });
 
-  // Botões criados dinamicamente: adicionar e excluir registros.
+  // Botões criados dinamicamente: refeições, alimentos e registros.
   document.addEventListener("click", event => {
+    const addMealButton = event.target.closest("[data-add-meal]");
+    if (addMealButton) {
+      event.preventDefault(); collectDiaryFromDOM();
+      appData.diary[selectedDiaryIndex].mealEntries.push({ type: "Café da manhã", time: "", foods: [], note: "" });
+      renderDiary(); markDirty(); return;
+    }
+    const deleteMealButton = event.target.closest("[data-delete-meal]");
+    if (deleteMealButton) {
+      event.preventDefault(); collectDiaryFromDOM();
+      appData.diary[selectedDiaryIndex].mealEntries.splice(Number(deleteMealButton.dataset.deleteMeal), 1);
+      appData.diary[selectedDiaryIndex].meals = mealText(appData.diary[selectedDiaryIndex].mealEntries);
+      renderDiary(); markDirty(); return;
+    }
+    const addFoodToMeal = event.target.closest("[data-add-food-to-meal]");
+    if (addFoodToMeal) {
+      event.preventDefault();
+      const card = addFoodToMeal.closest("[data-meal-index]");
+      const search = card?.querySelector("[data-food-search]");
+      const food = search?.value.trim();
+      if (!food) return showToast("Digite ou selecione um alimento.", "error");
+      if (!appData.foods.some(item => item.toLowerCase() === food.toLowerCase())) appData.foods.push(food);
+      const area = card.querySelector('[data-meal-field="foods"]');
+      const current = area.value.split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
+      if (!current.some(item => item.toLowerCase() === food.toLowerCase())) current.push(food);
+      area.value = current.join(", "); search.value = ""; markDirty(); return;
+    }
     const addButton = event.target.closest("[data-add]");
     if (addButton) {
       event.preventDefault();
