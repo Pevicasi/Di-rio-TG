@@ -669,3 +669,32 @@ footer {
 
 /* Admin v4 */
 .admin-status-group{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem}.admin-build{font-size:.75rem;opacity:.72}.diary-picker{position:sticky;top:.5rem;z-index:5;background:#fff;padding:.75rem;border-radius:1rem;box-shadow:0 8px 24px rgba(15,118,110,.08);margin-bottom:1rem}.diary-picker select{width:100%}@media(max-width:720px){.admin-status-group{align-items:flex-start}.diary-picker{top:0}}
+
+/* Administração 2.0 */
+.admin-section-nav button {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: .75rem 1rem;
+  border-radius: 999px;
+  background: #edf6f5;
+  color: #155e59;
+  font-weight: 700;
+}
+.admin-section-nav button.active { background: #0f766e; color: #fff; }
+.admin-form-section[hidden] { display: none !important; }
+.admin-load-error {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid #ef9a9a;
+  border-radius: 16px;
+  background: #fff0f0;
+  color: #9f1d1d;
+  font-weight: 700;
+  white-space: pre-wrap;
+}
+@media (max-width: 700px) {
+  .admin-section-nav { position: sticky; top: 0; z-index: 20; }
+  .admin-form-section { scroll-margin-top: 90px; }
+}

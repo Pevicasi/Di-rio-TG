@@ -3,9 +3,11 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
+  const ADMIN_BUILD = "2.0.0";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
+  let selectedDiaryIndex = -1;
 
   const emptyData = () => ({
     schemaVersion: 1,
@@ -93,6 +95,24 @@
     el.dataset.state = state;
   }
 
+  function showLoadError(message = "") {
+    const box = $("loadError");
+    if (!box) return;
+    box.hidden = !message;
+    box.textContent = message;
+  }
+
+  function activateTab(id, scroll = false) {
+    document.querySelectorAll(".admin-form-section").forEach(section => {
+      section.hidden = section.id !== id;
+    });
+    document.querySelectorAll("[data-admin-tab]").forEach(button => {
+      button.classList.toggle("active", button.dataset.adminTab === id);
+    });
+    if (scroll) document.querySelector(".admin-section-nav")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    try { sessionStorage.setItem("tirzetrack-admin-tab", id); } catch (_) {}
+  }
+
   function markDirty() {
     dirty = true;
     setStatus("Alterações não salvas", "dirty");
@@ -119,9 +139,15 @@
     if (confirmReload && dirty && !confirm("Descartar as alterações atuais e recarregar os dados publicados?")) return;
     try {
       setStatus("Carregando dados publicados...");
-      const response = await fetch(`../dados.json?ts=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Falha ao carregar dados.json (${response.status}).`);
-      appData = normalizeData(await response.json());
+      showLoadError("");
+      const url = new URL(`../dados.json?ts=${Date.now()}`, window.location.href).href;
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`dados.json respondeu com status ${response.status}.`);
+      const raw = await response.text();
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (_) { throw new Error("O arquivo dados.json não contém um JSON válido."); }
+      appData = normalizeData(parsed);
       synchronizeWeights();
       localStorage.removeItem(DRAFT_KEY);
       dirty = false;
@@ -131,14 +157,21 @@
     } catch (error) {
       appData = emptyData();
       fillEditor();
-      setStatus("Novo cadastro", "draft");
-      showToast(error.message || "Não foi possível carregar dados.json.", "error");
+      setStatus("Falha ao carregar dados", "error");
+      const message = `${error.message || "Não foi possível carregar dados.json."} Verifique se dados.json está na raiz do repositório e se admin/script-admin.js foi enviado.`;
+      showLoadError(message);
+      showToast(message, "error");
     }
   }
 
   function fillEditor() {
+    const build = $("adminBuild");
+    if (build) build.textContent = `Versão ${ADMIN_BUILD}`;
     setValue("fieldTitle", appData.title);
     setValue("fieldUpdatedAt", parseBRDate(appData.updatedAt));
+    const autoDate = $("fieldAutoUpdatedAt");
+    if (autoDate && autoDate.dataset.initialized !== "true") { autoDate.checked = true; autoDate.dataset.initialized = "true"; }
+    if (autoDate) $("fieldUpdatedAt").disabled = autoDate.checked;
     setValue("fieldSchemaVersion", appData.schemaVersion);
     setValue("fieldName", appData.profile.name);
     setValue("fieldAge", appData.profile.age);
@@ -207,23 +240,133 @@
       </article>`).join("") : '<p class="empty-list">Nenhuma aplicação cadastrada.</p>';
   }
 
+  function dateFromBR(value) {
+    const iso = parseBRDate(value);
+    return iso ? new Date(`${iso}T12:00:00`) : null;
+  }
+
+  function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  function dateInRange(value, start, end) {
+    const date = dateFromBR(value);
+    return date && date >= start && date <= end;
+  }
+
+  function latestWeightOnOrBefore(date) {
+    const items = appData.weights
+      .map(item => ({ ...item, parsed: dateFromBR(item.date), value: Number(item.valueKg) }))
+      .filter(item => item.parsed && Number.isFinite(item.value) && item.parsed <= date)
+      .sort((a, b) => a.parsed - b.parsed);
+    return items.length ? items[items.length - 1] : null;
+  }
+
+  function uniqueText(items, key) {
+    return [...new Set(items.map(item => String(item[key] || "").trim()).filter(Boolean))].join(" • ");
+  }
+
+  function generateWeeklySummaries({ notify = false } = {}) {
+    collectDiaryFromDOM();
+    const applications = [...appData.applications]
+      .filter(item => dateFromBR(item.date))
+      .sort((a, b) => dateFromBR(a.date) - dateFromBR(b.date));
+    if (!applications.length) {
+      if (notify) showToast("Cadastre pelo menos uma aplicação para gerar os resumos.", "error");
+      return false;
+    }
+
+    const today = new Date(); today.setHours(12, 0, 0, 0);
+    const oldByTitle = new Map((appData.weeks || []).map(item => [item.title, item]));
+    appData.weeks = applications.map((application, index) => {
+      const start = dateFromBR(application.date);
+      const nominalEnd = addDays(start, 6);
+      const nextStart = applications[index + 1] ? dateFromBR(applications[index + 1].date) : null;
+      const end = nextStart ? addDays(nextStart, -1) : nominalEnd;
+      const isCurrent = index === applications.length - 1 && today <= nominalEnd;
+      const displayEnd = isCurrent && today < end ? today : end;
+      const startWeight = latestWeightOnOrBefore(start);
+      const endWeight = latestWeightOnOrBefore(displayEnd);
+      const entries = appData.diary.filter(item => dateInRange(item.date, start, displayEnd));
+      const lines = [];
+
+      if (startWeight && endWeight && startWeight.date !== endWeight.date) {
+        lines.push(`Peso: ${Number(startWeight.value).toFixed(2).replace(".", ",")} → ${Number(endWeight.value).toFixed(2).replace(".", ",")} kg`);
+        const result = startWeight.value - endWeight.value;
+        lines.push(`Resultado: ${result >= 0 ? "-" : "+"}${Math.abs(result).toFixed(2).replace(".", ",")} kg`);
+      } else if (startWeight) {
+        lines.push(`Peso inicial: ${Number(startWeight.value).toFixed(2).replace(".", ",")} kg`);
+      }
+      lines.push(`Aplicação: ${application.date}${application.time ? ` às ${application.time}` : ""}`);
+      const hunger = uniqueText(entries, "hunger");
+      const effects = uniqueText(entries, "effects");
+      const notes = uniqueText(entries, "notes");
+      if (hunger) lines.push(`Fome: ${hunger}`);
+      if (effects) lines.push(`Efeitos: ${effects}`);
+      if (notes) lines.push(`Observação: ${notes}`);
+
+      const title = `Semana ${index + 1}`;
+      const old = oldByTitle.get(title) || {};
+      return {
+        title,
+        period: isCurrent ? `Iniciada em ${application.date.slice(0, 5)}` : `${application.date.slice(0, 5)} a ${formatBRDate(displayEnd).slice(0, 5)}`,
+        current: isCurrent,
+        generatedLines: lines,
+        customLines: Array.isArray(old.customLines) ? old.customLines : [],
+        lines: [...lines, ...(Array.isArray(old.customLines) ? old.customLines : [])]
+      };
+    });
+    renderWeeks();
+    if (notify) { markDirty(); showToast("Resumos semanais atualizados automaticamente."); }
+    return true;
+  }
+
   function renderWeeks() {
-    $("weeksList").innerHTML = appData.weeks.length ? appData.weeks.map((item, index) => `
+    $("weeksList").innerHTML = appData.weeks.length ? appData.weeks.map((item, index) => {
+      const generated = Array.isArray(item.generatedLines) ? item.generatedLines : (item.lines || []);
+      const custom = Array.isArray(item.customLines) ? item.customLines : [];
+      return `
       <article class="editable-item" data-type="weeks" data-index="${index}">
         ${itemHeader(item.title || `Semana ${index + 1}`, index, "weeks")}
         <div class="admin-grid three-columns">
           <label>Título<input data-field="title" type="text" value="${escapeHtml(item.title)}"></label>
           <label>Período<input data-field="period" type="text" value="${escapeHtml(item.period)}"></label>
           <label class="checkbox-label"><input data-field="current" type="checkbox" ${item.current ? "checked" : ""}> Semana atual</label>
-          <label class="wide-field">Linhas do resumo<textarea data-field="lines" data-lines="true" rows="6">${escapeHtml((item.lines || []).join("\n"))}</textarea></label>
+          <label class="wide-field">Informações geradas automaticamente<textarea data-field="generatedLines" data-lines="true" rows="7" readonly>${escapeHtml(generated.join("\n"))}</textarea></label>
+          <label class="wide-field">Informações adicionais (editáveis)<textarea data-field="customLines" data-lines="true" rows="4" placeholder="Inclua aqui informações que não puderam ser calculadas automaticamente.">${escapeHtml(custom.join("\n"))}</textarea></label>
         </div>
-      </article>`).join("") : '<p class="empty-list">Nenhum resumo semanal cadastrado.</p>';
+      </article>`;
+    }).join("") : '<p class="empty-list">Nenhum resumo semanal. Clique em “Gerar resumos automaticamente”.</p>';
+  }
+
+  function collectDiaryFromDOM() {
+    const editor = $("diarySingleEditor");
+    if (!editor || selectedDiaryIndex < 0 || !appData.diary[selectedDiaryIndex]) return;
+    const obj = {};
+    editor.querySelectorAll("[data-field]").forEach(input => {
+      const key = input.dataset.field;
+      if (input.dataset.date) obj[key] = formatBRDate(input.value);
+      else obj[key] = input.value.trim();
+    });
+    appData.diary[selectedDiaryIndex] = obj;
   }
 
   function renderDiary() {
-    $("diaryEditorList").innerHTML = appData.diary.length ? appData.diary.map((item, index) => `
-      <article class="editable-item" data-type="diary" data-index="${index}">
-        ${itemHeader(item.date || `Registro ${index + 1}`, index, "diary")}
+    sortByDate(appData.diary);
+    if (!appData.diary.length) {
+      selectedDiaryIndex = -1;
+      $("diaryDateSelector").innerHTML = '<option value="">Nenhum registro</option>';
+      $("diarySingleEditor").innerHTML = '<p class="empty-list">Nenhum registro diário cadastrado.</p>';
+      return;
+    }
+    if (selectedDiaryIndex < 0 || selectedDiaryIndex >= appData.diary.length) selectedDiaryIndex = appData.diary.length - 1;
+    $("diaryDateSelector").innerHTML = appData.diary.map((item, index) => `<option value="${index}" ${index === selectedDiaryIndex ? "selected" : ""}>${escapeHtml(item.date || `Registro ${index + 1}`)}</option>`).join("");
+    const item = appData.diary[selectedDiaryIndex];
+    $("diarySingleEditor").innerHTML = `
+      <article class="editable-item" data-type="diary" data-index="${selectedDiaryIndex}">
+        ${itemHeader(item.date || `Registro ${selectedDiaryIndex + 1}`, selectedDiaryIndex, "diary")}
         <div class="admin-grid two-columns">
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
           <label>Refeições<textarea data-field="meals" rows="4">${escapeHtml(item.meals)}</textarea></label>
@@ -231,12 +374,15 @@
           <label>Efeitos<textarea data-field="effects" rows="4">${escapeHtml(item.effects)}</textarea></label>
           <label class="wide-field">Observações<textarea data-field="notes" rows="4">${escapeHtml(item.notes)}</textarea></label>
         </div>
-      </article>`).join("") : '<p class="empty-list">Nenhum registro diário cadastrado.</p>';
+      </article>`;
   }
 
   function collectDataFromDOM() {
     appData.title = getValue("fieldTitle");
-    appData.updatedAt = formatBRDate(getValue("fieldUpdatedAt"));
+    if ($("fieldAutoUpdatedAt")?.checked) {
+      appData.updatedAt = formatBRDate(new Date());
+      setValue("fieldUpdatedAt", parseBRDate(appData.updatedAt));
+    } else appData.updatedAt = formatBRDate(getValue("fieldUpdatedAt"));
     appData.schemaVersion = numeric(getValue("fieldSchemaVersion")) || 1;
     appData.profile = {
       name: getValue("fieldName"), age: numeric(getValue("fieldAge")), heightM: numeric(getValue("fieldHeight"))
@@ -256,8 +402,8 @@
     };
     appData.weights = collectList("weights");
     appData.applications = collectList("applications");
-    appData.weeks = collectList("weeks");
-    appData.diary = collectList("diary");
+    appData.weeks = collectList("weeks").map(item => ({ ...item, lines: [...(item.generatedLines || []), ...(item.customLines || [])] }));
+    collectDiaryFromDOM();
     appData.generalObservation = getValue("fieldGeneralObservation");
     appData.medicalNotice = getValue("fieldMedicalNotice");
     return appData;
@@ -283,8 +429,19 @@
     if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
     if (type === "weights") appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" });
     if (type === "applications") appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" });
-    if (type === "weeks") appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, lines: [] });
-    if (type === "diary") appData.diary.push({ date: formatBRDate(new Date()), meals: "", hunger: "", effects: "", notes: "" });
+    if (type === "weeks") appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, generatedLines: [], customLines: [], lines: [] });
+    if (type === "diary") {
+      const today = formatBRDate(new Date());
+      const existingIndex = appData.diary.findIndex(item => item.date === today);
+      if (existingIndex >= 0) {
+        selectedDiaryIndex = existingIndex;
+        showToast("O registro de hoje já existe e foi aberto para edição.", "error");
+      } else {
+        appData.diary.push({ date: today, meals: "", hunger: "", effects: "", notes: "" });
+        sortByDate(appData.diary);
+        selectedDiaryIndex = appData.diary.findIndex(item => item.date === today);
+      }
+    }
     renderLists();
     markDirty();
     const selector = type === "goalHistory" ? "#goalHistoryList .editable-item:last-child" : `[data-type="${type}"]:last-child`;
@@ -297,6 +454,7 @@
     const list = type === "goalHistory" ? appData.goal.history : appData[type];
     if (!Array.isArray(list)) return;
     list.splice(index, 1);
+    if (type === "diary") selectedDiaryIndex = Math.min(index, list.length - 1);
     if (type === "applications") list.forEach((item, i) => { if (!item.number) item.number = i + 1; });
     renderLists();
     markDirty();
@@ -349,13 +507,25 @@
     return errors;
   }
 
-  function prepareData() {
+  function applyAutomaticUpdates() {
     collectDataFromDOM();
     sortByDate(appData.weights);
     synchronizeWeights();
     sortByDate(appData.applications);
     sortByDate(appData.diary);
     appData.applications.forEach((item, index) => { item.number = numeric(item.number) || index + 1; });
+    if ($("fieldAutoWeeks")?.checked) generateWeeklySummaries();
+    appData.weeks = (appData.weeks || []).map(item => ({
+      ...item,
+      lines: [...(item.generatedLines || []), ...(item.customLines || [])]
+    }));
+    setValue("fieldInitialWeight", appData.goal.initialWeightKg);
+    setValue("fieldCurrentWeight", appData.goal.currentWeightKg);
+    return appData;
+  }
+
+  function prepareData() {
+    applyAutomaticUpdates();
     const errors = validateData(appData);
     if (errors.length) throw new Error(errors.slice(0, 5).join("\n"));
     return appData;
@@ -363,12 +533,11 @@
 
   function saveDraft() {
     try {
-      collectDataFromDOM();
-      synchronizeWeights();
+      applyAutomaticUpdates();
       localStorage.setItem(DRAFT_KEY, JSON.stringify(appData));
       dirty = false;
       setStatus("Rascunho salvo neste navegador", "saved");
-      showToast("Rascunho salvo.");
+      showToast("Rascunho salvo com data, pesos e resumos atualizados.");
     } catch (error) { showToast(error.message, "error"); }
   }
 
@@ -480,9 +649,21 @@
     if (event.target.matches("input, textarea")) markDirty();
   });
   document.addEventListener("change", event => {
-    if (event.target.matches("input, textarea")) markDirty();
+    if (event.target.id === "fieldAutoUpdatedAt") {
+      $("fieldUpdatedAt").disabled = event.target.checked;
+      if (event.target.checked) setValue("fieldUpdatedAt", parseBRDate(formatBRDate(new Date())));
+    }
+    if (event.target.id === "diaryDateSelector") {
+      collectDiaryFromDOM();
+      selectedDiaryIndex = Number(event.target.value);
+      renderDiary();
+      return;
+    }
+    if (event.target.matches("input, textarea, select")) markDirty();
   });
   document.addEventListener("click", event => {
+    const tab = event.target.closest("[data-admin-tab]");
+    if (tab) { activateTab(tab.dataset.adminTab, true); return; }
     const add = event.target.closest("[data-add]");
     if (add) addItem(add.dataset.add);
     const del = event.target.closest("[data-delete]");
@@ -493,6 +674,7 @@
   $("downloadBackup").addEventListener("click", downloadBackup);
   $("reloadPublished").addEventListener("click", () => loadPublishedData(true));
   $("recalculateWeights").addEventListener("click", recalculateWeights);
+  $("generateWeeks").addEventListener("click", () => { collectDataFromDOM(); generateWeeklySummaries({ notify: true }); });
   $("saveGithubConfig").addEventListener("click", saveGithubConfig);
   $("publishButton").addEventListener("click", publishToGithub);
   $("jsonInput").addEventListener("change", event => {
@@ -506,5 +688,15 @@
     event.returnValue = "";
   });
 
-  loadInitialData();
+  const requiredIds = ["saveStatus", "fieldTitle", "weightsList", "diaryDateSelector", "publishButton"];
+  const missing = requiredIds.filter(id => !$(id));
+  if (missing.length) {
+    document.body.insertAdjacentHTML("afterbegin", `<div class="admin-load-error">Erro de estrutura: campos ausentes (${missing.join(", ")}).</div>`);
+  } else {
+    let initialTab = "general";
+    try { initialTab = sessionStorage.getItem("tirzetrack-admin-tab") || "general"; } catch (_) {}
+    if (!$(initialTab)) initialTab = "general";
+    activateTab(initialTab);
+    loadInitialData();
+  }
 })();

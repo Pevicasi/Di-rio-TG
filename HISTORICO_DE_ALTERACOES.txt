@@ -1,0 +1,30 @@
+==================================================
+TIRZETRACK — HISTÓRICO DE ALTERAÇÕES
+==================================================
+
+Versão 2.0.0
+Data: 27/07/2026
+
+CORREÇÕES
+• O JavaScript da administração passou a ficar também dentro da pasta admin.
+• O admin agora carrega ./script-admin.js, evitando falha por caminho incorreto.
+• O carregamento do dados.json passou a validar resposta HTTP e formato JSON.
+• Mensagens de erro de carregamento agora aparecem na própria página.
+• Removido o uso de Array.at(), aumentando a compatibilidade com navegadores.
+
+MELHORIAS
+• Apenas uma seção administrativa é exibida por vez.
+• Navegação por abas adequada para celular.
+• A última aba aberta é preservada durante a sessão.
+• Data de atualização automática permanece editável quando a opção automática é desmarcada.
+• Peso inicial e atual continuam calculados pelas pesagens.
+• Resumos semanais continuam gerados automaticamente e aceitam complementos manuais.
+• Diário continua exibindo um único registro por data.
+• Consolidado todo o histórico neste único arquivo em português.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• admin/index.html
+• admin/script-admin.js
+• script-admin.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt
