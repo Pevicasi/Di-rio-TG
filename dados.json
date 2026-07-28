@@ -300,7 +300,7 @@
     "treatment": true,
     "weights": true,
     "applications": true,
-    "weeks": true,
+    "weeks": false,
     "analysis": true,
     "diary": true,
     "notes": false
