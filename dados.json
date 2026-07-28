@@ -4,7 +4,7 @@
   "updatedAt": "28/07/2026",
   "profile": {
     "name": "Petrônio Vieira",
-    "birthDate": "17/03/1984",
+    "birthDate": "28/07/1984",
     "age": 42,
     "heightM": 1.59
   },
@@ -193,113 +193,290 @@
       "meals": "09:30: pesagem inicial; 20:00: jantar normal.",
       "hunger": "Fome intensa à tarde, menor no jantar e forte vontade de comer às 22:39.",
       "effects": "Leve dor de cabeça e boca muito seca.",
-      "notes": "1ª aplicação às 10:00, no lado esquerdo do umbigo."
+      "notes": "1ª aplicação às 10:00, no lado esquerdo do umbigo.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "09:30: pesagem inicial; 20:00: jantar normal."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "07/07/2026",
       "meals": "14:00: primeira refeição após longo jejum, em quantidade menor que a habitual.",
       "hunger": "Fome forte antes do almoço.",
       "effects": "Muita sede, salivação durante o sono, estufamento e arrotos com odor.",
-      "notes": "Dia com os sintomas digestivos mais marcantes."
+      "notes": "Dia com os sintomas digestivos mais marcantes.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "14:00: primeira refeição após longo jejum, em quantidade menor que a habitual."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "08/07/2026",
       "meals": "Almoço com carne, legumes e banana; jantar com talharim, carne e legumes.",
       "hunger": "Menor que no dia anterior; jantar mais por vontade de comer.",
       "effects": "Sem estufamento após o almoço.",
-      "notes": "Início de melhora clara dos sintomas."
+      "notes": "Início de melhora clara dos sintomas.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Almoço com carne, legumes e banana; jantar com talharim, carne e legumes."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "09/07/2026",
       "meals": "Pão com ovo; almoço; macarrão com frango e legumes; pão com frango e chá.",
       "hunger": "Pouca fome ao acordar, moderada no jantar e lanche noturno por vontade.",
       "effects": "Salivação muito menor e sem desconforto relevante.",
-      "notes": "Porções em torno de 40% a 50% do padrão anterior."
+      "notes": "Porções em torno de 40% a 50% do padrão anterior.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Pão com ovo; almoço; macarrão com frango e legumes; pão com frango e chá."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "10/07/2026",
       "meals": "Pão de queijo; almoço; pão doce com ovo e mortadela; pão doce com mortadela.",
       "hunger": "Leve fome antes do almoço; demais refeições sem fome ou por vontade.",
       "effects": "Sem efeitos relevantes.",
-      "notes": "Apetite já bastante reduzido."
+      "notes": "Apetite já bastante reduzido.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Pão de queijo; almoço; pão doce com ovo e mortadela; pão doce com mortadela."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "11/07/2026",
       "meals": "13:40: almoço; 21:15: jantar semelhante ao almoço.",
       "hunger": "Sem fome antes das refeições.",
       "effects": "Sem efeitos relevantes.",
-      "notes": "Comeu as refeições completas apesar da ausência de fome."
+      "notes": "Comeu as refeições completas apesar da ausência de fome.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "13:40: almoço; 21:15: jantar semelhante ao almoço."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "12/07/2026",
       "meals": "Bebida láctea; frango, batatas, talharim e legumes; jantar semelhante.",
       "hunger": "Sem fome.",
       "effects": "Salivação excessiva considerada resolvida.",
-      "notes": "Fim da 1ª semana com boa adaptação."
+      "notes": "Fim da 1ª semana com boa adaptação.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Bebida láctea; frango, batatas, talharim e legumes; jantar semelhante."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "13/07/2026",
       "meals": "Feijão, macarrão, abóbora e verduras; pão francês com ovo e mortadela.",
       "hunger": "Sem fome.",
       "effects": "Dor de garganta, sem efeitos digestivos importantes.",
-      "notes": "Peso 113,95 kg. 2ª aplicação às 18:50."
+      "notes": "Peso 113,95 kg. 2ª aplicação às 18:50.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Feijão, macarrão, abóbora e verduras; pão francês com ovo e mortadela."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "14/07/2026",
       "meals": "Pão de queijo; frango, batatas e legumes; frango, tomate e banana.",
       "hunger": "Sem fome durante todo o dia.",
       "effects": "Boca seca e garganta melhorando.",
-      "notes": "2ª aplicação melhor tolerada."
+      "notes": "2ª aplicação melhor tolerada.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Pão de queijo; frango, batatas e legumes; frango, tomate e banana."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "15/07/2026",
       "meals": "Pão francês com mortadela; frango grelhado, legumes e vinagrete; jantar semelhante.",
       "hunger": "Sem fome.",
       "effects": "Sem efeitos colaterais.",
-      "notes": "Dia estável."
+      "notes": "Dia estável.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Pão francês com mortadela; frango grelhado, legumes e vinagrete; jantar semelhante."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "16/07/2026",
       "meals": "14:10: almoço; 20:00: jantar.",
       "hunger": "Não informado.",
       "effects": "Sem efeitos colaterais.",
-      "notes": "Dia corrido; registro apenas dos horários."
+      "notes": "Dia corrido; registro apenas dos horários.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "14:10: almoço; 20:00: jantar."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "17/07/2026",
       "meals": "Bolinhos de caco e salsicha; carne moída, banana e legumes; jantar semelhante.",
       "hunger": "Sem fome durante todo o dia.",
       "effects": "Sem efeitos colaterais.",
-      "notes": "Boa tolerância e controle do apetite."
+      "notes": "Boa tolerância e controle do apetite.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Bolinhos de caco e salsicha; carne moída, banana e legumes; jantar semelhante."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "18/07/2026",
       "meals": "Pão carteira com omelete; omelete com batata assada; 2 bolinhos de caco.",
       "hunger": "Sem fome.",
       "effects": "Sem efeitos colaterais.",
-      "notes": "Lanche noturno feito mesmo sem fome."
+      "notes": "Lanche noturno feito mesmo sem fome.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Pão carteira com omelete; omelete com batata assada; 2 bolinhos de caco."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "19/07/2026",
       "meals": "Banana, pão com fiambre e bolinho de caco; pipoca; omelete com legumes.",
       "hunger": "Um pouco de fome às 16:30.",
       "effects": "Sem efeitos colaterais.",
-      "notes": "Primeiro episódio de fome em vários dias."
+      "notes": "Primeiro episódio de fome em vários dias.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "Banana, pão com fiambre e bolinho de caco; pipoca; omelete com legumes."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "20/07/2026",
       "meals": "14:15: frango, batata, cenoura, chuchu, cebola e pimentão.",
       "hunger": "Sem fome.",
       "notes": "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo.",
-      "effects": "Sem efeitos colaterais."
+      "effects": "Sem efeitos colaterais.",
+      "mealEntries": [
+        {
+          "type": "Outro",
+          "time": "",
+          "foods": [
+            "14:15: frango, batata, cenoura, chuchu, cebola e pimentão."
+          ],
+          "note": "Registro importado do campo antigo de refeições."
+        }
+      ]
     },
     {
       "date": "28/07/2026",
-      "meals": "",
+      "meals": "Café da manhã — 09:30",
       "hunger": "Sem fome",
       "notes": "",
-      "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento"
+      "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
+      "mealEntries": [
+        {
+          "type": "Café da manhã",
+          "time": "09:30",
+          "foods": [],
+          "note": ""
+        }
+      ]
     }
+  ],
+  "foods": [
+    "Pão",
+    "Arroz",
+    "Feijão",
+    "Macarrão",
+    "Frango",
+    "Carne bovina",
+    "Peixe",
+    "Ovo",
+    "Banana",
+    "Maçã",
+    "Tomate",
+    "Alface",
+    "Cenoura",
+    "Café",
+    "Chá",
+    "Água",
+    "Suco"
   ],
   "generalObservation": "Até 28/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
