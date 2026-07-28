@@ -192,3 +192,27 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • script-admin.js
 • admin/script-admin.js
 • HISTORICO_DE_ALTERACOES.txt
+
+
+--------------------------------------------------
+
+Versão 2.5.0
+Data: 28/07/2026
+
+NOVA FUNCIONALIDADE
+• Adicionado o botão “Exportar PDF” ao site público.
+• O relatório em PDF reúne resumo geral, tratamento, gráfico de peso, pesagens, aplicações, semanas, diário e observação geral.
+• O documento recebe cabeçalho, tabelas organizadas, paginação e nome de arquivo automático.
+• Durante a geração, o botão informa o andamento e impede cliques repetidos.
+• Incluídas mensagens de sucesso e de erro na própria página.
+
+VALIDAÇÕES
+• Sintaxe do JavaScript verificada.
+• Dependências de PDF carregadas antes do script principal.
+• Versão de cache do script público atualizada para 2.5.0.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• index.html
+• script-public.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt

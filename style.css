@@ -763,3 +763,26 @@ footer {
 /* Versão 2.3.8 — mantém o espaçamento correto quando o cabeçalho público é ocultado. */
 body.header-hidden main.container { padding-top: 28px; }
 body.header-hidden .hero-grid { margin-top: 0; }
+
+
+/* Exportação em PDF - v2.5.0 */
+.pdf-button {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.68rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.pdf-button:hover { background: rgba(255, 255, 255, 0.24); transform: translateY(-1px); }
+.pdf-button:focus-visible { outline: 3px solid rgba(255,255,255,.55); outline-offset: 2px; }
+.pdf-button:disabled { cursor: wait; opacity: .65; transform: none; }
+@media (max-width: 640px) {
+  .topbar-actions { align-items: stretch; width: 100%; }
+  .pdf-button { width: 100%; }
+}
+@media print { .pdf-button { display: none !important; } }
