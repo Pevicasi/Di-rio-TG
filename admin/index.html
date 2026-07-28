@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
   <title>Administração • TirzeTrack</title>
-  <link rel="stylesheet" href="../style.css?v=20260727-admin-v4" />
+  <link rel="stylesheet" href="../style.css?v=20260727-v200" />
 </head>
 <body class="admin-editor-page">
   <header class="topbar">
@@ -40,11 +40,19 @@
     </section>
 
     <nav class="admin-section-nav" aria-label="Seções do editor">
-      <a href="#general">Geral</a><a href="#profile">Perfil</a><a href="#goals">Metas</a>
-      <a href="#treatment">Tratamento</a><a href="#weights">Pesagens</a>
-      <a href="#applications">Aplicações</a><a href="#weeks">Semanas</a>
-      <a href="#diary">Diário</a><a href="#notes">Observações</a><a href="#github">GitHub</a>
+      <button type="button" data-admin-tab="general" class="active">Geral</button>
+      <button type="button" data-admin-tab="profile">Perfil</button>
+      <button type="button" data-admin-tab="goals">Metas</button>
+      <button type="button" data-admin-tab="treatment">Tratamento</button>
+      <button type="button" data-admin-tab="weights">Pesagens</button>
+      <button type="button" data-admin-tab="applications">Aplicações</button>
+      <button type="button" data-admin-tab="weeks">Semanas</button>
+      <button type="button" data-admin-tab="diary">Diário</button>
+      <button type="button" data-admin-tab="notes">Observações</button>
+      <button type="button" data-admin-tab="github">GitHub</button>
     </nav>
+
+    <div id="loadError" class="admin-load-error" hidden></div>
 
     <section class="card admin-form-section" id="general">
       <div class="section-header"><div><p class="eyebrow">Identificação</p><h2>Informações gerais</h2></div></div>
@@ -141,6 +149,6 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="../script-admin.js?v=20260727-admin-v4"></script>
+  <script src="./script-admin.js?v=20260727-v200"></script>
 </body>
 </html>
