@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.4.0";
+  const ADMIN_BUILD = "2.5.1";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -666,6 +666,179 @@
     } catch (error) { showToast(error.message, "error"); }
   }
 
+
+  function pdfText(value = "") {
+    return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+  }
+
+  function pdfKg(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? `${number.toFixed(2).replace(".", ",")} kg` : "-";
+  }
+
+  function pdfFileName(data) {
+    const name = pdfText(data?.profile?.name || "TirzeTrack")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "TirzeTrack";
+    return `TirzeTrack-${name}-${new Date().toISOString().slice(0, 10)}.pdf`;
+  }
+
+  async function exportPdfAdmin() {
+    const button = $("exportPdfAdmin");
+    const originalText = button?.textContent || "Exportar PDF";
+    try {
+      if (!window.jspdf?.jsPDF) throw new Error("A biblioteca de PDF não foi carregada. Verifique a internet e recarregue o admin.");
+      if (typeof window.jspdf.jsPDF.API.autoTable !== "function") throw new Error("O componente de tabelas do PDF não foi carregado.");
+      if (button) { button.disabled = true; button.textContent = "Gerando PDF..."; }
+
+      const data = prepareData();
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 14;
+      let y = 18;
+
+      const addHeader = () => {
+        pdf.setFillColor(15, 118, 110);
+        pdf.rect(0, 0, pageWidth, 25, "F");
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(16);
+        pdf.text(pdfText(data.title || "TirzeTrack"), margin, 11);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.text(`${pdfText(data.profile?.name || "")} • Atualizado em ${pdfText(data.updatedAt || "-")}`, margin, 18);
+        pdf.setTextColor(30, 41, 59);
+      };
+      const ensureSpace = needed => {
+        if (y + needed <= pageHeight - 18) return;
+        pdf.addPage();
+        addHeader();
+        y = 34;
+      };
+      const section = title => {
+        ensureSpace(14);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.setTextColor(15, 118, 110);
+        pdf.text(title, margin, y);
+        pdf.setDrawColor(153, 246, 228);
+        pdf.line(margin, y + 2, pageWidth - margin, y + 2);
+        pdf.setTextColor(30, 41, 59);
+        y += 7;
+      };
+      const table = options => {
+        pdf.autoTable({
+          startY: y,
+          theme: "grid",
+          styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.3, overflow: "linebreak", valign: "top" },
+          headStyles: { fillColor: [15, 118, 110] },
+          margin: { left: margin, right: margin, top: 32, bottom: 18 },
+          ...options
+        });
+        y = pdf.lastAutoTable.finalY + 8;
+      };
+
+      addHeader();
+      y = 34;
+      const goal = data.goal || {};
+      const initial = Number(goal.initialWeightKg);
+      const current = Number(goal.currentWeightKg);
+      const target = Number(goal.targetWeightKg);
+      const lost = Number.isFinite(initial) && Number.isFinite(current) ? initial - current : NaN;
+      const remaining = Number.isFinite(current) && Number.isFinite(target) ? current - target : NaN;
+
+      section("Resumo geral");
+      table({
+        head: [["Peso inicial", "Peso atual", "Perda total", "Meta", "Falta"]],
+        body: [[pdfKg(initial), pdfKg(current), pdfKg(lost), pdfKg(target), pdfKg(remaining)]]
+      });
+
+      section("Perfil e tratamento");
+      table({
+        head: [["Nome", "Idade", "Altura", "Medicamento", "Dose semanal", "Início"]],
+        body: [[pdfText(data.profile?.name) || "-", data.profile?.age ? `${data.profile.age} anos` : "-", data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : "-", pdfText(data.treatment?.medication) || "-", pdfText(data.treatment?.weeklyDose) || "-", pdfText(data.treatment?.startDate) || "-"]]
+      });
+
+      if ((data.weights || []).length) {
+        section("Histórico de pesagens");
+        table({
+          head: [["Data", "Peso", "Variação"]],
+          body: data.weights.map((item, index, list) => {
+            const value = Number(item.valueKg);
+            const previous = index ? Number(list[index - 1].valueKg) : value;
+            const variation = value - previous;
+            return [item.date || "-", pdfKg(value), index ? `${variation > 0 ? "+" : ""}${variation.toFixed(2).replace(".", ",")} kg` : "Início"];
+          })
+        });
+      }
+
+      if ((data.applications || []).length) {
+        section("Aplicações");
+        table({
+          head: [["Nº", "Data", "Hora", "Dose", "Local"]],
+          body: data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"])
+        });
+      }
+
+      if ((data.weeks || []).length) {
+        section("Resumos semanais");
+        table({
+          head: [["Semana", "Período", "Informações"]],
+          body: data.weeks.map(item => [item.title || "-", item.period || "-", (item.lines || []).map(pdfText).filter(Boolean).join("\n")])
+        });
+      }
+
+      if ((data.diary || []).length) {
+        section("Diário");
+        table({
+          head: [["Data", "Alimentação", "Fome", "Efeitos", "Observações"]],
+          body: data.diary.map(item => [item.date || "-", pdfText(item.meals), pdfText(item.hunger), pdfText(item.effects), pdfText(item.notes)]),
+          styles: { font: "helvetica", fontSize: 7.3, cellPadding: 2, overflow: "linebreak", valign: "top" }
+        });
+      }
+
+      if (data.generalObservation || data.medicalNotice) {
+        section("Observações");
+        ensureSpace(30);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        const lines = pdf.splitTextToSize(pdfText(data.generalObservation) || "Sem observação geral.", pageWidth - margin * 2);
+        pdf.text(lines, margin, y);
+        y += lines.length * 4.3 + 5;
+        if (data.medicalNotice) {
+          ensureSpace(20);
+          pdf.setFontSize(8);
+          pdf.setTextColor(100, 116, 139);
+          const notice = pdf.splitTextToSize(pdfText(data.medicalNotice), pageWidth - margin * 2);
+          pdf.text(notice, margin, y);
+          pdf.setTextColor(30, 41, 59);
+        }
+      }
+
+      const pages = pdf.internal.getNumberOfPages();
+      for (let page = 1; page <= pages; page++) {
+        pdf.setPage(page);
+        pdf.setDrawColor(226, 232, 240);
+        pdf.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("Relatório gerado pelo TirzeTrack", margin, pageHeight - 7);
+        pdf.text(`Página ${page} de ${pages}`, pageWidth - margin, pageHeight - 7, { align: "right" });
+      }
+
+      pdf.save(pdfFileName(data));
+      showToast("PDF gerado com sucesso.");
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "Não foi possível gerar o PDF.", "error");
+    } finally {
+      if (button) { button.disabled = false; button.textContent = originalText; }
+    }
+  }
+
   async function importJson(file) {
     try {
       const text = await file.text();
@@ -788,6 +961,7 @@
 
   $("saveDraft")?.addEventListener("click", saveDraft);
   $("downloadBackup")?.addEventListener("click", downloadBackup);
+  $("exportPdfAdmin")?.addEventListener("click", exportPdfAdmin);
   $("reloadPublished")?.addEventListener("click", () => loadPublishedData(true));
   $("recalculateWeights")?.addEventListener("click", recalculateWeights);
   $("generateWeeks")?.addEventListener("click", () => {

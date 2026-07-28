@@ -32,6 +32,7 @@
       <div class="admin-toolbar-actions">
         <button class="secondary-button" id="saveDraft" type="button">Salvar rascunho</button>
         <button class="secondary-button" id="downloadBackup" type="button">Baixar backup</button>
+        <button class="secondary-button" id="exportPdfAdmin" type="button">Exportar PDF</button>
         <label class="secondary-button file-button" for="jsonInput">Importar JSON</label>
         <input id="jsonInput" type="file" accept="application/json,.json" hidden />
         <button class="secondary-button danger-outline" id="reloadPublished" type="button">Recarregar publicado</button>
@@ -149,6 +150,8 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260728-v2-4-0"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="./script-admin.js?v=20260728-v2-5-1"></script>
 </body>
 </html>
