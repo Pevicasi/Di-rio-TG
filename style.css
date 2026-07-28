@@ -610,7 +610,7 @@ footer {
 .file-button { display: inline-flex; align-items: center; }
 .danger-outline { background: #fff1f1; color: #a52a2a; }
 .admin-section-nav { position: sticky; top: 8px; z-index: 20; display: flex; gap: 8px; overflow-x: auto; padding: 10px; margin-bottom: 18px; border: 1px solid #d9e5e3; border-radius: 14px; background: rgba(255,255,255,.95); box-shadow: 0 8px 24px rgba(15,118,110,.08); }
-.admin-section-nav a { white-space: nowrap; text-decoration: none; color: #275f59; background: #edf5f4; border-radius: 999px; padding: 8px 12px; font-size: .9rem; font-weight: 700; }
+.admin-section-nav a, .admin-section-nav button { white-space: nowrap; text-decoration: none; color: #275f59; background: #edf5f4; border-radius: 999px; padding: 8px 12px; font-size: .9rem; font-weight: 700; }
 .admin-form-section { scroll-margin-top: 82px; margin-bottom: 18px; }
 .admin-form-section .section-header { margin-bottom: 18px; }
 .admin-grid { display: grid; gap: 15px; }

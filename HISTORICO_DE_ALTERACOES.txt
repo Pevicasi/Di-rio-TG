@@ -85,3 +85,17 @@ Verificações técnicas
 • IDs utilizados pelo JavaScript administrativo conferidos no HTML.
 • Estrutura do ZIP e presença de apenas um arquivo TXT conferidas.
 
+
+
+--------------------------------------------------
+Versão 2.3.4
+Data: 28/07/2026
+
+Correções
+• Corrigida a navegação das abas no painel administrativo: o clique chamava uma função inexistente.
+• A troca de abas agora salva os campos visíveis usando a função correta antes de abrir a nova seção.
+• Ajustado o estilo dos botões de navegação para uso consistente no celular.
+
+Validações
+• Sintaxe dos arquivos JavaScript verificada.
+• Referências de funções usadas na inicialização e navegação revisadas.
