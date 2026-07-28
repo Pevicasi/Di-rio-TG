@@ -241,3 +241,8 @@ VERSÃO 2.6.0
 - Adicionada opção de diário compacto para reduzir o número de páginas.
 - Mantida a geração pelo navegador, sem bibliotecas externas.
 
+VERSÃO 2.6.1 — 28/07/2026
+- Corrigido o cache da área administrativa, que ainda apontava para o JavaScript da versão 2.5.2.
+- A exportação personalizada agora imprime por um iframe interno, sem depender da abertura de pop-ups.
+- Mantida a escolha das seções que aparecerão no relatório.
+- Validado o JavaScript e a estrutura do pacote.
