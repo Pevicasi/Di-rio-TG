@@ -297,7 +297,8 @@
         const result = startWeight.value - endWeight.value;
         lines.push(`Resultado: ${result >= 0 ? "-" : "+"}${Math.abs(result).toFixed(2).replace(".", ",")} kg`);
       } else if (startWeight) {
-        lines.push(`Peso inicial: ${Number(startWeight.value).toFixed(2).replace(".", ",")} kg`);
+        lines.push(`Peso: ${Number(startWeight.value).toFixed(2).replace(".", ",")} → aguardando nova pesagem`);
+        lines.push("Resultado: aguardando nova pesagem");
       }
       lines.push(`Aplicação: ${application.date}${application.time ? ` às ${application.time}` : ""}`);
       const hunger = uniqueText(entries, "hunger");
