@@ -754,3 +754,8 @@ footer {
   .section-header-actions { width: 100%; justify-content: flex-start; }
   .visibility-toggle { border-radius: 14px; }
 }
+
+.field-help { display:block; margin-top:6px; color:var(--muted); font-size:12px; font-weight:500; }
+.footer-row { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
+.sync-indicator { display:inline-flex; align-items:center; min-height:30px; padding:6px 10px; border:1px solid rgba(15,118,110,.18); border-radius:999px; background:rgba(255,255,255,.72); color:#52706d; font-size:12px; white-space:nowrap; }
+@media (max-width:620px){ .footer-row{align-items:flex-start;flex-direction:column}.sync-indicator{font-size:11px} }

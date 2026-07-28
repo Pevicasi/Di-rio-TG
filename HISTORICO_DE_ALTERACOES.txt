@@ -112,3 +112,18 @@ Correções
 • Corrigido o controle da data automática.
 • Removido um campo duplicado de data de conclusão no histórico de metas.
 • Edições em campos e opções de visibilidade agora marcam o painel como alterado.
+
+--------------------------------------------------
+
+Versão 2.3.6
+Data: 28/07/2026
+
+Correções
+• A semana atual não usa mais uma pesagem anterior ao início como peso final.
+• O resultado semanal só é calculado quando existe uma pesagem posterior ao início da semana.
+• A data inicial da Observação geral é sincronizada automaticamente quando o texto começa com “Até DD/MM/AAAA,”.
+
+Melhorias
+• Indicador discreto de sincronização no rodapé do site público.
+• Verificação automática do dados.json a cada 15 segundos, sem depender do cache do navegador.
+• A versão interna do formato ficou somente leitura e recebeu uma explicação no painel.

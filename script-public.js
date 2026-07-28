@@ -1,8 +1,3 @@
-import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-
 const STORAGE_KEY = "tirzetrack-data-v1";
 const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
 const PDF_START = "TIRZETRACK_DATA_START";
@@ -61,6 +56,9 @@ let showAll = false;
 let showAllApplications = false;
 let showAllWeeks = false;
 let showAllWeightSummary = false;
+let lastPublishedSignature = "";
+let lastSyncCheckAt = null;
+let syncTimer = null;
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
@@ -82,6 +80,62 @@ function saveGithubConfig(config) {
   localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
 }
 
+function dataSignature(data) {
+  return JSON.stringify(data || {});
+}
+
+function formatElapsed(seconds) {
+  const safe = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safe / 60);
+  const secs = safe % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function updateSyncIndicator(message = "") {
+  const indicator = $("syncIndicator");
+  if (!indicator) return;
+  if (message) {
+    indicator.textContent = message;
+    return;
+  }
+  if (!lastSyncCheckAt) {
+    indicator.textContent = "Verificando atualização…";
+    return;
+  }
+  const elapsed = (Date.now() - lastSyncCheckAt) / 1000;
+  indicator.textContent = `Sincronizado há ${formatElapsed(elapsed)}`;
+}
+
+async function checkForPublishedUpdate() {
+  try {
+    const response = await fetch(`dados.json?sync=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const published = await response.json();
+    validateData(published);
+    const signature = dataSignature(published);
+    lastSyncCheckAt = Date.now();
+    if (lastPublishedSignature && signature !== lastPublishedSignature) {
+      appData = synchronizeWeightFields(published);
+      saveData(appData);
+      lastPublishedSignature = signature;
+      renderAll();
+      updateSyncIndicator("Nova atualização carregada agora");
+      setTimeout(() => updateSyncIndicator(), 3500);
+      return;
+    }
+    lastPublishedSignature = signature;
+    updateSyncIndicator();
+  } catch (_) {
+    updateSyncIndicator("Aguardando sincronização…");
+  }
+}
+
+function startSyncMonitor() {
+  clearInterval(syncTimer);
+  syncTimer = setInterval(checkForPublishedUpdate, 15000);
+  setInterval(() => updateSyncIndicator(), 1000);
+}
+
 async function loadPublishedData() {
   const status = $("importStatus");
   try {
@@ -91,7 +145,10 @@ async function loadPublishedData() {
     validateData(published);
     appData = synchronizeWeightFields(published);
     saveData(appData);
+    lastPublishedSignature = dataSignature(published);
+    lastSyncCheckAt = Date.now();
     renderAll();
+    updateSyncIndicator();
     status.className = "import-status success";
     status.textContent = `Dados publicados carregados: ${published.updatedAt}.`;
   } catch (error) {
@@ -791,4 +848,4 @@ window.addEventListener("resize", () => {
   window.__chartTimer = setTimeout(drawChart, 150);
 });
 
-loadPublishedData();
+loadPublishedData().finally(startSyncMonitor);

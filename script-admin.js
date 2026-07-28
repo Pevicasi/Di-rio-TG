@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.5";
+  const ADMIN_BUILD = "2.3.6";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -271,6 +271,24 @@
     return items.length ? items[items.length - 1] : null;
   }
 
+  function firstWeightAfter(date, limitDate = null) {
+    const items = appData.weights
+      .map(item => ({ ...item, parsed: dateFromBR(item.date), value: Number(item.valueKg) }))
+      .filter(item => item.parsed && Number.isFinite(item.value) && item.parsed > date && (!limitDate || item.parsed <= limitDate))
+      .sort((a, b) => a.parsed - b.parsed);
+    return items.length ? items[0] : null;
+  }
+
+  function synchronizeGeneralObservationDate() {
+    const observation = String(appData.generalObservation || '').trim();
+    if (!observation || !appData.updatedAt) return;
+    const updated = observation.replace(/^Até\s+\d{2}\/\d{2}\/\d{4}(?=\s*[,.-])/i, `Até ${appData.updatedAt}`);
+    if (updated !== observation) {
+      appData.generalObservation = updated;
+      setValue('fieldGeneralObservation', updated);
+    }
+  }
+
   function uniqueText(items, key) {
     return [...new Set(items.map(item => String(item[key] || "").trim()).filter(Boolean))].join(" • ");
   }
@@ -347,11 +365,10 @@
       const isCurrent = index === applications.length - 1 && today <= nominalEnd;
       const displayEnd = isCurrent && today < end ? today : end;
       const startWeight = latestWeightOnOrBefore(start);
-      // A pesagem feita no dia da aplicação seguinte encerra a semana anterior.
-      // Isso mantém o período visual (ex.: 06/07 a 12/07), mas usa a pesagem
-      // de 13/07 como resultado final da Semana 1.
-      const closingWeightDate = nextStart || displayEnd;
-      const endWeight = latestWeightOnOrBefore(closingWeightDate);
+      // A semana só é encerrada por uma pesagem posterior ao início dela.
+      // A pesagem do próprio dia da aplicação é o peso inicial, nunca o resultado.
+      const closingWeight = firstWeightAfter(start, nextStart || displayEnd);
+      const endWeight = closingWeight;
       const entries = appData.diary.filter(item => dateInRange(item.date, start, displayEnd));
 
       let weight = "";
@@ -608,6 +625,7 @@
     sortByDate(appData.applications);
     sortByDate(appData.diary);
     appData.applications.forEach((item, index) => { item.number = numeric(item.number) || index + 1; });
+    synchronizeGeneralObservationDate();
     if ($("fieldAutoWeeks")?.checked) generateWeeklySummaries();
     appData.weeks = (appData.weeks || []).map(item => ({
       ...item,
