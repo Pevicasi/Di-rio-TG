@@ -292,9 +292,9 @@
   "visibility": {
     "header": false,
     "profile": true,
-    "summary": false,
+    "summary": true,
     "treatment": true,
-    "weights": false,
+    "weights": true,
     "applications": true,
     "weeks": true,
     "analysis": true,
