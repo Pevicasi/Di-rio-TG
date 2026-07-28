@@ -183,7 +183,19 @@
         </label>
       </div>
       <div id="diarySingleEditor" class="editable-list"></div>
-      <div class="food-catalog-info"><strong>Cadastro de alimentos</strong><p>Os alimentos digitados nas refeições são salvos no próprio dados.json e ficam disponíveis para reutilização nos próximos registros.</p></div>
+      <section class="food-catalog-manager" aria-labelledby="foodCatalogTitle">
+        <div class="food-catalog-heading">
+          <div><p class="eyebrow">Lista reutilizável</p><h3 id="foodCatalogTitle">Cadastro de alimentos</h3></div>
+          <span id="foodCatalogCount" class="catalog-count">0 alimentos</span>
+        </div>
+        <p class="form-help">Pesquise os alimentos já cadastrados ou adicione um novo. A lista será salva no dados.json quando você publicar.</p>
+        <div class="food-catalog-controls">
+          <label>Pesquisar alimento<input id="foodCatalogSearch" type="search" placeholder="Ex.: arroz, banana ou frango"></label>
+          <label>Novo alimento<input id="newFoodName" type="text" placeholder="Digite o nome do alimento"></label>
+          <button id="addFoodCatalog" class="add-button" type="button">+ Cadastrar alimento</button>
+        </div>
+        <div id="foodCatalogList" class="food-catalog-list"></div>
+      </section>
     </section>
 
     <section class="card admin-form-section" id="notes">
