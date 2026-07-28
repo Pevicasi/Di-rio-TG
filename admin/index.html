@@ -40,6 +40,42 @@
       </div>
     </section>
 
+    <dialog class="pdf-options-dialog" id="pdfOptionsDialog" aria-labelledby="pdfOptionsTitle">
+      <form method="dialog" class="pdf-options-card" id="pdfOptionsForm">
+        <div class="pdf-options-header">
+          <div>
+            <p class="eyebrow">Relatório</p>
+            <h2 id="pdfOptionsTitle">Escolha o conteúdo do PDF</h2>
+            <p>O relatório será montado no estilo do backup oficial, com páginas A4, tabelas e gráfico.</p>
+          </div>
+          <button class="dialog-close" id="closePdfOptions" type="button" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="pdf-options-toolbar">
+          <button class="text-button" id="selectAllPdfSections" type="button">Selecionar tudo</button>
+          <button class="text-button" id="clearPdfSections" type="button">Limpar seleção</button>
+        </div>
+
+        <div class="pdf-options-grid">
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="summary" checked><span><strong>Resumo geral</strong><small>Pesos, perda, meta e progresso</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="treatment" checked><span><strong>Tratamento</strong><small>Medicamento, dose, início e aplicações</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="chart" checked><span><strong>Gráfico do peso</strong><small>Evolução visual das pesagens</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weights" checked><span><strong>Histórico de pesagens</strong><small>Data, peso e variação</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="applications" checked><span><strong>Aplicações</strong><small>Data, hora, dose e local</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weeks" checked><span><strong>Resumos semanais</strong><small>Resultados, fome, efeitos e observações</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="diary"><span><strong>Registros diários</strong><small>Refeições, fome, efeitos e observações</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="observations" checked><span><strong>Observação geral</strong><small>Conclusão e aviso médico</small></span></label>
+        </div>
+
+        <label class="pdf-extra-option"><input type="checkbox" id="pdfCompactDiary" checked><span><strong>Diário compacto</strong><small>Quando o diário estiver selecionado, usa tabelas menores para economizar páginas.</small></span></label>
+
+        <div class="pdf-options-actions">
+          <button class="secondary-button" id="cancelPdfOptions" type="button">Cancelar</button>
+          <button class="publish-button" id="generateSelectedPdf" type="button">Gerar relatório</button>
+        </div>
+      </form>
+    </dialog>
+
     <nav class="admin-section-nav" aria-label="Seções do editor">
       <button type="button" data-admin-tab="general" class="active">Geral</button>
       <button type="button" data-admin-tab="profile">Perfil</button>
