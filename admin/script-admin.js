@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.4";
+  const ADMIN_BUILD = "2.3.5";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -758,6 +758,7 @@
     }
   }
 
+  // Liga todos os controles fixos do painel.
   document.querySelectorAll("[data-admin-tab]").forEach(button => {
     button.addEventListener("click", () => {
       const targetId = button.dataset.adminTab;
@@ -767,8 +768,58 @@
     });
   });
 
-  $("publishButton").addEventListener("click", publishToGithub);
-  $("jsonInput").addEventListener("change", event => {
+  $("saveDraft")?.addEventListener("click", saveDraft);
+  $("downloadBackup")?.addEventListener("click", downloadBackup);
+  $("reloadPublished")?.addEventListener("click", () => loadPublishedData(true));
+  $("recalculateWeights")?.addEventListener("click", recalculateWeights);
+  $("generateWeeks")?.addEventListener("click", () => {
+    collectDataFromDOM();
+    generateWeeklySummaries({ notify: true });
+  });
+  $("saveGithubConfig")?.addEventListener("click", saveGithubConfig);
+  $("publishButton")?.addEventListener("click", publishToGithub);
+
+  $("fieldAutoUpdatedAt")?.addEventListener("change", event => {
+    const dateField = $("fieldUpdatedAt");
+    if (dateField) dateField.disabled = event.target.checked;
+    if (event.target.checked) {
+      appData.updatedAt = formatBRDate(new Date());
+      setValue("fieldUpdatedAt", parseBRDate(appData.updatedAt));
+    }
+    markDirty();
+  });
+
+  $("diaryDateSelector")?.addEventListener("change", event => {
+    collectDiaryFromDOM();
+    const nextIndex = Number(event.target.value);
+    selectedDiaryIndex = Number.isInteger(nextIndex) ? nextIndex : -1;
+    renderDiary();
+  });
+
+  // Botões criados dinamicamente: adicionar e excluir registros.
+  document.addEventListener("click", event => {
+    const addButton = event.target.closest("[data-add]");
+    if (addButton) {
+      event.preventDefault();
+      addItem(addButton.dataset.add);
+      return;
+    }
+    const deleteButton = event.target.closest("[data-delete]");
+    if (deleteButton) {
+      event.preventDefault();
+      deleteItem(deleteButton.dataset.delete, Number(deleteButton.dataset.index));
+    }
+  });
+
+  // Marca como alterado quando o usuário edita qualquer campo do painel.
+  document.addEventListener("input", event => {
+    if (event.target.matches("input, textarea, select")) markDirty();
+  });
+  document.addEventListener("change", event => {
+    if (event.target.matches("input, textarea, select")) markDirty();
+  });
+
+  $("jsonInput")?.addEventListener("change", event => {
     const file = event.target.files?.[0];
     if (file) importJson(file);
     event.target.value = "";
