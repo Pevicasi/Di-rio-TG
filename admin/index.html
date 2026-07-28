@@ -4,131 +4,136 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
-  <title>Acompanhamento com Tirzepatida</title>
-  <link rel="stylesheet" href="../style.css?v=20260720-9" />
+  <title>Administração • TirzeTrack</title>
+  <link rel="stylesheet" href="../style.css?v=20260727-admin-editor" />
 </head>
-<body>
+<body class="admin-editor-page">
   <header class="topbar">
     <div class="container topbar-content">
       <div>
-        <p class="eyebrow">Diário de tratamento</p>
-        <h1 id="siteTitle">Acompanhamento com Tirzepatida</h1>
-        <p class="subtitle" id="profileSubtitle">Petrônio Vieira • 42 anos • 1,59 m</p>
+        <p class="eyebrow">TirzeTrack</p>
+        <h1>Área administrativa</h1>
+        <p class="subtitle">Inclua, altere e publique todas as informações do acompanhamento.</p>
       </div>
       <div class="topbar-actions">
-        <div class="status-pill" id="updatedAt">Atualizado em 20/07/2026</div>
-        <button class="admin-button" id="openAdmin" type="button">Configurar publicação</button>
-        <label class="import-button" for="pdfInput">Selecionar relatório PDF</label>
-        <input id="pdfInput" type="file" accept="application/pdf,.pdf" hidden />
+        <span class="status-pill" id="saveStatus">Carregando dados...</span>
+        <a class="admin-button admin-link-button" href="../index.html" target="_blank" rel="noopener">Abrir site público</a>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <section class="import-panel card" id="importPanel">
+  <main class="container admin-editor-main">
+    <section class="card admin-toolbar">
       <div>
-        <p class="eyebrow">Atualização</p>
-        <h2>Importar relatório</h2>
-        <p>Escolha um PDF criado no formato TirzeTrack. Os dados serão validados antes da atualização.</p>
+        <p class="eyebrow">Dados</p>
+        <h2>Gerenciamento</h2>
+        <p>As alterações ficam neste navegador até você publicar no GitHub.</p>
       </div>
-      <div class="publish-area">
-        <div class="import-status" id="importStatus" role="status" aria-live="polite">Carregando dados publicados...</div>
-        <button class="publish-button" id="publishButton" type="button" disabled>Publicar atualização</button>
+      <div class="admin-toolbar-actions">
+        <button class="secondary-button" id="saveDraft" type="button">Salvar rascunho</button>
+        <button class="secondary-button" id="downloadBackup" type="button">Baixar backup</button>
+        <label class="secondary-button file-button" for="jsonInput">Importar JSON</label>
+        <input id="jsonInput" type="file" accept="application/json,.json" hidden />
+        <button class="secondary-button danger-outline" id="reloadPublished" type="button">Recarregar publicado</button>
+        <button class="publish-button" id="publishButton" type="button">Publicar no GitHub</button>
       </div>
     </section>
 
-    <section class="admin-panel card hidden" id="adminPanel">
+    <nav class="admin-section-nav" aria-label="Seções do editor">
+      <a href="#general">Geral</a><a href="#profile">Perfil</a><a href="#goals">Metas</a>
+      <a href="#treatment">Tratamento</a><a href="#weights">Pesagens</a>
+      <a href="#applications">Aplicações</a><a href="#weeks">Semanas</a>
+      <a href="#diary">Diário</a><a href="#notes">Observações</a><a href="#github">GitHub</a>
+    </nav>
+
+    <section class="card admin-form-section" id="general">
+      <div class="section-header"><div><p class="eyebrow">Identificação</p><h2>Informações gerais</h2></div></div>
+      <div class="admin-grid three-columns">
+        <label>Título do site<input id="fieldTitle" type="text" /></label>
+        <label>Data de atualização<input id="fieldUpdatedAt" type="date" /></label>
+        <label>Versão do formato<input id="fieldSchemaVersion" type="number" min="1" step="1" /></label>
+      </div>
+    </section>
+
+    <section class="card admin-form-section" id="profile">
+      <div class="section-header"><div><p class="eyebrow">Paciente</p><h2>Perfil</h2></div></div>
+      <div class="admin-grid three-columns">
+        <label>Nome<input id="fieldName" type="text" /></label>
+        <label>Idade<input id="fieldAge" type="number" min="0" max="130" step="1" /></label>
+        <label>Altura (m)<input id="fieldHeight" type="number" min="0.5" max="2.5" step="0.01" inputmode="decimal" /></label>
+      </div>
+    </section>
+
+    <section class="card admin-form-section" id="goals">
       <div class="section-header">
-        <div><p class="eyebrow">Administrador</p><h2>Configuração do GitHub</h2></div>
-        <button class="close-button" id="closeAdmin" type="button">Fechar</button>
+        <div><p class="eyebrow">Objetivos</p><h2>Metas e progresso</h2></div>
+        <button class="secondary-button" id="recalculateWeights" type="button">Recalcular pelos pesos</button>
       </div>
-      <div class="admin-grid">
-        <label>Usuário ou organização<input id="githubOwner" autocomplete="off" placeholder="Ex.: Pevicasi"></label>
-        <label>Repositório<input id="githubRepo" autocomplete="off" placeholder="Nome do repositório"></label>
-        <label>Branch<input id="githubBranch" autocomplete="off" value="main"></label>
-        <label>Arquivo de dados<input id="githubPath" autocomplete="off" value="dados.json"></label>
-        <label class="token-field">Token do GitHub<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..."></label>
+      <div class="admin-grid four-columns">
+        <label>Peso inicial (kg)<input id="fieldInitialWeight" type="number" step="0.01" inputmode="decimal" /></label>
+        <label>Peso atual (kg)<input id="fieldCurrentWeight" type="number" step="0.01" inputmode="decimal" /></label>
+        <label>Meta atual (kg)<input id="fieldTargetWeight" type="number" step="0.01" inputmode="decimal" /></label>
+        <label>Peso inicial da etapa (kg)<input id="fieldStageStartWeight" type="number" step="0.01" inputmode="decimal" /></label>
+        <label>Data inicial da etapa<input id="fieldStageStartDate" type="date" /></label>
       </div>
-      <p class="security-note">O token fica salvo somente neste navegador e nunca é colocado nos arquivos do site.</p>
-      <button class="save-config-button" id="saveGithubConfig" type="button">Salvar configuração</button>
+      <div class="subsection-heading"><div><h3>Histórico de metas</h3><p>Registre metas anteriores, concluídas ou substituídas.</p></div><button class="add-button" data-add="goalHistory" type="button">+ Adicionar meta anterior</button></div>
+      <div id="goalHistoryList" class="editable-list"></div>
     </section>
 
-    <section class="card goal-admin-box goal-admin-visible">
-      <div>
-        <p class="eyebrow">Metas</p>
-        <h2>Definir nova meta</h2>
-        <p>Quando uma meta for alcançada, ela continuará aparecendo no histórico.</p>
-      </div>
-      <div class="goal-admin-form">
-        <label>Novo peso-meta (kg)<input id="newGoalWeight" type="number" inputmode="decimal" min="30" max="300" step="0.1" placeholder="Ex.: 95"></label>
-        <button class="save-config-button" id="setNewGoal" type="button">Adicionar nova meta</button>
+    <section class="card admin-form-section" id="treatment">
+      <div class="section-header"><div><p class="eyebrow">Medicação</p><h2>Tratamento</h2></div></div>
+      <div class="admin-grid four-columns">
+        <label>Medicamento<input id="fieldMedication" type="text" /></label>
+        <label>Concentração<input id="fieldConcentration" type="text" /></label>
+        <label>Dose semanal<input id="fieldWeeklyDose" type="text" /></label>
+        <label>Data de início<input id="fieldTreatmentStart" type="date" /></label>
       </div>
     </section>
 
-    <section class="hero-grid">
-      <article class="card profile-card">
-        <div class="section-title"><span>Resumo geral</span></div>
-        <div class="metrics-grid">
-          <div class="metric"><span>Peso inicial</span><strong id="initialWeight">117,50 kg</strong></div>
-          <div class="metric"><span>Peso atual</span><strong id="currentWeight">111,30 kg</strong></div>
-          <div class="metric highlight"><span>Perda acumulada</span><strong id="totalLoss">6,20 kg</strong></div>
-          <div class="metric"><span>Meta atual</span><strong id="goalWeight">100,00 kg</strong></div>
-        </div>
-        <div class="goal-box">
-          <div class="goal-heading">
-            <div><span id="goalLabel">Progresso até 100 kg</span><strong id="goalPercent">35,4%</strong></div>
-            <small>Faltam <b id="remainingWeight">11,30 kg</b></small>
-          </div>
-          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-          <div class="goal-scale"><span id="goalScaleStart">117,50 kg</span><span id="goalScaleEnd">100 kg</span></div>
-          <div class="goal-estimate" id="goalEstimate">Calculando estimativa...</div>
-          <div class="goals-history" id="goalsHistory"></div>
-        </div>
-      </article>
-
-      <article class="card treatment-card">
-        <div class="section-title"><span>Tratamento</span></div>
-        <dl class="details-list" id="treatmentDetails"></dl>
-      </article>
+    <section class="card admin-form-section" id="weights">
+      <div class="section-header"><div><p class="eyebrow">Evolução</p><h2>Pesagens</h2></div><button class="add-button" data-add="weights" type="button">+ Adicionar pesagem</button></div>
+      <div id="weightsList" class="editable-list"></div>
     </section>
 
-    <section class="card">
-      <div class="section-header">
-        <div><p class="eyebrow">Evolução</p><h2>Peso ao longo do tratamento</h2></div>
-        <div class="section-actions"><div class="chart-legend"><span></span>Peso em kg</div><button class="filter-button" id="toggleWeightSummary" type="button">Mostrar todos</button></div>
+    <section class="card admin-form-section" id="applications">
+      <div class="section-header"><div><p class="eyebrow">Medicação</p><h2>Aplicações</h2></div><button class="add-button" data-add="applications" type="button">+ Adicionar aplicação</button></div>
+      <div id="applicationsList" class="editable-list"></div>
+    </section>
+
+    <section class="card admin-form-section" id="weeks">
+      <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumos semanais</h2></div><button class="add-button" data-add="weeks" type="button">+ Adicionar semana</button></div>
+      <p class="form-help">Digite uma informação por linha no campo “Linhas do resumo”.</p>
+      <div id="weeksList" class="editable-list"></div>
+    </section>
+
+    <section class="card admin-form-section" id="diary">
+      <div class="section-header"><div><p class="eyebrow">Registros</p><h2>Diário</h2></div><button class="add-button" data-add="diary" type="button">+ Adicionar dia</button></div>
+      <div id="diaryEditorList" class="editable-list"></div>
+    </section>
+
+    <section class="card admin-form-section" id="notes">
+      <div class="section-header"><div><p class="eyebrow">Rodapé</p><h2>Observações e aviso</h2></div></div>
+      <div class="admin-grid one-column">
+        <label>Observação geral<textarea id="fieldGeneralObservation" rows="5"></textarea></label>
+        <label>Aviso médico<textarea id="fieldMedicalNotice" rows="3"></textarea></label>
       </div>
-      <div class="chart-wrap"><canvas id="weightChart" aria-label="Gráfico da evolução do peso"></canvas></div>
-      <div class="weight-summary" id="weightSummary"></div>
     </section>
 
-    <section class="card">
-      <div class="section-header"><div><p class="eyebrow">Aplicações</p><h2>Linha do tempo</h2></div><button class="filter-button" id="toggleApplications" type="button">Mostrar todos</button></div>
-      <div class="timeline" id="timeline"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumo semanal</h2></div><button class="filter-button" id="toggleWeeks" type="button">Mostrar todos</button></div>
-      <div class="weeks-grid" id="weeksGrid"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-header">
-        <div><p class="eyebrow">Diário</p><h2>Registros diários</h2></div>
-        <button class="filter-button" id="toggleAll">Mostrar todos</button>
+    <section class="card admin-form-section" id="github">
+      <div class="section-header"><div><p class="eyebrow">Publicação</p><h2>Configuração do GitHub</h2></div></div>
+      <div class="admin-grid two-columns">
+        <label>Usuário ou organização<input id="githubOwner" autocomplete="off" placeholder="Ex.: Pevicasi" /></label>
+        <label>Repositório<input id="githubRepo" autocomplete="off" placeholder="Nome do repositório" /></label>
+        <label>Branch<input id="githubBranch" autocomplete="off" value="main" /></label>
+        <label>Arquivo de dados<input id="githubPath" autocomplete="off" value="dados.json" /></label>
+        <label class="token-field">Token do GitHub<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..." /></label>
       </div>
-      <div class="diary-list" id="diaryList"></div>
-    </section>
-
-    <section class="card note-card">
-      <h2>Observação geral</h2>
-      <p id="generalObservation"></p>
-      <small id="medicalNotice"></small>
+      <p class="security-note">O token é salvo somente neste navegador. Use um token com acesso apenas ao repositório necessário.</p>
+      <button class="save-config-button" id="saveGithubConfig" type="button">Salvar configuração do GitHub</button>
     </section>
   </main>
 
-  <footer><div class="container" id="footerText"></div></footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
-  <script src="../script-admin.js?v=20260720-11" type="module"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../script-admin.js?v=20260727-admin-editor"></script>
 </body>
 </html>
