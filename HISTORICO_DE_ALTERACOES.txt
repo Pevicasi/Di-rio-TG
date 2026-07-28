@@ -1,0 +1,54 @@
+==================================================
+TIRZETRACK — HISTÓRICO DE ALTERAÇÕES
+==================================================
+
+Versão 2.0.0
+Data: 27/07/2026
+
+CORREÇÕES
+• O JavaScript da administração passou a ficar também dentro da pasta admin.
+• O admin agora carrega ./script-admin.js, evitando falha por caminho incorreto.
+• O carregamento do dados.json passou a validar resposta HTTP e formato JSON.
+• Mensagens de erro de carregamento agora aparecem na própria página.
+• Removido o uso de Array.at(), aumentando a compatibilidade com navegadores.
+
+MELHORIAS
+• Apenas uma seção administrativa é exibida por vez.
+• Navegação por abas adequada para celular.
+• A última aba aberta é preservada durante a sessão.
+• Data de atualização automática permanece editável quando a opção automática é desmarcada.
+• Peso inicial e atual continuam calculados pelas pesagens.
+• Resumos semanais continuam gerados automaticamente e aceitam complementos manuais.
+• Diário continua exibindo um único registro por data.
+• Consolidado todo o histórico neste único arquivo em português.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• admin/index.html
+• admin/script-admin.js
+• script-admin.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt
+
+--------------------------------------------------
+
+Versão 2.1.0
+Data: 27/07/2026
+
+NOVIDADES
+• Criada a seção “Análise da evolução” com indicadores automáticos.
+• A estimativa da meta agora usa as pesagens recentes, média ponderada e desaceleração gradual.
+• A previsão apresenta faixa de semanas, data central, ritmo de referência e nível de confiança.
+
+MELHORIAS
+• O resumo semanal mantém sempre o formato “Peso: início → fim” e “Resultado”.
+• Em semana ainda aberta, o sistema mostra “aguardando nova pesagem” em vez de “Peso inicial”.
+• A projeção é recalculada automaticamente a cada nova pesagem.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• index.html
+• script-public.js
+• script-admin.js
+• admin/script-admin.js
+• style.css
+• dados.json
+• HISTORICO_DE_ALTERACOES.txt
