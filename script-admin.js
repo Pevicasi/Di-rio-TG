@@ -698,102 +698,118 @@
     return `<table>${head}${body}</table>`;
   }
 
-  async function exportPdfAdmin() {
-    const button = $("exportPdfAdmin");
-    const originalText = button?.textContent || "Exportar PDF";
+  function getSelectedPdfSections() {
+    return new Set(Array.from(document.querySelectorAll('input[name="pdfSection"]:checked')).map(input => input.value));
+  }
+
+  function openPdfOptions() {
+    const dialog = $("pdfOptionsDialog");
+    if (!dialog) return exportPdfAdmin(new Set(["summary", "treatment", "chart", "weights", "applications", "weeks", "observations"]));
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    else dialog.setAttribute("open", "");
+  }
+
+  function closePdfOptions() {
+    const dialog = $("pdfOptionsDialog");
+    if (!dialog) return;
+    if (typeof dialog.close === "function") dialog.close();
+    else dialog.removeAttribute("open");
+  }
+
+  function pdfProgress(initial, current, target) {
+    const total = initial - target;
+    const lost = initial - current;
+    if (!Number.isFinite(total) || total <= 0 || !Number.isFinite(lost)) return 0;
+    return Math.max(0, Math.min(100, (lost / total) * 100));
+  }
+
+  function pdfChartSvg(weights = []) {
+    const points = weights.map(item => ({ date: pdfText(item.date), value: Number(item.valueKg) })).filter(item => Number.isFinite(item.value));
+    if (points.length < 2) return '<p class="empty-note">São necessárias pelo menos duas pesagens para gerar o gráfico.</p>';
+    const width = 900, height = 330, left = 70, right = 28, top = 30, bottom = 58;
+    const values = points.map(item => item.value);
+    const rawMin = Math.min(...values), rawMax = Math.max(...values);
+    const padding = Math.max(1, (rawMax - rawMin) * 0.18);
+    const min = Math.floor(rawMin - padding), max = Math.ceil(rawMax + padding);
+    const range = Math.max(1, max - min);
+    const x = index => left + index * ((width - left - right) / Math.max(1, points.length - 1));
+    const y = value => top + (max - value) * ((height - top - bottom) / range);
+    const line = points.map((item, index) => `${index ? "L" : "M"}${x(index).toFixed(1)},${y(item.value).toFixed(1)}`).join(" ");
+    const grid = Array.from({ length: 5 }, (_, index) => {
+      const value = max - (range * index / 4);
+      const yy = y(value);
+      return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" class="chart-grid"/><text x="${left-12}" y="${yy+5}" text-anchor="end" class="chart-axis">${value.toFixed(1).replace(".", ",")}</text>`;
+    }).join("");
+    const labels = points.map((item, index) => {
+      const xx = x(index), yy = y(item.value);
+      const shortDate = item.date.replace(/\/\d{4}$/, "");
+      return `<circle cx="${xx}" cy="${yy}" r="5" class="chart-point"/><text x="${xx}" y="${yy-13}" text-anchor="middle" class="chart-value">${item.value.toFixed(2).replace(".", ",")} kg</text><text x="${xx}" y="${height-22}" text-anchor="middle" class="chart-axis">${escapePdfHtml(shortDate)}</text>`;
+    }).join("");
+    return `<div class="chart-wrap"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico da evolução do peso">${grid}<line x1="${left}" y1="${top}" x2="${left}" y2="${height-bottom}" class="chart-base"/><line x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}" class="chart-base"/><path d="${line}" class="chart-line"/>${labels}</svg></div>`;
+  }
+
+  function weekCard(item) {
+    const lines = (item.lines || []).map(pdfText).filter(Boolean);
+    return `<article class="week-card${item.current ? " current" : ""}"><h3>${escapePdfHtml(item.title || "Semana")}${item.period ? ` <span>- ${escapePdfHtml(item.period)}</span>` : ""}</h3>${lines.length ? `<ul>${lines.map(line => `<li>${escapePdfHtml(line)}</li>`).join("")}</ul>` : '<p class="empty-note">Sem informações registradas.</p>'}</article>`;
+  }
+
+  function diaryCards(items, compact) {
+    return items.map(item => `<article class="diary-card${compact ? " compact" : ""}"><h3>${escapePdfHtml(item.date || "Sem data")}</h3><table class="detail-table"><tbody><tr><th>Refeições</th><td>${escapePdfHtml(pdfText(item.meals) || "-")}</td></tr><tr><th>Fome</th><td>${escapePdfHtml(pdfText(item.hunger) || "-")}</td></tr><tr><th>Efeitos</th><td>${escapePdfHtml(pdfText(item.effects) || "-")}</td></tr><tr><th>Observações</th><td>${escapePdfHtml(pdfText(item.notes) || "-")}</td></tr></tbody></table></article>`).join("");
+  }
+
+  async function exportPdfAdmin(selectedSections = getSelectedPdfSections()) {
+    const button = $("generateSelectedPdf") || $("exportPdfAdmin");
+    const originalText = button?.textContent || "Gerar relatório";
     try {
-      if (button) { button.disabled = true; button.textContent = "Preparando PDF..."; }
+      if (!selectedSections.size) throw new Error("Selecione pelo menos uma seção para o relatório.");
+      if (button) { button.disabled = true; button.textContent = "Preparando relatório..."; }
       const data = prepareData();
+      const compactDiary = $("pdfCompactDiary")?.checked !== false;
       const goal = data.goal || {};
       const initial = Number(goal.initialWeightKg);
       const current = Number(goal.currentWeightKg);
       const target = Number(goal.targetWeightKg);
       const lost = Number.isFinite(initial) && Number.isFinite(current) ? initial - current : NaN;
       const remaining = Number.isFinite(current) && Number.isFinite(target) ? current - target : NaN;
-      const section = (title, content) => `<section><h2>${escapePdfHtml(title)}</h2>${content}</section>`;
+      const progress = pdfProgress(initial, current, target);
+      const section = (key, title, content, extraClass = "") => selectedSections.has(key) ? `<section class="report-section ${extraClass}"><h2>${escapePdfHtml(title)}</h2>${content}</section>` : "";
       const parts = [];
 
-      parts.push(section("Resumo geral", pdfRows(
-        ["Peso inicial", "Peso atual", "Perda total", "Meta", "Falta"],
-        [[pdfKg(initial), pdfKg(current), pdfKg(lost), pdfKg(target), pdfKg(remaining)]]
-      )));
+      parts.push(section("summary", "Resumo geral", `<div class="summary-grid"><div><small>Peso inicial</small><strong>${pdfKg(initial)}</strong></div><div><small>Peso atual</small><strong>${pdfKg(current)}</strong></div><div class="highlight"><small>Perda acumulada</small><strong>${pdfKg(lost)}</strong></div><div><small>Meta atual</small><strong>${pdfKg(target)}</strong></div></div><div class="progress-box"><div><strong>Progresso até ${pdfKg(target)}</strong><span>${progress.toFixed(1).replace(".", ",")}%</span><em>Faltam ${pdfKg(remaining)}</em></div><div class="progress-track"><i style="width:${progress.toFixed(2)}%"></i></div></div>`));
 
-      parts.push(section("Perfil e tratamento", pdfRows(
-        ["Nome", "Idade", "Altura", "Medicamento", "Dose semanal", "Início"],
-        [[
-          pdfText(data.profile?.name) || "-",
-          data.profile?.age ? `${data.profile.age} anos` : "-",
-          data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : "-",
-          pdfText(data.treatment?.medication) || "-",
-          pdfText(data.treatment?.weeklyDose) || "-",
-          pdfText(data.treatment?.startDate) || "-"
-        ]]
-      )));
+      parts.push(section("treatment", "Tratamento", `<table class="detail-table treatment-table"><tbody><tr><th>Medicamento</th><td>${escapePdfHtml(pdfText(data.treatment?.medication) || "-")}</td><th>Concentração</th><td>${escapePdfHtml(pdfText(data.treatment?.concentration) || "-")}</td></tr><tr><th>Dose semanal</th><td>${escapePdfHtml(pdfText(data.treatment?.weeklyDose) || "-")}</td><th>Início</th><td>${escapePdfHtml(pdfText(data.treatment?.startDate) || "-")}</td></tr><tr><th>Aplicações registradas</th><td>${(data.applications || []).length}</td><th>Atualização</th><td>${escapePdfHtml(data.updatedAt || "-")}</td></tr></tbody></table>`));
 
-      if ((data.weights || []).length) {
-        parts.push(section("Histórico de pesagens", pdfRows(
-          ["Data", "Peso", "Variação"],
-          data.weights.map((item, index, list) => {
-            const value = Number(item.valueKg);
-            const previous = index ? Number(list[index - 1].valueKg) : value;
-            const variation = value - previous;
-            return [item.date || "-", pdfKg(value), index ? `${variation > 0 ? "+" : ""}${variation.toFixed(2).replace(".", ",")} kg` : "Início"];
-          })
-        )));
-      }
+      parts.push(section("chart", "Evolução do peso", pdfChartSvg(data.weights || []), "chart-section"));
 
-      if ((data.applications || []).length) {
-        parts.push(section("Aplicações", pdfRows(
-          ["Nº", "Data", "Hora", "Dose", "Local"],
-          data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"])
-        )));
-      }
+      if ((data.weights || []).length) parts.push(section("weights", "Histórico de pesagens", pdfRows(["Data", "Peso", "Variação"], data.weights.map((item, index, list) => { const value = Number(item.valueKg); const previous = index ? Number(list[index - 1].valueKg) : value; const variation = value - previous; return [item.date || "-", pdfKg(value), index ? `${variation > 0 ? "+" : ""}${variation.toFixed(2).replace(".", ",")} kg` : "Início"]; }))));
 
-      if ((data.weeks || []).length) {
-        parts.push(section("Resumos semanais", pdfRows(
-          ["Semana", "Período", "Informações"],
-          data.weeks.map(item => [item.title || "-", item.period || "-", (item.lines || []).map(pdfText).filter(Boolean).join("\n")])
-        )));
-      }
+      if ((data.applications || []).length) parts.push(section("applications", "Linha do tempo das aplicações", pdfRows(["Nº", "Data", "Hora", "Dose", "Local"], data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"]))));
 
-      if ((data.diary || []).length) {
-        parts.push(section("Diário", pdfRows(
-          ["Data", "Alimentação", "Fome", "Efeitos", "Observações"],
-          data.diary.map(item => [item.date || "-", pdfText(item.meals), pdfText(item.hunger), pdfText(item.effects), pdfText(item.notes)])
-        )));
-      }
+      if ((data.weeks || []).length) parts.push(section("weeks", "Resumo semanal", `<div class="weeks-list">${data.weeks.map(weekCard).join("")}</div>`));
 
-      if (data.generalObservation || data.medicalNotice) {
-        const observation = escapePdfHtml(pdfText(data.generalObservation) || "Sem observação geral.").replace(/\n/g, "<br>");
-        const notice = data.medicalNotice ? `<p class="notice">${escapePdfHtml(pdfText(data.medicalNotice)).replace(/\n/g, "<br>")}</p>` : "";
-        parts.push(section("Observações", `<p>${observation}</p>${notice}`));
-      }
+      if ((data.diary || []).length) parts.push(section("diary", "Registros diários", `<div class="diary-list">${diaryCards(data.diary, compactDiary)}</div>`, "diary-section"));
+
+      if (data.generalObservation || data.medicalNotice) parts.push(section("observations", "Observação geral", `<div class="observation-box"><p>${escapePdfHtml(pdfText(data.generalObservation) || "Sem observação geral.").replace(/\n/g, "<br>")}</p>${data.medicalNotice ? `<p class="notice">${escapePdfHtml(pdfText(data.medicalNotice)).replace(/\n/g, "<br>")}</p>` : ""}</div>`));
 
       const report = window.open("", "_blank");
       if (!report) throw new Error("O navegador bloqueou a janela do relatório. Permita pop-ups para o site e tente novamente.");
+      const subtitle = [data.profile?.name, data.profile?.age ? `${data.profile.age} anos` : "", data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : ""].filter(Boolean).join(" • ");
       report.document.open();
       report.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapePdfHtml(pdfFileName(data))}</title><style>
-        @page { size: A4; margin: 14mm; }
-        * { box-sizing: border-box; }
-        body { margin: 0; color: #1e293b; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; line-height: 1.4; }
-        header { margin: -14mm -14mm 10mm; padding: 10mm 14mm 7mm; color: white; background: #0f766e; }
-        h1 { margin: 0 0 2mm; font-size: 19pt; }
-        header p { margin: 0; font-size: 9pt; }
-        section { margin: 0 0 8mm; break-inside: avoid; }
-        h2 { margin: 0 0 3mm; padding-bottom: 1.5mm; color: #0f766e; border-bottom: 1px solid #99f6e4; font-size: 13pt; }
-        table { width: 100%; border-collapse: collapse; table-layout: auto; }
-        th, td { padding: 2.2mm; border: 1px solid #cbd5e1; text-align: left; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
-        th { color: white; background: #0f766e; font-size: 8.5pt; }
-        td { font-size: 8.5pt; }
-        tr { break-inside: avoid; }
-        .notice { color: #64748b; font-size: 8.5pt; }
-        footer { margin-top: 8mm; padding-top: 3mm; color: #64748b; border-top: 1px solid #e2e8f0; font-size: 8pt; }
-        .actions { position: sticky; top: 0; z-index: 10; display: flex; gap: 8px; justify-content: center; padding: 10px; background: #fff; border-bottom: 1px solid #e2e8f0; }
-        .actions button { padding: 9px 16px; border: 0; border-radius: 8px; color: white; background: #0f766e; font-weight: 700; cursor: pointer; }
-        @media print { .actions { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header><h1>${escapePdfHtml(data.title || "TirzeTrack")}</h1><p>${escapePdfHtml(data.profile?.name || "")} • Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</p></header><main>${parts.join("")}</main><footer>Relatório gerado pelo TirzeTrack • ${escapePdfHtml(new Date().toLocaleString("pt-BR"))}</footer><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`);
+        @page { size:A4; margin:15mm 14mm 17mm; }
+        *{box-sizing:border-box} body{margin:0;color:#173532;font-family:Arial,Helvetica,sans-serif;font-size:10pt;line-height:1.38;background:#fff} .actions{position:sticky;top:0;z-index:10;display:flex;justify-content:center;gap:8px;padding:10px;background:#fff;border-bottom:1px solid #d7e1df}.actions button{padding:10px 18px;border:0;border-radius:9px;background:#117d73;color:#fff;font-weight:800;cursor:pointer}
+        .report-header{margin:-15mm -14mm 10mm;padding:13mm 14mm 10mm;background:#137d73;color:#fff}.report-header .header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.report-header h1{margin:0 0 3mm;font-size:23pt;line-height:1.08}.report-header p{margin:0;font-size:11pt}.report-header time{font-weight:800;white-space:nowrap;margin-top:3mm}
+        main{display:block}.report-section{margin:0 0 8mm;break-inside:auto}.report-section>h2{margin:0 0 4mm;color:#173f3b;font-size:17pt;line-height:1.15}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #d4dfdd}.summary-grid>div{padding:3mm 4mm;border-right:1px solid #d4dfdd}.summary-grid>div:last-child{border-right:0}.summary-grid small{display:block;margin-bottom:1.5mm;color:#667b78;font-size:8pt;font-weight:800;text-transform:uppercase}.summary-grid strong{font-size:16pt}.summary-grid .highlight{background:#d9f1ee;color:#086e66}.progress-box{margin-top:4mm;padding:4mm;border:1px solid #d4dfdd;background:#f8fbfa}.progress-box>div:first-child{display:flex;align-items:center;gap:8px}.progress-box span{font-weight:800}.progress-box em{margin-left:auto;color:#72817f;font-style:normal}.progress-track{height:7px;margin-top:3mm;border-radius:99px;background:#dce9e7;overflow:hidden}.progress-track i{display:block;height:100%;background:#17998e;border-radius:99px}
+        table{width:100%;border-collapse:collapse;table-layout:auto} th,td{padding:2.5mm 3mm;border:1px solid #d4dfdd;text-align:left;vertical-align:top;overflow-wrap:anywhere} thead th{background:#137d73;color:#fff;font-size:9pt} tbody td{font-size:9pt}.detail-table th{width:17%;background:#f3f7f6;color:#425d59}.treatment-table td{width:33%} tr{break-inside:avoid}
+        .chart-wrap{padding:3mm 0 0}.chart-wrap svg{display:block;width:100%;height:auto}.chart-grid{stroke:#d8e2e0;stroke-width:1}.chart-base{stroke:#233936;stroke-width:2}.chart-line{fill:none;stroke:#137d73;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}.chart-point{fill:#fff;stroke:#137d73;stroke-width:4}.chart-axis{fill:#536b67;font-size:18px}.chart-value{fill:#173532;font-size:17px;font-weight:800}
+        .weeks-list,.diary-list{display:grid;gap:3mm}.week-card{padding:4mm;border:1px solid #d4dfdd;break-inside:avoid}.week-card.current{border-color:#137d73;background:#e4f5f2}.week-card h3,.diary-card h3{margin:0 0 2mm;color:#08736a;font-size:13pt}.week-card h3 span{font-weight:700}.week-card ul{margin:0;padding-left:5mm}.week-card li{margin:.6mm 0}.diary-card{break-inside:avoid}.diary-card.compact h3{margin-bottom:1.5mm}.diary-card.compact th,.diary-card.compact td{padding:1.8mm 2.5mm;font-size:8.5pt}.observation-box{padding:4mm;border:1px solid #d4dfdd;background:#f8fbfa}.observation-box p{margin:0 0 3mm}.observation-box p:last-child{margin-bottom:0}.notice{color:#637672;font-size:9pt}.empty-note{color:#6f807d}
+        .report-footer{margin-top:10mm;padding-top:3mm;border-top:1px solid #d4dfdd;color:#6a7b78;font-size:8.5pt;display:flex;justify-content:space-between}.report-footer::after{content:"TirzeTrack 2.6.0"}
+        @media print{.actions{display:none!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-header{break-after:avoid}.chart-section{break-inside:avoid}.report-footer{position:running(footer)}}
+        @media(max-width:700px){.summary-grid{grid-template-columns:repeat(2,1fr)}.summary-grid>div:nth-child(2){border-right:0}.summary-grid>div:nth-child(-n+2){border-bottom:1px solid #d4dfdd}.report-header .header-row{display:block}.report-header time{display:block}.progress-box>div:first-child{flex-wrap:wrap}.progress-box em{margin-left:0;width:100%}}
+      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header class="report-header"><div class="header-row"><div><h1>${escapePdfHtml(data.title || "Acompanhamento com Tirzepatida")}</h1><p>${escapePdfHtml(subtitle)}</p></div><time>Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</time></div></header><main>${parts.join("")}</main><footer class="report-footer"><span>Relatório de acompanhamento</span></footer><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),450));<\/script></body></html>`);
       report.document.close();
-      showToast("Relatório aberto. Escolha ‘Salvar como PDF’ na tela de impressão.");
+      closePdfOptions();
+      showToast("Relatório preparado. Escolha ‘Salvar como PDF’ na tela de impressão.");
     } catch (error) {
       console.error(error);
       showToast(error.message || "Não foi possível preparar o PDF.", "error");
@@ -924,7 +940,13 @@
 
   $("saveDraft")?.addEventListener("click", saveDraft);
   $("downloadBackup")?.addEventListener("click", downloadBackup);
-  $("exportPdfAdmin")?.addEventListener("click", exportPdfAdmin);
+  $("exportPdfAdmin")?.addEventListener("click", openPdfOptions);
+  $("closePdfOptions")?.addEventListener("click", closePdfOptions);
+  $("cancelPdfOptions")?.addEventListener("click", closePdfOptions);
+  $("generateSelectedPdf")?.addEventListener("click", () => exportPdfAdmin(getSelectedPdfSections()));
+  $("selectAllPdfSections")?.addEventListener("click", () => document.querySelectorAll('input[name="pdfSection"]').forEach(input => { input.checked = true; }));
+  $("clearPdfSections")?.addEventListener("click", () => document.querySelectorAll('input[name="pdfSection"]').forEach(input => { input.checked = false; }));
+  $("pdfOptionsDialog")?.addEventListener("click", event => { if (event.target === $("pdfOptionsDialog")) closePdfOptions(); });
   $("reloadPublished")?.addEventListener("click", () => loadPublishedData(true));
   $("recalculateWeights")?.addEventListener("click", recalculateWeights);
   $("generateWeeks")?.addEventListener("click", () => {
