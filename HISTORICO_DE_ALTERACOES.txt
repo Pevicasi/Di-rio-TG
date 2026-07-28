@@ -246,3 +246,12 @@ VERSÃO 2.6.1 — 28/07/2026
 - A exportação personalizada agora imprime por um iframe interno, sem depender da abertura de pop-ups.
 - Mantida a escolha das seções que aparecerão no relatório.
 - Validado o JavaScript e a estrutura do pacote.
+
+VERSÃO 3.0.0 — 28/07/2026
+- Substituída a impressão do navegador por um gerador PDF próprio do TirzeTrack.
+- O relatório agora é baixado diretamente como arquivo PDF A4.
+- Corrigido o corte do cabeçalho observado no celular.
+- Mantida a escolha individual das seções do relatório.
+- Adicionados cabeçalho, tabelas, gráfico vetorial, quebras automáticas de página e paginação.
+- O gerador não depende de bibliotecas externas, CDN, pop-up ou pasta vendor.
+- O dados.json não foi incluído nem alterado.

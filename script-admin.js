@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.5.2";
+  const ADMIN_BUILD = "3.0.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -683,21 +683,6 @@
     return `TirzeTrack-${name}-${new Date().toISOString().slice(0, 10)}.pdf`;
   }
 
-  function escapePdfHtml(value = "") {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function pdfRows(headers, rows) {
-    const head = `<thead><tr>${headers.map(item => `<th>${escapePdfHtml(item)}</th>`).join("")}</tr></thead>`;
-    const body = `<tbody>${rows.map(row => `<tr>${row.map(item => `<td>${escapePdfHtml(item)}</td>`).join("")}</tr>`).join("")}</tbody>`;
-    return `<table>${head}${body}</table>`;
-  }
-
   function getSelectedPdfSections() {
     return new Set(Array.from(document.querySelectorAll('input[name="pdfSection"]:checked')).map(input => input.value));
   }
@@ -723,124 +708,133 @@
     return Math.max(0, Math.min(100, (lost / total) * 100));
   }
 
-  function pdfChartSvg(weights = []) {
-    const points = weights.map(item => ({ date: pdfText(item.date), value: Number(item.valueKg) })).filter(item => Number.isFinite(item.value));
-    if (points.length < 2) return '<p class="empty-note">São necessárias pelo menos duas pesagens para gerar o gráfico.</p>';
-    const width = 900, height = 330, left = 70, right = 28, top = 30, bottom = 58;
-    const values = points.map(item => item.value);
-    const rawMin = Math.min(...values), rawMax = Math.max(...values);
-    const padding = Math.max(1, (rawMax - rawMin) * 0.18);
-    const min = Math.floor(rawMin - padding), max = Math.ceil(rawMax + padding);
-    const range = Math.max(1, max - min);
-    const x = index => left + index * ((width - left - right) / Math.max(1, points.length - 1));
-    const y = value => top + (max - value) * ((height - top - bottom) / range);
-    const line = points.map((item, index) => `${index ? "L" : "M"}${x(index).toFixed(1)},${y(item.value).toFixed(1)}`).join(" ");
-    const grid = Array.from({ length: 5 }, (_, index) => {
-      const value = max - (range * index / 4);
-      const yy = y(value);
-      return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" class="chart-grid"/><text x="${left-12}" y="${yy+5}" text-anchor="end" class="chart-axis">${value.toFixed(1).replace(".", ",")}</text>`;
-    }).join("");
-    const labels = points.map((item, index) => {
-      const xx = x(index), yy = y(item.value);
-      const shortDate = item.date.replace(/\/\d{4}$/, "");
-      return `<circle cx="${xx}" cy="${yy}" r="5" class="chart-point"/><text x="${xx}" y="${yy-13}" text-anchor="middle" class="chart-value">${item.value.toFixed(2).replace(".", ",")} kg</text><text x="${xx}" y="${height-22}" text-anchor="middle" class="chart-axis">${escapePdfHtml(shortDate)}</text>`;
-    }).join("");
-    return `<div class="chart-wrap"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico da evolução do peso">${grid}<line x1="${left}" y1="${top}" x2="${left}" y2="${height-bottom}" class="chart-base"/><line x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}" class="chart-base"/><path d="${line}" class="chart-line"/>${labels}</svg></div>`;
+  const PDF_WIN_ANSI = {"€":128,"‚":130,"ƒ":131,"„":132,"…":133,"†":134,"‡":135,"ˆ":136,"‰":137,"Š":138,"‹":139,"Œ":140,"Ž":142,"‘":145,"’":146,"“":147,"”":148,"•":149,"–":150,"—":151,"˜":152,"™":153,"š":154,"›":155,"œ":156,"ž":158,"Ÿ":159};
+  function pdfBytes(text) {
+    const out = [];
+    for (const char of String(text)) {
+      const code = char.codePointAt(0);
+      if (code <= 255) out.push(code);
+      else if (PDF_WIN_ANSI[char] !== undefined) out.push(PDF_WIN_ANSI[char]);
+      else out.push(63);
+    }
+    return out;
+  }
+  function pdfEscape(text) {
+    return String(text).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)").replace(/\r?\n/g, " ");
+  }
+  function pdfBinary(text) { return String.fromCharCode(...pdfBytes(text)); }
+
+  class TirzePdf {
+    constructor() {
+      this.width = 595.28; this.height = 841.89;
+      this.margin = 42; this.bottom = 46; this.pages = [[]]; this.page = 0;
+      this.y = 42; this.teal = [19,125,115]; this.dark = [23,53,50]; this.gray = [103,123,120]; this.border = [210,223,221];
+    }
+    cmd(value) { this.pages[this.page].push(value); }
+    rgb(color, stroke = false) { const [r,g,b] = color.map(v => (v/255).toFixed(3)); this.cmd(`${r} ${g} ${b} ${stroke ? "RG" : "rg"}`); }
+    addPage() { this.pages.push([]); this.page++; this.y = this.margin; }
+    ensure(height) { if (this.y + height > this.height - this.bottom) this.addPage(); }
+    text(text, x, y, size = 10, bold = false, color = this.dark, align = "left") {
+      const clean = pdfBinary(pdfText(text));
+      let tx = x;
+      const approx = clean.length * size * 0.49;
+      if (align === "right") tx -= approx; else if (align === "center") tx -= approx / 2;
+      this.rgb(color); this.cmd(`BT /${bold ? "F2" : "F1"} ${size} Tf 1 0 0 1 ${tx.toFixed(2)} ${(this.height-y).toFixed(2)} Tm (${pdfEscape(clean)}) Tj ET`);
+    }
+    line(x1,y1,x2,y2,color=this.border,width=0.7) { this.rgb(color,true); this.cmd(`${width} w ${x1} ${this.height-y1} m ${x2} ${this.height-y2} l S`); }
+    rect(x,y,w,h,fill=null,stroke=this.border) {
+      if (fill) this.rgb(fill); if (stroke) this.rgb(stroke,true);
+      this.cmd(`${x} ${(this.height-y-h).toFixed(2)} ${w} ${h} re ${fill && stroke ? "B" : fill ? "f" : "S"}`);
+    }
+    wrap(text, maxWidth, size=10) {
+      const words = pdfText(text).split(/\s+/).filter(Boolean), lines=[]; let line="";
+      const limit = Math.max(8, Math.floor(maxWidth/(size*0.49)));
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (candidate.length <= limit) line = candidate;
+        else { if (line) lines.push(line); line = word; }
+      }
+      if (line) lines.push(line); return lines.length ? lines : [""];
+    }
+    paragraph(text,x,width,size=10,lineHeight=14,color=this.dark,bold=false) {
+      const lines=[]; String(text ?? "").split(/\n/).forEach(p => lines.push(...this.wrap(p,width,size)));
+      this.ensure(lines.length*lineHeight+4);
+      lines.forEach(line => { this.text(line,x,this.y,size,bold,color); this.y += lineHeight; });
+      return lines.length*lineHeight;
+    }
+    sectionTitle(title) { this.ensure(34); this.text(title,this.margin,this.y,16,true,this.dark); this.y += 24; }
+    table(headers, rows, widths) {
+      const total = this.width - this.margin*2; const cols = widths || headers.map(()=>total/headers.length);
+      const drawHeader = () => { this.ensure(24); let x=this.margin; headers.forEach((h,i)=>{this.rect(x,this.y,cols[i],24,this.teal,this.teal);this.text(h,x+7,this.y+16,8.5,true,[255,255,255]);x+=cols[i];}); this.y+=24; };
+      drawHeader();
+      rows.forEach(row => {
+        const wrapped = row.map((cell,i)=>this.wrap(cell,cols[i]-14,8.5)); const h=Math.max(24,...wrapped.map(lines=>lines.length*11+10));
+        if (this.y+h > this.height-this.bottom) { this.addPage(); drawHeader(); }
+        let x=this.margin; wrapped.forEach((lines,i)=>{this.rect(x,this.y,cols[i],h,null,this.border); lines.forEach((line,j)=>this.text(line,x+7,this.y+15+j*11,8.5,false,this.dark)); x+=cols[i];}); this.y+=h;
+      }); this.y+=12;
+    }
+    build() {
+      const objects=[]; const add=obj=>{objects.push(obj);return objects.length;};
+      const f1=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+      const f2=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+      const pagesId=objects.length+1; add(""); const pageIds=[];
+      this.pages.forEach(commands=>{ const stream=commands.join("\n"); const contentId=add(`<< /Length ${pdfBytes(stream).length} >>\nstream\n${stream}\nendstream`); const pageId=add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${this.width} ${this.height}] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> /Contents ${contentId} 0 R >>`); pageIds.push(pageId); });
+      objects[pagesId-1]=`<< /Type /Pages /Kids [${pageIds.map(id=>`${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
+      const catalog=add(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+      let bytes=pdfBytes("%PDF-1.4\n%âãÏÓ\n"), offsets=[0];
+      objects.forEach((obj,i)=>{ offsets.push(bytes.length); bytes.push(...pdfBytes(`${i+1} 0 obj\n${obj}\nendobj\n`)); });
+      const xref=bytes.length; bytes.push(...pdfBytes(`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`));
+      for(let i=1;i<offsets.length;i++) bytes.push(...pdfBytes(`${String(offsets[i]).padStart(10,"0")} 00000 n \n`));
+      bytes.push(...pdfBytes(`trailer\n<< /Size ${objects.length+1} /Root ${catalog} 0 R >>\nstartxref\n${xref}\n%%EOF`));
+      return new Blob([new Uint8Array(bytes)],{type:"application/pdf"});
+    }
   }
 
-  function weekCard(item) {
-    const lines = (item.lines || []).map(pdfText).filter(Boolean);
-    return `<article class="week-card${item.current ? " current" : ""}"><h3>${escapePdfHtml(item.title || "Semana")}${item.period ? ` <span>- ${escapePdfHtml(item.period)}</span>` : ""}</h3>${lines.length ? `<ul>${lines.map(line => `<li>${escapePdfHtml(line)}</li>`).join("")}</ul>` : '<p class="empty-note">Sem informações registradas.</p>'}</article>`;
-  }
-
-  function diaryCards(items, compact) {
-    return items.map(item => `<article class="diary-card${compact ? " compact" : ""}"><h3>${escapePdfHtml(item.date || "Sem data")}</h3><table class="detail-table"><tbody><tr><th>Refeições</th><td>${escapePdfHtml(pdfText(item.meals) || "-")}</td></tr><tr><th>Fome</th><td>${escapePdfHtml(pdfText(item.hunger) || "-")}</td></tr><tr><th>Efeitos</th><td>${escapePdfHtml(pdfText(item.effects) || "-")}</td></tr><tr><th>Observações</th><td>${escapePdfHtml(pdfText(item.notes) || "-")}</td></tr></tbody></table></article>`).join("");
+  function drawPdfHeader(doc, data) {
+    doc.rect(0,0,doc.width,116,doc.teal,doc.teal);
+    doc.text(data.title || "Acompanhamento com Tirzepatida", doc.margin, 49, 22, true, [255,255,255]);
+    const subtitle=[data.profile?.name,data.profile?.age?`${data.profile.age} anos`:"",data.profile?.heightM?`${String(data.profile.heightM).replace(".",",")} m`:""].filter(Boolean).join(" • ");
+    doc.text(subtitle,doc.margin,75,10.5,false,[255,255,255]);
+    doc.text(`Atualizado em ${data.updatedAt || "-"}`,doc.width-doc.margin,49,9,true,[255,255,255],"right");
+    doc.y=145;
   }
 
   async function exportPdfAdmin(selectedSections = getSelectedPdfSections()) {
-    const button = $("generateSelectedPdf") || $("exportPdfAdmin");
-    const originalText = button?.textContent || "Gerar relatório";
+    const button=$("generateSelectedPdf")||$("exportPdfAdmin"), originalText=button?.textContent||"Gerar relatório";
     try {
-      if (!selectedSections.size) throw new Error("Selecione pelo menos uma seção para o relatório.");
-      if (button) { button.disabled = true; button.textContent = "Preparando relatório..."; }
-      const data = prepareData();
-      const compactDiary = $("pdfCompactDiary")?.checked !== false;
-      const goal = data.goal || {};
-      const initial = Number(goal.initialWeightKg);
-      const current = Number(goal.currentWeightKg);
-      const target = Number(goal.targetWeightKg);
-      const lost = Number.isFinite(initial) && Number.isFinite(current) ? initial - current : NaN;
-      const remaining = Number.isFinite(current) && Number.isFinite(target) ? current - target : NaN;
-      const progress = pdfProgress(initial, current, target);
-      const section = (key, title, content, extraClass = "") => selectedSections.has(key) ? `<section class="report-section ${extraClass}"><h2>${escapePdfHtml(title)}</h2>${content}</section>` : "";
-      const parts = [];
-
-      parts.push(section("summary", "Resumo geral", `<div class="summary-grid"><div><small>Peso inicial</small><strong>${pdfKg(initial)}</strong></div><div><small>Peso atual</small><strong>${pdfKg(current)}</strong></div><div class="highlight"><small>Perda acumulada</small><strong>${pdfKg(lost)}</strong></div><div><small>Meta atual</small><strong>${pdfKg(target)}</strong></div></div><div class="progress-box"><div><strong>Progresso até ${pdfKg(target)}</strong><span>${progress.toFixed(1).replace(".", ",")}%</span><em>Faltam ${pdfKg(remaining)}</em></div><div class="progress-track"><i style="width:${progress.toFixed(2)}%"></i></div></div>`));
-
-      parts.push(section("treatment", "Tratamento", `<table class="detail-table treatment-table"><tbody><tr><th>Medicamento</th><td>${escapePdfHtml(pdfText(data.treatment?.medication) || "-")}</td><th>Concentração</th><td>${escapePdfHtml(pdfText(data.treatment?.concentration) || "-")}</td></tr><tr><th>Dose semanal</th><td>${escapePdfHtml(pdfText(data.treatment?.weeklyDose) || "-")}</td><th>Início</th><td>${escapePdfHtml(pdfText(data.treatment?.startDate) || "-")}</td></tr><tr><th>Aplicações registradas</th><td>${(data.applications || []).length}</td><th>Atualização</th><td>${escapePdfHtml(data.updatedAt || "-")}</td></tr></tbody></table>`));
-
-      parts.push(section("chart", "Evolução do peso", pdfChartSvg(data.weights || []), "chart-section"));
-
-      if ((data.weights || []).length) parts.push(section("weights", "Histórico de pesagens", pdfRows(["Data", "Peso", "Variação"], data.weights.map((item, index, list) => { const value = Number(item.valueKg); const previous = index ? Number(list[index - 1].valueKg) : value; const variation = value - previous; return [item.date || "-", pdfKg(value), index ? `${variation > 0 ? "+" : ""}${variation.toFixed(2).replace(".", ",")} kg` : "Início"]; }))));
-
-      if ((data.applications || []).length) parts.push(section("applications", "Linha do tempo das aplicações", pdfRows(["Nº", "Data", "Hora", "Dose", "Local"], data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"]))));
-
-      if ((data.weeks || []).length) parts.push(section("weeks", "Resumo semanal", `<div class="weeks-list">${data.weeks.map(weekCard).join("")}</div>`));
-
-      if ((data.diary || []).length) parts.push(section("diary", "Registros diários", `<div class="diary-list">${diaryCards(data.diary, compactDiary)}</div>`, "diary-section"));
-
-      if (data.generalObservation || data.medicalNotice) parts.push(section("observations", "Observação geral", `<div class="observation-box"><p>${escapePdfHtml(pdfText(data.generalObservation) || "Sem observação geral.").replace(/\n/g, "<br>")}</p>${data.medicalNotice ? `<p class="notice">${escapePdfHtml(pdfText(data.medicalNotice)).replace(/\n/g, "<br>")}</p>` : ""}</div>`));
-
-      const subtitle = [data.profile?.name, data.profile?.age ? `${data.profile.age} anos` : "", data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : ""].filter(Boolean).join(" • ");
-      const reportHtml = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapePdfHtml(pdfFileName(data))}</title><style>
-        @page { size:A4; margin:15mm 14mm 17mm; }
-        *{box-sizing:border-box} body{margin:0;color:#173532;font-family:Arial,Helvetica,sans-serif;font-size:10pt;line-height:1.38;background:#fff} .actions{position:sticky;top:0;z-index:10;display:flex;justify-content:center;gap:8px;padding:10px;background:#fff;border-bottom:1px solid #d7e1df}.actions button{padding:10px 18px;border:0;border-radius:9px;background:#117d73;color:#fff;font-weight:800;cursor:pointer}
-        .report-header{margin:-15mm -14mm 10mm;padding:13mm 14mm 10mm;background:#137d73;color:#fff}.report-header .header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.report-header h1{margin:0 0 3mm;font-size:23pt;line-height:1.08}.report-header p{margin:0;font-size:11pt}.report-header time{font-weight:800;white-space:nowrap;margin-top:3mm}
-        main{display:block}.report-section{margin:0 0 8mm;break-inside:auto}.report-section>h2{margin:0 0 4mm;color:#173f3b;font-size:17pt;line-height:1.15}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #d4dfdd}.summary-grid>div{padding:3mm 4mm;border-right:1px solid #d4dfdd}.summary-grid>div:last-child{border-right:0}.summary-grid small{display:block;margin-bottom:1.5mm;color:#667b78;font-size:8pt;font-weight:800;text-transform:uppercase}.summary-grid strong{font-size:16pt}.summary-grid .highlight{background:#d9f1ee;color:#086e66}.progress-box{margin-top:4mm;padding:4mm;border:1px solid #d4dfdd;background:#f8fbfa}.progress-box>div:first-child{display:flex;align-items:center;gap:8px}.progress-box span{font-weight:800}.progress-box em{margin-left:auto;color:#72817f;font-style:normal}.progress-track{height:7px;margin-top:3mm;border-radius:99px;background:#dce9e7;overflow:hidden}.progress-track i{display:block;height:100%;background:#17998e;border-radius:99px}
-        table{width:100%;border-collapse:collapse;table-layout:auto} th,td{padding:2.5mm 3mm;border:1px solid #d4dfdd;text-align:left;vertical-align:top;overflow-wrap:anywhere} thead th{background:#137d73;color:#fff;font-size:9pt} tbody td{font-size:9pt}.detail-table th{width:17%;background:#f3f7f6;color:#425d59}.treatment-table td{width:33%} tr{break-inside:avoid}
-        .chart-wrap{padding:3mm 0 0}.chart-wrap svg{display:block;width:100%;height:auto}.chart-grid{stroke:#d8e2e0;stroke-width:1}.chart-base{stroke:#233936;stroke-width:2}.chart-line{fill:none;stroke:#137d73;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}.chart-point{fill:#fff;stroke:#137d73;stroke-width:4}.chart-axis{fill:#536b67;font-size:18px}.chart-value{fill:#173532;font-size:17px;font-weight:800}
-        .weeks-list,.diary-list{display:grid;gap:3mm}.week-card{padding:4mm;border:1px solid #d4dfdd;break-inside:avoid}.week-card.current{border-color:#137d73;background:#e4f5f2}.week-card h3,.diary-card h3{margin:0 0 2mm;color:#08736a;font-size:13pt}.week-card h3 span{font-weight:700}.week-card ul{margin:0;padding-left:5mm}.week-card li{margin:.6mm 0}.diary-card{break-inside:avoid}.diary-card.compact h3{margin-bottom:1.5mm}.diary-card.compact th,.diary-card.compact td{padding:1.8mm 2.5mm;font-size:8.5pt}.observation-box{padding:4mm;border:1px solid #d4dfdd;background:#f8fbfa}.observation-box p{margin:0 0 3mm}.observation-box p:last-child{margin-bottom:0}.notice{color:#637672;font-size:9pt}.empty-note{color:#6f807d}
-        .report-footer{margin-top:10mm;padding-top:3mm;border-top:1px solid #d4dfdd;color:#6a7b78;font-size:8.5pt;display:flex;justify-content:space-between}.report-footer::after{content:"TirzeTrack 2.6.1"}
-        @media print{.actions{display:none!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-header{break-after:avoid}.chart-section{break-inside:avoid}.report-footer{position:running(footer)}}
-        @media(max-width:700px){.summary-grid{grid-template-columns:repeat(2,1fr)}.summary-grid>div:nth-child(2){border-right:0}.summary-grid>div:nth-child(-n+2){border-bottom:1px solid #d4dfdd}.report-header .header-row{display:block}.report-header time{display:block}.progress-box>div:first-child{flex-wrap:wrap}.progress-box em{margin-left:0;width:100%}}
-      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header class="report-header"><div class="header-row"><div><h1>${escapePdfHtml(data.title || "Acompanhamento com Tirzepatida")}</h1><p>${escapePdfHtml(subtitle)}</p></div><time>Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</time></div></header><main>${parts.join("")}</main><footer class="report-footer"><span>Relatório de acompanhamento</span></footer></body></html>`;
-
-      // Usa um iframe invisível para evitar bloqueio de pop-up no Chrome do celular.
-      document.getElementById("tirzetrackPrintFrame")?.remove();
-      const printFrame = document.createElement("iframe");
-      printFrame.id = "tirzetrackPrintFrame";
-      printFrame.title = "Relatório TirzeTrack";
-      printFrame.setAttribute("aria-hidden", "true");
-      printFrame.style.position = "fixed";
-      printFrame.style.width = "1px";
-      printFrame.style.height = "1px";
-      printFrame.style.right = "0";
-      printFrame.style.bottom = "0";
-      printFrame.style.border = "0";
-      printFrame.style.opacity = "0";
-      document.body.appendChild(printFrame);
-
-      const frameDocument = printFrame.contentDocument || printFrame.contentWindow?.document;
-      if (!frameDocument) throw new Error("Não foi possível preparar a tela de impressão neste navegador.");
-      frameDocument.open();
-      frameDocument.write(reportHtml);
-      frameDocument.close();
-      closePdfOptions();
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const frameWindow = printFrame.contentWindow;
-      if (!frameWindow || typeof frameWindow.print !== "function") throw new Error("A impressão não está disponível neste navegador.");
-      frameWindow.focus();
-      frameWindow.print();
-      showToast("Relatório preparado. Escolha ‘Salvar como PDF’ na tela de impressão.");
-      setTimeout(() => printFrame.remove(), 60000);
-    } catch (error) {
-      console.error(error);
-      showToast(error.message || "Não foi possível preparar o PDF.", "error");
-    } finally {
-      if (button) { button.disabled = false; button.textContent = originalText; }
-    }
+      if(!selectedSections.size) throw new Error("Selecione pelo menos uma seção para o relatório.");
+      if(button){button.disabled=true;button.textContent="Gerando PDF...";}
+      const data=prepareData(), doc=new TirzePdf(); drawPdfHeader(doc,data);
+      const goal=data.goal||{}, initial=Number(goal.initialWeightKg), current=Number(goal.currentWeightKg), target=Number(goal.targetWeightKg);
+      const lost=initial-current, remaining=current-target, progress=pdfProgress(initial,current,target);
+      if(selectedSections.has("summary")){
+        doc.sectionTitle("Resumo geral"); const labels=["PESO INICIAL","PESO ATUAL","PERDA ACUMULADA","META ATUAL"], vals=[pdfKg(initial),pdfKg(current),pdfKg(lost),pdfKg(target)], w=(doc.width-doc.margin*2)/4;
+        labels.forEach((label,i)=>{doc.rect(doc.margin+i*w,doc.y,w,54,i===2?[217,241,238]:null,doc.border);doc.text(label,doc.margin+i*w+8,doc.y+17,7.5,true,doc.gray);doc.text(vals[i],doc.margin+i*w+8,doc.y+40,14,true,i===2?[8,110,102]:doc.dark);}); doc.y+=68;
+        doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,45,[248,251,250],doc.border);doc.text(`Progresso até ${pdfKg(target)}: ${progress.toFixed(1).replace(".",",")}%`,doc.margin+10,doc.y+17,9,true);doc.text(`Faltam ${pdfKg(remaining)}`,doc.width-doc.margin-10,doc.y+17,9,false,doc.gray,"right");doc.rect(doc.margin+10,doc.y+28,doc.width-doc.margin*2-20,7,[220,233,231],null);doc.rect(doc.margin+10,doc.y+28,(doc.width-doc.margin*2-20)*progress/100,7,[23,153,142],null);doc.y+=62;
+      }
+      if(selectedSections.has("treatment")){
+        doc.sectionTitle("Tratamento"); doc.table(["Campo","Informação","Campo","Informação"],[
+          ["Medicamento",pdfText(data.treatment?.medication)||"-","Concentração",pdfText(data.treatment?.concentration)||"-"],
+          ["Dose semanal",pdfText(data.treatment?.weeklyDose)||"-","Início",pdfText(data.treatment?.startDate)||"-"],
+          ["Aplicações registradas",String((data.applications||[]).length),"Atualização",data.updatedAt||"-"]
+        ],[92,164,92,163]);
+      }
+      if(selectedSections.has("chart") && (data.weights||[]).length>1){
+        doc.sectionTitle("Evolução do peso"); doc.ensure(190); const x0=doc.margin+35,y0=doc.y+12,w=doc.width-doc.margin*2-55,h=145,pts=data.weights.map(i=>({d:i.date,v:Number(i.valueKg)})).filter(i=>Number.isFinite(i.v)); const vals=pts.map(p=>p.v),min=Math.floor(Math.min(...vals)-1),max=Math.ceil(Math.max(...vals)+1),range=Math.max(1,max-min);
+        for(let i=0;i<5;i++){const yy=y0+i*h/4;doc.line(x0,yy,x0+w,yy,[220,229,227],0.5);doc.text((max-range*i/4).toFixed(1).replace(".",","),x0-8,yy+3,8,false,doc.gray,"right");}
+        const coords=pts.map((p,i)=>({x:x0+i*w/Math.max(1,pts.length-1),y:y0+(max-p.v)*h/range,p})); coords.forEach((c,i)=>{if(i)doc.line(coords[i-1].x,coords[i-1].y,c.x,c.y,doc.teal,3);doc.rect(c.x-2,c.y-2,4,4,[255,255,255],doc.teal);doc.text(`${c.p.v.toFixed(2).replace(".",",")} kg`,c.x,c.y-8,8,true,doc.dark,"center");doc.text(String(c.p.d).replace(/\/\d{4}$/,"") ,c.x,y0+h+17,8,false,doc.gray,"center");}); doc.y=y0+h+36;
+      }
+      if(selectedSections.has("weights") && (data.weights||[]).length){doc.sectionTitle("Histórico de pesagens");doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
+      if(selectedSections.has("applications") && (data.applications||[]).length){doc.sectionTitle("Linha do tempo das aplicações");doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}
+      if(selectedSections.has("weeks") && (data.weeks||[]).length){doc.sectionTitle("Resumo semanal");for(const week of data.weeks){const lines=(week.lines||[]).map(pdfText).filter(Boolean), title=`${week.title||"Semana"}${week.period?` - ${week.period}`:""}`, height=34+Math.max(1,lines.length)*15;doc.ensure(height+10);doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,height,week.current?[228,245,242]:null,week.current?doc.teal:doc.border);doc.text(title,doc.margin+10,doc.y+20,12,true,[8,115,106]);let yy=doc.y+39;(lines.length?lines:["Sem informações registradas."]).forEach(line=>{doc.text(`• ${line}`,doc.margin+12,yy,9,false,doc.dark);yy+=15;});doc.y+=height+9;}}
+      if(selectedSections.has("diary") && (data.diary||[]).length){doc.sectionTitle("Registros diários");const compact=$("pdfCompactDiary")?.checked!==false;for(const item of data.diary){doc.ensure(compact?92:112);doc.text(item.date||"Sem data",doc.margin,doc.y,12,true,[8,115,106]);doc.y+=10;doc.table(["Campo","Registro"],[["Refeições",pdfText(item.meals)||"-"],["Fome",pdfText(item.hunger)||"-"],["Efeitos",pdfText(item.effects)||"-"],["Observações",pdfText(item.notes)||"-"]],[85,426]);}}
+      if(selectedSections.has("observations") && (data.generalObservation||data.medicalNotice)){doc.sectionTitle("Observação geral");doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,1,null,null);doc.paragraph(data.generalObservation||"Sem observação geral.",doc.margin,doc.width-doc.margin*2,10,14);if(data.medicalNotice){doc.y+=6;doc.paragraph(data.medicalNotice,doc.margin,doc.width-doc.margin*2,9,13,doc.gray);}doc.y+=10;}
+      const total=doc.pages.length;doc.pages.forEach((commands,index)=>{doc.page=index;doc.rgb(doc.border,true);doc.cmd(`0.7 w ${doc.margin} ${doc.height-815} m ${doc.width-doc.margin} ${doc.height-815} l S`);doc.text("Relatório gerado pelo TirzeTrack",doc.margin,826,8,false,doc.gray);doc.text(`Página ${index+1} de ${total}`,doc.width-doc.margin,826,8,false,doc.gray,"right");});doc.page=total-1;
+      const blob=doc.build(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=pdfFileName(data);document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);closePdfOptions();showToast("PDF gerado e baixado com sucesso.");
+    }catch(error){console.error(error);showToast(error.message||"Não foi possível gerar o PDF.","error");}
+    finally{if(button){button.disabled=false;button.textContent=originalText;}}
   }
+
 
   async function importJson(file) {
     try {
