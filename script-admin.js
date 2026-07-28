@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.5.1";
+  const ADMIN_BUILD = "2.5.2";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -683,157 +683,120 @@
     return `TirzeTrack-${name}-${new Date().toISOString().slice(0, 10)}.pdf`;
   }
 
+  function escapePdfHtml(value = "") {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function pdfRows(headers, rows) {
+    const head = `<thead><tr>${headers.map(item => `<th>${escapePdfHtml(item)}</th>`).join("")}</tr></thead>`;
+    const body = `<tbody>${rows.map(row => `<tr>${row.map(item => `<td>${escapePdfHtml(item)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    return `<table>${head}${body}</table>`;
+  }
+
   async function exportPdfAdmin() {
     const button = $("exportPdfAdmin");
     const originalText = button?.textContent || "Exportar PDF";
     try {
-      if (!window.jspdf?.jsPDF) throw new Error("A biblioteca de PDF não foi carregada. Verifique a internet e recarregue o admin.");
-      if (typeof window.jspdf.jsPDF.API.autoTable !== "function") throw new Error("O componente de tabelas do PDF não foi carregado.");
-      if (button) { button.disabled = true; button.textContent = "Gerando PDF..."; }
-
+      if (button) { button.disabled = true; button.textContent = "Preparando PDF..."; }
       const data = prepareData();
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 14;
-      let y = 18;
-
-      const addHeader = () => {
-        pdf.setFillColor(15, 118, 110);
-        pdf.rect(0, 0, pageWidth, 25, "F");
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(16);
-        pdf.text(pdfText(data.title || "TirzeTrack"), margin, 11);
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(9);
-        pdf.text(`${pdfText(data.profile?.name || "")} • Atualizado em ${pdfText(data.updatedAt || "-")}`, margin, 18);
-        pdf.setTextColor(30, 41, 59);
-      };
-      const ensureSpace = needed => {
-        if (y + needed <= pageHeight - 18) return;
-        pdf.addPage();
-        addHeader();
-        y = 34;
-      };
-      const section = title => {
-        ensureSpace(14);
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(12);
-        pdf.setTextColor(15, 118, 110);
-        pdf.text(title, margin, y);
-        pdf.setDrawColor(153, 246, 228);
-        pdf.line(margin, y + 2, pageWidth - margin, y + 2);
-        pdf.setTextColor(30, 41, 59);
-        y += 7;
-      };
-      const table = options => {
-        pdf.autoTable({
-          startY: y,
-          theme: "grid",
-          styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.3, overflow: "linebreak", valign: "top" },
-          headStyles: { fillColor: [15, 118, 110] },
-          margin: { left: margin, right: margin, top: 32, bottom: 18 },
-          ...options
-        });
-        y = pdf.lastAutoTable.finalY + 8;
-      };
-
-      addHeader();
-      y = 34;
       const goal = data.goal || {};
       const initial = Number(goal.initialWeightKg);
       const current = Number(goal.currentWeightKg);
       const target = Number(goal.targetWeightKg);
       const lost = Number.isFinite(initial) && Number.isFinite(current) ? initial - current : NaN;
       const remaining = Number.isFinite(current) && Number.isFinite(target) ? current - target : NaN;
+      const section = (title, content) => `<section><h2>${escapePdfHtml(title)}</h2>${content}</section>`;
+      const parts = [];
 
-      section("Resumo geral");
-      table({
-        head: [["Peso inicial", "Peso atual", "Perda total", "Meta", "Falta"]],
-        body: [[pdfKg(initial), pdfKg(current), pdfKg(lost), pdfKg(target), pdfKg(remaining)]]
-      });
+      parts.push(section("Resumo geral", pdfRows(
+        ["Peso inicial", "Peso atual", "Perda total", "Meta", "Falta"],
+        [[pdfKg(initial), pdfKg(current), pdfKg(lost), pdfKg(target), pdfKg(remaining)]]
+      )));
 
-      section("Perfil e tratamento");
-      table({
-        head: [["Nome", "Idade", "Altura", "Medicamento", "Dose semanal", "Início"]],
-        body: [[pdfText(data.profile?.name) || "-", data.profile?.age ? `${data.profile.age} anos` : "-", data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : "-", pdfText(data.treatment?.medication) || "-", pdfText(data.treatment?.weeklyDose) || "-", pdfText(data.treatment?.startDate) || "-"]]
-      });
+      parts.push(section("Perfil e tratamento", pdfRows(
+        ["Nome", "Idade", "Altura", "Medicamento", "Dose semanal", "Início"],
+        [[
+          pdfText(data.profile?.name) || "-",
+          data.profile?.age ? `${data.profile.age} anos` : "-",
+          data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : "-",
+          pdfText(data.treatment?.medication) || "-",
+          pdfText(data.treatment?.weeklyDose) || "-",
+          pdfText(data.treatment?.startDate) || "-"
+        ]]
+      )));
 
       if ((data.weights || []).length) {
-        section("Histórico de pesagens");
-        table({
-          head: [["Data", "Peso", "Variação"]],
-          body: data.weights.map((item, index, list) => {
+        parts.push(section("Histórico de pesagens", pdfRows(
+          ["Data", "Peso", "Variação"],
+          data.weights.map((item, index, list) => {
             const value = Number(item.valueKg);
             const previous = index ? Number(list[index - 1].valueKg) : value;
             const variation = value - previous;
             return [item.date || "-", pdfKg(value), index ? `${variation > 0 ? "+" : ""}${variation.toFixed(2).replace(".", ",")} kg` : "Início"];
           })
-        });
+        )));
       }
 
       if ((data.applications || []).length) {
-        section("Aplicações");
-        table({
-          head: [["Nº", "Data", "Hora", "Dose", "Local"]],
-          body: data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"])
-        });
+        parts.push(section("Aplicações", pdfRows(
+          ["Nº", "Data", "Hora", "Dose", "Local"],
+          data.applications.map(item => [item.number ?? "-", item.date || "-", item.time || "-", item.dose || "-", pdfText(item.location) || "-"])
+        )));
       }
 
       if ((data.weeks || []).length) {
-        section("Resumos semanais");
-        table({
-          head: [["Semana", "Período", "Informações"]],
-          body: data.weeks.map(item => [item.title || "-", item.period || "-", (item.lines || []).map(pdfText).filter(Boolean).join("\n")])
-        });
+        parts.push(section("Resumos semanais", pdfRows(
+          ["Semana", "Período", "Informações"],
+          data.weeks.map(item => [item.title || "-", item.period || "-", (item.lines || []).map(pdfText).filter(Boolean).join("\n")])
+        )));
       }
 
       if ((data.diary || []).length) {
-        section("Diário");
-        table({
-          head: [["Data", "Alimentação", "Fome", "Efeitos", "Observações"]],
-          body: data.diary.map(item => [item.date || "-", pdfText(item.meals), pdfText(item.hunger), pdfText(item.effects), pdfText(item.notes)]),
-          styles: { font: "helvetica", fontSize: 7.3, cellPadding: 2, overflow: "linebreak", valign: "top" }
-        });
+        parts.push(section("Diário", pdfRows(
+          ["Data", "Alimentação", "Fome", "Efeitos", "Observações"],
+          data.diary.map(item => [item.date || "-", pdfText(item.meals), pdfText(item.hunger), pdfText(item.effects), pdfText(item.notes)])
+        )));
       }
 
       if (data.generalObservation || data.medicalNotice) {
-        section("Observações");
-        ensureSpace(30);
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(9);
-        const lines = pdf.splitTextToSize(pdfText(data.generalObservation) || "Sem observação geral.", pageWidth - margin * 2);
-        pdf.text(lines, margin, y);
-        y += lines.length * 4.3 + 5;
-        if (data.medicalNotice) {
-          ensureSpace(20);
-          pdf.setFontSize(8);
-          pdf.setTextColor(100, 116, 139);
-          const notice = pdf.splitTextToSize(pdfText(data.medicalNotice), pageWidth - margin * 2);
-          pdf.text(notice, margin, y);
-          pdf.setTextColor(30, 41, 59);
-        }
+        const observation = escapePdfHtml(pdfText(data.generalObservation) || "Sem observação geral.").replace(/\n/g, "<br>");
+        const notice = data.medicalNotice ? `<p class="notice">${escapePdfHtml(pdfText(data.medicalNotice)).replace(/\n/g, "<br>")}</p>` : "";
+        parts.push(section("Observações", `<p>${observation}</p>${notice}`));
       }
 
-      const pages = pdf.internal.getNumberOfPages();
-      for (let page = 1; page <= pages; page++) {
-        pdf.setPage(page);
-        pdf.setDrawColor(226, 232, 240);
-        pdf.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(8);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text("Relatório gerado pelo TirzeTrack", margin, pageHeight - 7);
-        pdf.text(`Página ${page} de ${pages}`, pageWidth - margin, pageHeight - 7, { align: "right" });
-      }
-
-      pdf.save(pdfFileName(data));
-      showToast("PDF gerado com sucesso.");
+      const report = window.open("", "_blank");
+      if (!report) throw new Error("O navegador bloqueou a janela do relatório. Permita pop-ups para o site e tente novamente.");
+      report.document.open();
+      report.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapePdfHtml(pdfFileName(data))}</title><style>
+        @page { size: A4; margin: 14mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #1e293b; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; line-height: 1.4; }
+        header { margin: -14mm -14mm 10mm; padding: 10mm 14mm 7mm; color: white; background: #0f766e; }
+        h1 { margin: 0 0 2mm; font-size: 19pt; }
+        header p { margin: 0; font-size: 9pt; }
+        section { margin: 0 0 8mm; break-inside: avoid; }
+        h2 { margin: 0 0 3mm; padding-bottom: 1.5mm; color: #0f766e; border-bottom: 1px solid #99f6e4; font-size: 13pt; }
+        table { width: 100%; border-collapse: collapse; table-layout: auto; }
+        th, td { padding: 2.2mm; border: 1px solid #cbd5e1; text-align: left; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
+        th { color: white; background: #0f766e; font-size: 8.5pt; }
+        td { font-size: 8.5pt; }
+        tr { break-inside: avoid; }
+        .notice { color: #64748b; font-size: 8.5pt; }
+        footer { margin-top: 8mm; padding-top: 3mm; color: #64748b; border-top: 1px solid #e2e8f0; font-size: 8pt; }
+        .actions { position: sticky; top: 0; z-index: 10; display: flex; gap: 8px; justify-content: center; padding: 10px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .actions button { padding: 9px 16px; border: 0; border-radius: 8px; color: white; background: #0f766e; font-weight: 700; cursor: pointer; }
+        @media print { .actions { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header><h1>${escapePdfHtml(data.title || "TirzeTrack")}</h1><p>${escapePdfHtml(data.profile?.name || "")} • Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</p></header><main>${parts.join("")}</main><footer>Relatório gerado pelo TirzeTrack • ${escapePdfHtml(new Date().toLocaleString("pt-BR"))}</footer><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`);
+      report.document.close();
+      showToast("Relatório aberto. Escolha ‘Salvar como PDF’ na tela de impressão.");
     } catch (error) {
       console.error(error);
-      showToast(error.message || "Não foi possível gerar o PDF.", "error");
+      showToast(error.message || "Não foi possível preparar o PDF.", "error");
     } finally {
       if (button) { button.disabled = false; button.textContent = originalText; }
     }

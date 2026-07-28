@@ -224,3 +224,12 @@ VERSÃO 2.5.1 — EXPORTAÇÃO EM PDF NO ADMIN
 - Adicionado carregamento das bibliotecas jsPDF e AutoTable no admin.
 - Incluídas mensagens claras de sucesso e de falha no carregamento das bibliotecas.
 - Mantido o dados.json fora do pacote de atualização.
+
+VERSÃO 2.5.2 — 28/07/2026
+
+- Corrigida a exportação em PDF na área administrativa.
+- Removida a pasta vendor vazia e as referências externas ao jsPDF e AutoTable.
+- A exportação agora gera um relatório HTML próprio e abre a tela nativa de impressão do navegador.
+- No celular ou computador, basta escolher “Salvar como PDF” na tela de impressão.
+- A geração passou a funcionar sem bibliotecas externas e sem depender de CDN.
+- Mantidos resumo, perfil, tratamento, pesagens, aplicações, semanas, diário e observações no relatório.
