@@ -92,6 +92,7 @@ function formatElapsed(seconds) {
 }
 
 const SYNC_INTERVAL_SECONDS = 15;
+const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
 let nextSyncAt = null;
 let lastSuccessfulSyncAt = null;
 let syncMessageUntil = 0;
@@ -125,40 +126,27 @@ function updateSyncIndicator(message = "", messageDurationMs = 0) {
   }
 }
 
-function inferGithubRawUrls() {
-  if (!location.hostname.endsWith("github.io")) return [];
-  const owner = location.hostname.split(".")[0];
-  const parts = location.pathname.split("/").filter(Boolean);
-  const repo = parts[0];
-  if (!owner || !repo) return [];
-  const stamp = Date.now();
-  return [
-    `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/main/dados.json?ts=${stamp}`,
-    `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/master/dados.json?ts=${stamp}`
-  ];
+async function fetchFreshPublishedData() {
+  const url = new URL("dados.json", window.location.href);
+  url.searchParams.set("_", String(Date.now()));
+  const response = await fetch(url.toString(), { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const published = await response.json();
+  validateData(published);
+  return published;
 }
 
-async function fetchFreshPublishedData() {
-  const candidates = [
-    ...inferGithubRawUrls(),
-    `dados.json?sync=${Date.now()}`
-  ];
-  let lastError = null;
-  for (const url of candidates) {
-    try {
-      const response = await fetch(url, {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const published = await response.json();
-      validateData(published);
-      return published;
-    } catch (error) {
-      lastError = error;
-    }
+function loadRecentPublishedPreview() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LIVE_PREVIEW_KEY) || "null");
+    if (!stored?.data || !stored?.publishedAt) return null;
+    // A prévia só é usada logo após uma publicação feita neste navegador.
+    if (Date.now() - Number(stored.publishedAt) > 15 * 60 * 1000) return null;
+    validateData(stored.data);
+    return stored.data;
+  } catch (_) {
+    return null;
   }
-  throw lastError || new Error("Não foi possível consultar os dados publicados.");
 }
 
 async function checkForPublishedUpdate() {
@@ -201,7 +189,9 @@ async function loadPublishedData() {
   try {
     const published = await fetchFreshPublishedData();
     validateData(published);
-    appData = synchronizeWeightFields(published);
+    const preview = loadRecentPublishedPreview();
+    const selected = preview || published;
+    appData = synchronizeWeightFields(selected);
     saveData(appData);
     lastPublishedSignature = dataSignature(published);
     lastSyncCheckAt = Date.now();
@@ -209,7 +199,7 @@ async function loadPublishedData() {
     renderAll();
     updateSyncIndicator(`Página carregada às ${currentClockTime()}`, 2500);
     status.className = "import-status success";
-    status.textContent = `Dados publicados carregados: ${published.updatedAt}.`;
+    status.textContent = `Dados carregados: ${appData.updatedAt}.`;
   } catch (error) {
     const cached = loadSavedData();
     if (cached) {
@@ -426,11 +416,14 @@ function applyVisibility(data) {
   setSectionVisible($("analysisSection"), v.analysis);
   setSectionVisible($("diarySection"), v.diary);
   setSectionVisible($("notesSection"), v.notes);
-  setSectionVisible($("publicFooter"), v.notes);
+  setSectionVisible($("publicFooter"), true);
 
   document.body.classList.toggle("header-hidden", !v.header);
 }
 
+
+function setText(id, value) { const el = $(id); if (el) el.textContent = value ?? ""; }
+function setHtml(id, value) { const el = $(id); if (el) el.innerHTML = value ?? ""; }
 function renderAll() {
   const d = synchronizeWeightFields(appData);
   const summary = weightSummary(d);
@@ -444,19 +437,19 @@ function renderAll() {
   const progress = stageTotal > 0 ? Math.max(0, Math.min(100, (stageLoss / stageTotal) * 100)) : (current <= target ? 100 : 0);
   const remaining = Math.max(0, current - target);
 
-  $("siteTitle").textContent = d.title || "Acompanhamento com Tirzepatida";
-  $("profileSubtitle").textContent = `${d.profile.name} • ${d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`;
-  $("updatedAt").textContent = `Atualizado em ${d.updatedAt}`;
-  $("initialWeight").textContent = kg(initial);
-  $("currentWeight").textContent = kg(current);
-  $("totalLoss").textContent = kg(loss);
-  $("goalWeight").textContent = kg(target);
-  $("goalLabel").textContent = `Progresso até ${String(target).replace(".", ",")} kg`;
-  $("goalPercent").textContent = `${progress.toFixed(1).replace(".", ",")}%`;
-  $("remainingWeight").textContent = kg(remaining);
-  $("progressBar").style.width = `${progress}%`;
-  $("goalScaleStart").textContent = kg(stage.startWeight);
-  $("goalScaleEnd").textContent = `${String(target).replace(".", ",")} kg`;
+  setText("siteTitle", d.title || "Acompanhamento com Tirzepatida");
+  setText("profileSubtitle", `${d.profile.name} • ${d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`);
+  setText("updatedAt", `Atualizado em ${d.updatedAt}`);
+  setText("initialWeight", kg(initial));
+  setText("currentWeight", kg(current));
+  setText("totalLoss", kg(loss));
+  setText("goalWeight", kg(target));
+  setText("goalLabel", `Progresso até ${String(target).replace(".", ",")} kg`);
+  setText("goalPercent", `${progress.toFixed(1).replace(".", ",")}%`);
+  setText("remainingWeight", kg(remaining));
+  if ($("progressBar")) $("progressBar").style.width = `${progress}%`;
+  setText("goalScaleStart", kg(stage.startWeight));
+  setText("goalScaleEnd", `${String(target).replace(".", ",")} kg`);
   renderGoalExtras(d, current, target, stage);
 
   const treatmentRows = [
@@ -464,15 +457,15 @@ function renderAll() {
     ["Dose semanal", d.treatment.weeklyDose], ["Início", d.treatment.startDate],
     ["Aplicações", `${d.applications.length} registradas`]
   ];
-  $("treatmentDetails").innerHTML = treatmentRows.map(([k,v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join("");
+  setHtml("treatmentDetails", treatmentRows.map(([k,v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join(""));
 
   renderApplications();
   renderWeeks();
   renderAnalysis(d, stage);
 
-  $("generalObservation").textContent = d.generalObservation || "";
-  $("medicalNotice").textContent = d.medicalNotice || "";
-  $("footerText").textContent = `Acompanhamento iniciado em ${d.treatment.startDate}`;
+  setText("generalObservation", d.generalObservation || "");
+  setText("medicalNotice", d.medicalNotice || "");
+  setText("footerText", `Acompanhamento iniciado em ${d.treatment.startDate}`);
 
   renderDiary();
   drawChart();

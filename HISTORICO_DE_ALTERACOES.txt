@@ -167,3 +167,28 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • style.css
 • HISTORICO_DE_ALTERACOES.txt
 
+--------------------------------------------------
+
+Versão 2.4.0
+Data: 28/07/2026
+
+CORREÇÕES
+• Reestruturada a leitura dos dados públicos para priorizar o dados.json do próprio site, evitando carregar uma branch incorreta do repositório.
+• Após uma publicação bem-sucedida no admin, o site público do mesmo navegador recebe uma prévia imediata dos dados, reduzindo a espera do GitHub Pages.
+• Corrigido o controle de visibilidade para que ocultar observações não esconda o rodapé e o indicador de sincronização.
+• A renderização pública agora verifica a existência dos elementos antes de atualizá-los, evitando falhas ao ocultar seções.
+• Resumos semanais automáticos antigos são recalculados sem reutilizar peso e resultado incorretos.
+• Campos semanais só são preservados como manuais depois de uma edição explícita no admin.
+
+VALIDAÇÕES
+• Sintaxe dos arquivos JavaScript verificada.
+• Scripts do admin da raiz e da pasta admin sincronizados.
+• Estrutura HTML e arquivo de histórico revisados.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• index.html
+• script-public.js
+• admin/index.html
+• script-admin.js
+• admin/script-admin.js
+• HISTORICO_DE_ALTERACOES.txt
