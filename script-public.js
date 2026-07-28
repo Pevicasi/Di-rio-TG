@@ -88,20 +88,20 @@ async function loadPublishedData() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const published = await response.json();
     validateData(published);
-    appData = published;
-    saveData(published);
+    appData = synchronizeWeightFields(published);
+    saveData(appData);
     renderAll();
     status.className = "import-status success";
     status.textContent = `Dados publicados carregados: ${published.updatedAt}.`;
   } catch (error) {
     const cached = loadSavedData();
     if (cached) {
-      appData = cached;
+      appData = synchronizeWeightFields(cached);
       renderAll();
       status.className = "import-status";
       status.textContent = "Sem acesso ao arquivo publicado. Exibindo a última versão salva neste navegador.";
     } else {
-      appData = defaultData;
+      appData = synchronizeWeightFields(defaultData);
       renderAll();
       status.className = "import-status error";
       status.textContent = "Não foi possível carregar dados.json. Envie esse arquivo junto com o site.";
@@ -114,10 +114,13 @@ function validateData(data) {
   if (!data || typeof data !== "object") errors.push("dados ausentes");
   if (Number(data?.schemaVersion) !== 1) errors.push("schemaVersion deve ser 1");
   if (!data?.profile?.name) errors.push("nome ausente");
-  ["initialWeightKg", "currentWeightKg", "targetWeightKg"].forEach(key => {
-    if (!Number.isFinite(Number(data?.goal?.[key]))) errors.push(`${key} inválido`);
-  });
+  if (!Number.isFinite(Number(data?.goal?.targetWeightKg))) errors.push("targetWeightKg inválido");
   if (!Array.isArray(data?.weights) || data.weights.length < 1) errors.push("histórico de pesos ausente");
+  else data.weights.forEach((item, index) => {
+    if (!parseBrDate(item?.date) || !Number.isFinite(Number(item?.valueKg))) {
+      errors.push(`pesagem ${index + 1} inválida`);
+    }
+  });
   if (!Array.isArray(data?.applications)) errors.push("aplicações inválidas");
   if (!Array.isArray(data?.weeks)) errors.push("semanas inválidas");
   if (!Array.isArray(data?.diary)) errors.push("diário inválido");
@@ -129,6 +132,36 @@ function parseBrDate(value) {
   const [day, month, year] = String(value || "").split("/").map(Number);
   if (!day || !month || !year) return null;
   return new Date(year, month - 1, day);
+}
+
+
+function weightSummary(data) {
+  const ordered = (Array.isArray(data?.weights) ? data.weights : [])
+    .map(item => ({ ...item, parsedDate: parseBrDate(item?.date), valueKg: Number(item?.valueKg) }))
+    .filter(item => item.parsedDate && Number.isFinite(item.valueKg))
+    .sort((a, b) => a.parsedDate - b.parsedDate);
+
+  if (!ordered.length) {
+    return {
+      ordered: [],
+      initial: Number(data?.goal?.initialWeightKg),
+      current: Number(data?.goal?.currentWeightKg)
+    };
+  }
+
+  return {
+    ordered,
+    initial: ordered[0].valueKg,
+    current: ordered[ordered.length - 1].valueKg
+  };
+}
+
+function synchronizeWeightFields(data) {
+  const summary = weightSummary(data);
+  if (!data.goal) data.goal = {};
+  if (Number.isFinite(summary.initial)) data.goal.initialWeightKg = summary.initial;
+  if (Number.isFinite(summary.current)) data.goal.currentWeightKg = summary.current;
+  return data;
 }
 
 function addDays(date, days) {
@@ -203,9 +236,10 @@ function renderGoalExtras(data, current, target, stage) {
   }).join("") : "";
 }
 function renderAll() {
-  const d = appData;
-  const initial = Number(d.goal.initialWeightKg);
-  const current = Number(d.goal.currentWeightKg);
+  const d = synchronizeWeightFields(appData);
+  const summary = weightSummary(d);
+  const initial = summary.initial;
+  const current = summary.current;
   const target = Number(d.goal.targetWeightKg);
   const loss = initial - current;
   const stage = currentGoalStage(d, current, target);

@@ -1,0 +1,18 @@
+ARQUIVOS ALTERADOS
+
+1. script-public.js
+- O Resumo Geral agora calcula o peso inicial pela primeira pesagem válida.
+- O peso atual agora é calculado pela pesagem válida mais recente.
+- Perda acumulada, progresso e estimativa usam esses valores calculados.
+- Os campos goal.initialWeightKg e goal.currentWeightKg são sincronizados ao carregar os dados.
+- A validação passou a conferir data e valor de cada pesagem.
+
+2. script-admin.js
+- O peso inicial e o peso atual são sincronizados automaticamente antes de salvar rascunho, exportar ou publicar.
+- As pesagens são ordenadas por data antes do cálculo.
+- O botão de recálculo continua disponível para atualização imediata na tela.
+
+3. admin/index.html
+- Os campos Peso inicial e Peso atual ficaram somente leitura e estão identificados como automáticos.
+
+A estrutura do dados.json foi mantida para compatibilidade.

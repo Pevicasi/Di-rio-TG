@@ -104,6 +104,7 @@
     if (draft) {
       try {
         appData = normalizeData(JSON.parse(draft));
+        synchronizeWeights();
         fillEditor();
         setStatus("Rascunho carregado", "draft");
         return;
@@ -121,6 +122,7 @@
       const response = await fetch(`../dados.json?ts=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`Falha ao carregar dados.json (${response.status}).`);
       appData = normalizeData(await response.json());
+      synchronizeWeights();
       localStorage.removeItem(DRAFT_KEY);
       dirty = false;
       fillEditor();
@@ -308,18 +310,25 @@
     return list.sort((a, b) => time(a.date) - time(b.date));
   }
 
-  function recalculateWeights() {
-    collectDataFromDOM();
+  function synchronizeWeights({ updateStage = false } = {}) {
     sortByDate(appData.weights);
-    const valid = appData.weights.filter(item => Number.isFinite(Number(item.valueKg)));
-    if (!valid.length) return showToast("Cadastre ao menos uma pesagem válida.", "error");
+    const valid = appData.weights.filter(item => item.date && Number.isFinite(Number(item.valueKg)));
+    if (!valid.length) return false;
     appData.goal.initialWeightKg = Number(valid[0].valueKg);
     appData.goal.currentWeightKg = Number(valid[valid.length - 1].valueKg);
-    if (!appData.goal.stageStartWeightKg) appData.goal.stageStartWeightKg = Number(valid[0].valueKg);
-    if (!appData.goal.stageStartDate) appData.goal.stageStartDate = valid[0].date;
+    if (updateStage || !Number.isFinite(Number(appData.goal.stageStartWeightKg))) {
+      appData.goal.stageStartWeightKg = Number(valid[0].valueKg);
+    }
+    if (updateStage || !appData.goal.stageStartDate) appData.goal.stageStartDate = valid[0].date;
+    return true;
+  }
+
+  function recalculateWeights() {
+    collectDataFromDOM();
+    if (!synchronizeWeights()) return showToast("Cadastre ao menos uma pesagem válida.", "error");
     fillEditor();
     markDirty();
-    showToast("Peso inicial e peso atual recalculados.");
+    showToast("Peso inicial e peso atual recalculados pela primeira e pela última pesagem.");
   }
 
   function validateData(data) {
@@ -343,6 +352,7 @@
   function prepareData() {
     collectDataFromDOM();
     sortByDate(appData.weights);
+    synchronizeWeights();
     sortByDate(appData.applications);
     sortByDate(appData.diary);
     appData.applications.forEach((item, index) => { item.number = numeric(item.number) || index + 1; });
@@ -354,6 +364,7 @@
   function saveDraft() {
     try {
       collectDataFromDOM();
+      synchronizeWeights();
       localStorage.setItem(DRAFT_KEY, JSON.stringify(appData));
       dirty = false;
       setStatus("Rascunho salvo neste navegador", "saved");
