@@ -292,7 +292,7 @@
   "visibility": {
     "header": true,
     "profile": true,
-    "summary": true,
+    "summary": false,
     "treatment": true,
     "weights": true,
     "applications": true,
