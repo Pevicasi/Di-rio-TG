@@ -295,14 +295,14 @@
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
-    "profile": false,
+    "profile": true,
     "summary": true,
     "treatment": true,
-    "weights": false,
+    "weights": true,
     "applications": true,
-    "weeks": true,
-    "analysis": false,
-    "diary": false,
-    "notes": false
+    "weeks": false,
+    "analysis": true,
+    "diary": true,
+    "notes": true
   }
 }
