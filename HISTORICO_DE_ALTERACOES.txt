@@ -216,3 +216,11 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • script-public.js
 • style.css
 • HISTORICO_DE_ALTERACOES.txt
+
+VERSÃO 2.5.1 — EXPORTAÇÃO EM PDF NO ADMIN
+- Removido o botão de exportação em PDF do site público.
+- Adicionado o botão “Exportar PDF” à área administrativa, ao lado do backup.
+- O relatório passa a usar os dados atualmente carregados/editados no admin.
+- Adicionado carregamento das bibliotecas jsPDF e AutoTable no admin.
+- Incluídas mensagens claras de sucesso e de falha no carregamento das bibliotecas.
+- Mantido o dados.json fora do pacote de atualização.
