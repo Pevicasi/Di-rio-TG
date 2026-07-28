@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.0.0";
+  const ADMIN_BUILD = "2.3.0";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -21,7 +21,8 @@
     treatment: { medication: "", concentration: "", weeklyDose: "", startDate: "" },
     weights: [], applications: [], weeks: [], diary: [],
     generalObservation: "",
-    medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico."
+    medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico.",
+    visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
   });
 
   function normalizeData(raw) {
@@ -36,7 +37,8 @@
       weights: Array.isArray(data.weights) ? data.weights : [],
       applications: Array.isArray(data.applications) ? data.applications : [],
       weeks: Array.isArray(data.weeks) ? data.weeks : [],
-      diary: Array.isArray(data.diary) ? data.diary : []
+      diary: Array.isArray(data.diary) ? data.diary : [],
+      visibility: { ...base.visibility, ...(data.visibility || {}) }
     };
   }
 
@@ -187,6 +189,11 @@
     setValue("fieldTreatmentStart", parseBRDate(appData.treatment.startDate));
     setValue("fieldGeneralObservation", appData.generalObservation);
     setValue("fieldMedicalNotice", appData.medicalNotice);
+    const visibility = appData.visibility || {};
+    ["Header","Profile","Summary","Treatment","Weights","Applications","Weeks","Analysis","Diary","Notes"].forEach(name => {
+      const el = $(`visibility${name}`);
+      if (el) el.checked = visibility[name.charAt(0).toLowerCase() + name.slice(1)] !== false;
+    });
     renderLists();
   }
 
@@ -268,6 +275,56 @@
     return [...new Set(items.map(item => String(item[key] || "").trim()).filter(Boolean))].join(" • ");
   }
 
+  function extractWeekFields(item = {}) {
+    const fields = {
+      weight: item.weight || "",
+      result: item.result || "",
+      application: item.application || "",
+      hunger: item.hunger || "",
+      effects: item.effects || "",
+      observation: item.observation || "",
+      additional: item.additional || ""
+    };
+    const lines = Array.isArray(item.lines) ? item.lines : [];
+    const map = [
+      ["Peso:", "weight"], ["Resultado:", "result"], ["Aplicação:", "application"],
+      ["Fome:", "hunger"], ["Efeitos:", "effects"], ["Observação:", "observation"]
+    ];
+    for (const line of lines) {
+      const text = String(line || "").trim();
+      const found = map.find(([prefix]) => text.startsWith(prefix));
+      if (found && !fields[found[1]]) fields[found[1]] = text.slice(found[0].length).trim();
+      else if (!found && text && !fields.additional) fields.additional = text;
+    }
+    if (Array.isArray(item.customLines) && item.customLines.length && !fields.additional) {
+      fields.additional = item.customLines.join("\n");
+    }
+    return fields;
+  }
+
+  function weekLines(item = {}) {
+    const fields = extractWeekFields(item);
+    const lines = [];
+    if (fields.weight) lines.push(`Peso: ${fields.weight}`);
+    if (fields.result) lines.push(`Resultado: ${fields.result}`);
+    if (fields.application) lines.push(`Aplicação: ${fields.application}`);
+    if (fields.hunger) lines.push(`Fome: ${fields.hunger}`);
+    if (fields.effects) lines.push(`Efeitos: ${fields.effects}`);
+    if (fields.observation) lines.push(`Observação: ${fields.observation}`);
+    if (fields.additional) {
+      String(fields.additional).split("\n").map(line => line.trim()).filter(Boolean).forEach(line => lines.push(line));
+    }
+    return lines;
+  }
+
+  function preserveManualValue(oldItem, key, generatedValue) {
+    const oldFields = extractWeekFields(oldItem);
+    const previousGenerated = oldItem?.generatedFields?.[key];
+    const current = oldFields[key];
+    const wasManuallyChanged = current && previousGenerated !== undefined && current !== previousGenerated;
+    return wasManuallyChanged ? current : generatedValue;
+  }
+
   function generateWeeklySummaries({ notify = false } = {}) {
     collectDiaryFromDOM();
     const applications = [...appData.applications]
@@ -290,53 +347,66 @@
       const startWeight = latestWeightOnOrBefore(start);
       const endWeight = latestWeightOnOrBefore(displayEnd);
       const entries = appData.diary.filter(item => dateInRange(item.date, start, displayEnd));
-      const lines = [];
 
+      let weight = "";
+      let result = "";
       if (startWeight && endWeight && startWeight.date !== endWeight.date) {
-        lines.push(`Peso: ${Number(startWeight.value).toFixed(2).replace(".", ",")} → ${Number(endWeight.value).toFixed(2).replace(".", ",")} kg`);
-        const result = startWeight.value - endWeight.value;
-        lines.push(`Resultado: ${result >= 0 ? "-" : "+"}${Math.abs(result).toFixed(2).replace(".", ",")} kg`);
+        weight = `${Number(startWeight.value).toFixed(2).replace(".", ",")} → ${Number(endWeight.value).toFixed(2).replace(".", ",")} kg`;
+        const delta = startWeight.value - endWeight.value;
+        result = `${delta >= 0 ? "-" : "+"}${Math.abs(delta).toFixed(2).replace(".", ",")} kg`;
       } else if (startWeight) {
-        lines.push(`Peso: ${Number(startWeight.value).toFixed(2).replace(".", ",")} → aguardando nova pesagem`);
-        lines.push("Resultado: aguardando nova pesagem");
+        weight = `${Number(startWeight.value).toFixed(2).replace(".", ",")} → aguardando nova pesagem`;
+        result = "aguardando nova pesagem";
       }
-      lines.push(`Aplicação: ${application.date}${application.time ? ` às ${application.time}` : ""}`);
-      const hunger = uniqueText(entries, "hunger");
-      const effects = uniqueText(entries, "effects");
-      const notes = uniqueText(entries, "notes");
-      if (hunger) lines.push(`Fome: ${hunger}`);
-      if (effects) lines.push(`Efeitos: ${effects}`);
-      if (notes) lines.push(`Observação: ${notes}`);
 
+      const generatedFields = {
+        weight,
+        result,
+        application: `${application.date}${application.time ? ` às ${application.time}` : ""}`,
+        hunger: uniqueText(entries, "hunger"),
+        effects: uniqueText(entries, "effects"),
+        observation: uniqueText(entries, "notes")
+      };
       const title = `Semana ${index + 1}`;
       const old = oldByTitle.get(title) || {};
-      return {
+      const item = {
         title,
         period: isCurrent ? `Iniciada em ${application.date.slice(0, 5)}` : `${application.date.slice(0, 5)} a ${formatBRDate(displayEnd).slice(0, 5)}`,
         current: isCurrent,
-        generatedLines: lines,
-        customLines: Array.isArray(old.customLines) ? old.customLines : [],
-        lines: [...lines, ...(Array.isArray(old.customLines) ? old.customLines : [])]
+        weight: preserveManualValue(old, "weight", generatedFields.weight),
+        result: preserveManualValue(old, "result", generatedFields.result),
+        application: preserveManualValue(old, "application", generatedFields.application),
+        hunger: preserveManualValue(old, "hunger", generatedFields.hunger),
+        effects: preserveManualValue(old, "effects", generatedFields.effects),
+        observation: preserveManualValue(old, "observation", generatedFields.observation),
+        additional: extractWeekFields(old).additional,
+        generatedFields
       };
+      item.lines = weekLines(item);
+      return item;
     });
     renderWeeks();
-    if (notify) { markDirty(); showToast("Resumos semanais atualizados automaticamente."); }
+    if (notify) { markDirty(); showToast("Resumos semanais atualizados. Cada campo continua editável."); }
     return true;
   }
 
   function renderWeeks() {
     $("weeksList").innerHTML = appData.weeks.length ? appData.weeks.map((item, index) => {
-      const generated = Array.isArray(item.generatedLines) ? item.generatedLines : (item.lines || []);
-      const custom = Array.isArray(item.customLines) ? item.customLines : [];
+      const fields = extractWeekFields(item);
       return `
       <article class="editable-item" data-type="weeks" data-index="${index}">
         ${itemHeader(item.title || `Semana ${index + 1}`, index, "weeks")}
-        <div class="admin-grid three-columns">
+        <div class="admin-grid two-columns weekly-fields-grid">
           <label>Título<input data-field="title" type="text" value="${escapeHtml(item.title)}"></label>
           <label>Período<input data-field="period" type="text" value="${escapeHtml(item.period)}"></label>
-          <label class="checkbox-label"><input data-field="current" type="checkbox" ${item.current ? "checked" : ""}> Semana atual</label>
-          <label class="wide-field">Informações geradas automaticamente<textarea data-field="generatedLines" data-lines="true" rows="7" readonly>${escapeHtml(generated.join("\n"))}</textarea></label>
-          <label class="wide-field">Informações adicionais (editáveis)<textarea data-field="customLines" data-lines="true" rows="4" placeholder="Inclua aqui informações que não puderam ser calculadas automaticamente.">${escapeHtml(custom.join("\n"))}</textarea></label>
+          <label class="checkbox-label wide-field"><input data-field="current" type="checkbox" ${item.current ? "checked" : ""}> Semana atual</label>
+          <label>Peso<input data-field="weight" type="text" value="${escapeHtml(fields.weight)}" placeholder="Ex.: 111,30 → 109,80 kg"></label>
+          <label>Resultado<input data-field="result" type="text" value="${escapeHtml(fields.result)}" placeholder="Ex.: -1,50 kg"></label>
+          <label>Aplicação<input data-field="application" type="text" value="${escapeHtml(fields.application)}" placeholder="Data, horário e detalhes"></label>
+          <label>Fome<textarea data-field="hunger" rows="3">${escapeHtml(fields.hunger)}</textarea></label>
+          <label>Efeitos<textarea data-field="effects" rows="3">${escapeHtml(fields.effects)}</textarea></label>
+          <label class="wide-field">Observação<textarea data-field="observation" rows="3">${escapeHtml(fields.observation)}</textarea></label>
+          <label class="wide-field">Informações adicionais<textarea data-field="additional" rows="3" placeholder="Informações extras que não entram nos campos acima.">${escapeHtml(fields.additional)}</textarea></label>
         </div>
       </article>`;
     }).join("") : '<p class="empty-list">Nenhum resumo semanal. Clique em “Gerar resumos automaticamente”.</p>';
@@ -403,10 +473,27 @@
     };
     appData.weights = collectList("weights");
     appData.applications = collectList("applications");
-    appData.weeks = collectList("weeks").map(item => ({ ...item, lines: [...(item.generatedLines || []), ...(item.customLines || [])] }));
+    appData.weeks = collectList("weeks").map((item, index) => {
+      const merged = { ...(appData.weeks[index] || {}), ...item };
+      merged.generatedFields = appData.weeks[index]?.generatedFields || {};
+      merged.lines = weekLines(merged);
+      return merged;
+    });
     collectDiaryFromDOM();
     appData.generalObservation = getValue("fieldGeneralObservation");
     appData.medicalNotice = getValue("fieldMedicalNotice");
+    appData.visibility = {
+      header: $("visibilityHeader")?.checked !== false,
+      profile: $("visibilityProfile")?.checked !== false,
+      summary: $("visibilitySummary")?.checked !== false,
+      treatment: $("visibilityTreatment")?.checked !== false,
+      weights: $("visibilityWeights")?.checked !== false,
+      applications: $("visibilityApplications")?.checked !== false,
+      weeks: $("visibilityWeeks")?.checked !== false,
+      analysis: $("visibilityAnalysis")?.checked !== false,
+      diary: $("visibilityDiary")?.checked !== false,
+      notes: $("visibilityNotes")?.checked !== false
+    };
     return appData;
   }
 
@@ -518,7 +605,7 @@
     if ($("fieldAutoWeeks")?.checked) generateWeeklySummaries();
     appData.weeks = (appData.weeks || []).map(item => ({
       ...item,
-      lines: [...(item.generatedLines || []), ...(item.customLines || [])]
+      lines: weekLines(item)
     }));
     setValue("fieldInitialWeight", appData.goal.initialWeightKg);
     setValue("fieldCurrentWeight", appData.goal.currentWeightKg);
