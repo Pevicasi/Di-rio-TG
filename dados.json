@@ -487,7 +487,7 @@
     "treatment": true,
     "weights": true,
     "applications": true,
-    "weeks": false,
+    "weeks": true,
     "analysis": true,
     "diary": true,
     "notes": true
