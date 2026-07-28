@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.3";
+  const ADMIN_BUILD = "2.3.4";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -762,7 +762,7 @@
     button.addEventListener("click", () => {
       const targetId = button.dataset.adminTab;
       if (!targetId || !$(targetId)) return;
-      collectEditorData();
+      collectDataFromDOM();
       activateTab(targetId, true);
     });
   });
