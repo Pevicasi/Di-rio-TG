@@ -105,7 +105,8 @@
       <div class="section-header"><div><p class="eyebrow">Paciente</p><h2>Perfil</h2></div><label class="visibility-toggle"><input id="visibilityProfile" type="checkbox" checked> Exibir perfil no site</label></div>
       <div class="admin-grid three-columns">
         <label>Nome<input id="fieldName" type="text" /></label>
-        <label>Idade<input id="fieldAge" type="number" min="0" max="130" step="1" /></label>
+        <label>Data de nascimento<input id="fieldBirthDate" type="date" /></label>
+        <label>Idade calculada<input id="fieldAge" type="text" readonly placeholder="Calculada automaticamente" /><small class="field-help">A idade é atualizada automaticamente pela data de nascimento.</small></label>
         <label>Altura (m)<input id="fieldHeight" type="number" min="0.5" max="2.5" step="0.01" inputmode="decimal" /></label>
       </div>
     </section>
@@ -129,8 +130,29 @@
     <section class="card admin-form-section" id="treatment">
       <div class="section-header"><div><p class="eyebrow">Medicação</p><h2>Tratamento</h2></div><label class="visibility-toggle"><input id="visibilityTreatment" type="checkbox" checked> Exibir no site</label></div>
       <div class="admin-grid four-columns">
-        <label>Medicamento<input id="fieldMedication" type="text" /></label>
-        <label>Concentração<input id="fieldConcentration" type="text" /></label>
+        <label>Medicamento
+          <select id="fieldMedicationSelect">
+            <option value="">Selecione</option>
+            <option value="TG (Indufar)">TG (Indufar)</option>
+            <option value="Mounjaro">Mounjaro</option>
+            <option value="Zepbound">Zepbound</option>
+            <option value="__custom__">Cadastrar outro medicamento…</option>
+          </select>
+          <input id="fieldMedication" type="text" placeholder="Digite o medicamento" hidden />
+        </label>
+        <label>Concentração
+          <select id="fieldConcentration">
+            <option value="">Selecione</option>
+            <option value="2,5 mg / 0,5 mL">2,5 mg / 0,5 mL</option>
+            <option value="5 mg / 0,5 mL">5 mg / 0,5 mL</option>
+            <option value="7,5 mg / 0,5 mL">7,5 mg / 0,5 mL</option>
+            <option value="10 mg / 0,5 mL">10 mg / 0,5 mL</option>
+            <option value="12,5 mg / 0,5 mL">12,5 mg / 0,5 mL</option>
+            <option value="15 mg / 0,5 mL">15 mg / 0,5 mL</option>
+            <option value="__custom__">Cadastrar outra concentração…</option>
+          </select>
+          <input id="fieldConcentrationCustom" type="text" placeholder="Digite a concentração" hidden />
+        </label>
         <label>Dose semanal<input id="fieldWeeklyDose" type="text" /></label>
         <label>Data de início<input id="fieldTreatmentStart" type="date" /></label>
       </div>
@@ -186,6 +208,6 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260728-v3-0-0"></script>
+  <script src="./script-admin.js?v=20260728-v3-1-0"></script>
 </body>
 </html>

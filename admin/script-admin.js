@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.0.0";
+  const ADMIN_BUILD = "3.1.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -14,7 +14,7 @@
     schemaVersion: 1,
     title: "Acompanhamento com Tirzepatida",
     updatedAt: formatBRDate(new Date()),
-    profile: { name: "", age: "", heightM: "" },
+    profile: { name: "", birthDate: "", age: "", heightM: "" },
     goal: {
       initialWeightKg: "", currentWeightKg: "", targetWeightKg: "",
       history: [], stageStartWeightKg: "", stageStartDate: ""
@@ -60,6 +60,56 @@
     }
     const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value);
+  }
+
+  function calculateAge(birthDate) {
+    const iso = parseBRDate(birthDate);
+    if (!iso) return "";
+    const [year, month, day] = iso.split("-").map(Number);
+    const born = new Date(year, month - 1, day);
+    if (Number.isNaN(born.getTime()) || born > new Date()) return "";
+    const today = new Date();
+    let age = today.getFullYear() - born.getFullYear();
+    const beforeBirthday = today.getMonth() < born.getMonth() || (today.getMonth() === born.getMonth() && today.getDate() < born.getDate());
+    if (beforeBirthday) age--;
+    return age >= 0 ? age : "";
+  }
+
+  function syncCalculatedAge() {
+    const birthDate = getValue("fieldBirthDate");
+    const calculated = calculateAge(birthDate);
+    if (calculated !== "") setValue("fieldAge", calculated);
+    else if (!getValue("fieldAge")) setValue("fieldAge", appData?.profile?.age ?? "");
+    return calculated !== "" ? calculated : numeric(getValue("fieldAge"));
+  }
+
+  function syncMedicationControls() {
+    const select = $("fieldMedicationSelect");
+    const custom = $("fieldMedication");
+    const current = appData?.treatment?.medication || "";
+    const known = Array.from(select?.options || []).some(option => option.value === current && option.value !== "__custom__");
+    if (select) select.value = known ? current : (current ? "__custom__" : "");
+    if (custom) { custom.hidden = !current || known; custom.value = known ? "" : current; }
+
+    const concentration = $("fieldConcentration");
+    const concentrationCustom = $("fieldConcentrationCustom");
+    const currentConcentration = appData?.treatment?.concentration || "";
+    const knownConcentration = Array.from(concentration?.options || []).some(option => option.value === currentConcentration && option.value !== "__custom__");
+    if (concentration) concentration.value = knownConcentration ? currentConcentration : (currentConcentration ? "__custom__" : "");
+    if (concentrationCustom) { concentrationCustom.hidden = !currentConcentration || knownConcentration; concentrationCustom.value = knownConcentration ? "" : currentConcentration; }
+  }
+
+  const COMMON_EFFECTS = ["Nenhum", "Náusea", "Diarreia", "Constipação", "Vômito", "Dor abdominal", "Indigestão", "Estufamento", "Arrotos", "Azia ou refluxo", "Boca seca", "Dor de cabeça", "Cansaço", "Reação no local da aplicação"];
+
+  function effectValues(text) {
+    return String(text || "").split(/[,;\n]+/).map(value => value.trim()).filter(Boolean);
+  }
+
+  function renderEffectsSelector(text) {
+    const selected = effectValues(text);
+    const known = new Set(COMMON_EFFECTS);
+    const custom = selected.filter(value => !known.has(value)).join("; ");
+    return `<fieldset class="effects-selector"><legend>Efeitos colaterais</legend><div class="effects-grid">${COMMON_EFFECTS.map(effect => `<label class="effect-option"><input type="checkbox" data-effect="${escapeHtml(effect)}" ${selected.includes(effect) ? "checked" : ""}> <span>${escapeHtml(effect)}</span></label>`).join("")}</div><label>Outros efeitos<textarea data-effects-other rows="2" placeholder="Descreva outros efeitos, se houver">${escapeHtml(custom)}</textarea></label></fieldset>`;
   }
 
   function numeric(value) {
@@ -177,15 +227,15 @@
     if (autoDate) $("fieldUpdatedAt").disabled = autoDate.checked;
     setValue("fieldSchemaVersion", appData.schemaVersion);
     setValue("fieldName", appData.profile.name);
-    setValue("fieldAge", appData.profile.age);
+    setValue("fieldBirthDate", parseBRDate(appData.profile.birthDate));
+    setValue("fieldAge", calculateAge(appData.profile.birthDate) || appData.profile.age);
     setValue("fieldHeight", appData.profile.heightM);
     setValue("fieldInitialWeight", appData.goal.initialWeightKg);
     setValue("fieldCurrentWeight", appData.goal.currentWeightKg);
     setValue("fieldTargetWeight", appData.goal.targetWeightKg);
     setValue("fieldStageStartWeight", appData.goal.stageStartWeightKg);
     setValue("fieldStageStartDate", parseBRDate(appData.goal.stageStartDate));
-    setValue("fieldMedication", appData.treatment.medication);
-    setValue("fieldConcentration", appData.treatment.concentration);
+    syncMedicationControls();
     setValue("fieldWeeklyDose", appData.treatment.weeklyDose);
     setValue("fieldTreatmentStart", parseBRDate(appData.treatment.startDate));
     setValue("fieldGeneralObservation", appData.generalObservation);
@@ -442,6 +492,12 @@
       if (input.dataset.date) obj[key] = formatBRDate(input.value);
       else obj[key] = input.value.trim();
     });
+    if (obj.hunger === "__custom__") obj.hunger = editor.querySelector("[data-hunger-custom]")?.value.trim() || "";
+    const selectedEffects = Array.from(editor.querySelectorAll("[data-effect]:checked")).map(input => input.dataset.effect);
+    const otherEffects = editor.querySelector("[data-effects-other]")?.value.trim();
+    if (selectedEffects.includes("Nenhum") && selectedEffects.length > 1) selectedEffects.splice(selectedEffects.indexOf("Nenhum"), 1);
+    if (otherEffects) selectedEffects.push(otherEffects);
+    obj.effects = selectedEffects.join("; ");
     appData.diary[selectedDiaryIndex] = obj;
   }
 
@@ -462,8 +518,17 @@
         <div class="admin-grid two-columns">
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
           <label>Refeições<textarea data-field="meals" rows="4">${escapeHtml(item.meals)}</textarea></label>
-          <label>Fome<textarea data-field="hunger" rows="4">${escapeHtml(item.hunger)}</textarea></label>
-          <label>Efeitos<textarea data-field="effects" rows="4">${escapeHtml(item.effects)}</textarea></label>
+          <label>Fome
+            <select data-field="hunger">
+              <option value="" ${!item.hunger ? "selected" : ""}>Selecione</option>
+              <option value="Sem fome" ${item.hunger === "Sem fome" ? "selected" : ""}>Sem fome</option>
+              <option value="Pouca fome" ${item.hunger === "Pouca fome" ? "selected" : ""}>Pouca fome</option>
+              <option value="Bastante fome" ${item.hunger === "Bastante fome" ? "selected" : ""}>Bastante fome</option>
+              <option value="__custom__" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "selected" : ""}>Descrição personalizada</option>
+            </select>
+            <textarea data-hunger-custom rows="2" placeholder="Descreva a fome" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "" : "hidden"}>${escapeHtml(item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? item.hunger : "")}</textarea>
+          </label>
+          ${renderEffectsSelector(item.effects)}
           <label class="wide-field">Observações<textarea data-field="notes" rows="4">${escapeHtml(item.notes)}</textarea></label>
         </div>
       </article>`;
@@ -477,7 +542,7 @@
     } else appData.updatedAt = formatBRDate(getValue("fieldUpdatedAt"));
     appData.schemaVersion = numeric(getValue("fieldSchemaVersion")) || 1;
     appData.profile = {
-      name: getValue("fieldName"), age: numeric(getValue("fieldAge")), heightM: numeric(getValue("fieldHeight"))
+      name: getValue("fieldName"), birthDate: formatBRDate(getValue("fieldBirthDate")), age: syncCalculatedAge(), heightM: numeric(getValue("fieldHeight"))
     };
     appData.goal = {
       ...appData.goal,
@@ -489,7 +554,7 @@
       history: collectList("goalHistory")
     };
     appData.treatment = {
-      medication: getValue("fieldMedication"), concentration: getValue("fieldConcentration"),
+      medication: $("fieldMedicationSelect")?.value === "__custom__" ? getValue("fieldMedication") : getValue("fieldMedicationSelect"), concentration: $("fieldConcentration")?.value === "__custom__" ? getValue("fieldConcentrationCustom") : getValue("fieldConcentration"),
       weeklyDose: getValue("fieldWeeklyDose"), startDate: formatBRDate(getValue("fieldTreatmentStart"))
     };
     appData.weights = collectList("weights");
@@ -793,7 +858,7 @@
   function drawPdfHeader(doc, data) {
     doc.rect(0,0,doc.width,116,doc.teal,doc.teal);
     doc.text(data.title || "Acompanhamento com Tirzepatida", doc.margin, 49, 22, true, [255,255,255]);
-    const subtitle=[data.profile?.name,data.profile?.age?`${data.profile.age} anos`:"",data.profile?.heightM?`${String(data.profile.heightM).replace(".",",")} m`:""].filter(Boolean).join(" • ");
+    const subtitle=[data.profile?.name,(calculateAge(data.profile?.birthDate)||data.profile?.age)?`${calculateAge(data.profile?.birthDate)||data.profile?.age} anos`:"",data.profile?.heightM?`${String(data.profile.heightM).replace(".",",")} m`:""].filter(Boolean).join(" • ");
     doc.text(subtitle,doc.margin,75,10.5,false,[255,255,255]);
     doc.text(`Atualizado em ${data.updatedAt || "-"}`,doc.width-doc.margin,49,9,true,[255,255,255],"right");
     doc.y=145;
@@ -980,6 +1045,34 @@
     if (event.target.checked) {
       appData.updatedAt = formatBRDate(new Date());
       setValue("fieldUpdatedAt", parseBRDate(appData.updatedAt));
+    }
+    markDirty();
+  });
+
+  $("fieldBirthDate")?.addEventListener("change", () => { syncCalculatedAge(); markDirty(); });
+  $("fieldMedicationSelect")?.addEventListener("change", event => {
+    const custom = $("fieldMedication");
+    custom.hidden = event.target.value !== "__custom__";
+    if (!custom.hidden) custom.focus();
+    markDirty();
+  });
+  $("fieldConcentration")?.addEventListener("change", event => {
+    const custom = $("fieldConcentrationCustom");
+    custom.hidden = event.target.value !== "__custom__";
+    if (!custom.hidden) custom.focus();
+    markDirty();
+  });
+  $("diarySingleEditor")?.addEventListener("change", event => {
+    if (event.target.matches('[data-field="hunger"]')) {
+      const custom = $("diarySingleEditor").querySelector("[data-hunger-custom]");
+      custom.hidden = event.target.value !== "__custom__";
+      if (!custom.hidden) custom.focus();
+    }
+    if (event.target.matches('[data-effect="Nenhum"]') && event.target.checked) {
+      $("diarySingleEditor").querySelectorAll('[data-effect]:not([data-effect="Nenhum"])').forEach(input => { input.checked = false; });
+    } else if (event.target.matches('[data-effect]:not([data-effect="Nenhum"])') && event.target.checked) {
+      const none = $("diarySingleEditor").querySelector('[data-effect="Nenhum"]');
+      if (none) none.checked = false;
     }
     markDirty();
   });
