@@ -656,3 +656,16 @@ footer {
   .checkbox-label { padding-top: 0; }
   .admin-section-nav { top: 4px; }
 }
+
+/* Melhorias do admin v3 */
+.auto-date-option { grid-column: span 1; }
+.inline-option { display:flex; align-items:center; gap:9px; margin:0 0 12px; color:#315f5a; font-weight:700; }
+.inline-option input { width:20px; height:20px; }
+.diary-picker { margin-bottom:14px; padding:14px; border:1px solid #d8e5e3; border-radius:14px; background:#f7fbfa; }
+.diary-picker label { display:flex; flex-direction:column; gap:8px; color:#315f5a; font-weight:700; }
+.diary-picker select { width:100%; padding:12px; border:1px solid #cbdad8; border-radius:10px; background:#fff; color:#173d39; font:inherit; font-weight:600; }
+.admin-grid textarea[readonly] { background:#eef5f4; color:#466d69; }
+
+
+/* Admin v4 */
+.admin-status-group{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem}.admin-build{font-size:.75rem;opacity:.72}.diary-picker{position:sticky;top:.5rem;z-index:5;background:#fff;padding:.75rem;border-radius:1rem;box-shadow:0 8px 24px rgba(15,118,110,.08);margin-bottom:1rem}.diary-picker select{width:100%}@media(max-width:720px){.admin-status-group{align-items:flex-start}.diary-picker{top:0}}

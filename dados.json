@@ -9,7 +9,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 108.8,
+    "currentWeightKg": 111.3,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -33,14 +33,6 @@
     {
       "date": "20/07/2026",
       "valueKg": 111.3
-    },
-    {
-      "date": "27/07/2026",
-      "valueKg": 109.8
-    },
-    {
-      "date": "03/08/2026",
-      "valueKg": 108.8
     }
   ],
   "applications": [

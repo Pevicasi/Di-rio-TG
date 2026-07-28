@@ -1,0 +1,17 @@
+TIRZETRACK ADMIN V4
+
+IMPORTANTE PARA PUBLICAR NO GITHUB:
+1. Abra o ZIP.
+2. Envie os ARQUIVOS que estão dentro dele para a RAIZ do mesmo repositório onde já existem index.html e dados.json.
+3. Não envie a pasta inteira como uma nova subpasta, pois isso não substitui o site atual.
+4. Confirme que admin/index.html, script-admin.js, style.css e index.html foram substituídos.
+5. Aguarde o GitHub Pages e recarregue a página.
+
+COMO CONFERIR:
+Na área admin deve aparecer “Versão 2026.07.27-v4” no topo. Se não aparecer, os arquivos novos não foram publicados na raiz ou o navegador ainda está usando cache.
+
+MELHORIAS:
+- Data automática ao salvar, baixar backup e publicar, com opção manual.
+- Resumos semanais automáticos também ao salvar rascunho.
+- Diário mostra apenas uma data por vez.
+- Ao adicionar o dia atual, abre o registro existente em vez de criar duplicado.

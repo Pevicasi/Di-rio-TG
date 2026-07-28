@@ -1,0 +1,20 @@
+TirzeTrack — melhorias do painel administrativo v3
+
+1. Data de atualização
+- Atualizada automaticamente com a data do dia ao salvar rascunho, baixar backup ou publicar.
+- A opção automática pode ser desmarcada para permitir uma data manual.
+
+2. Resumos semanais
+- Gerados pelas aplicações, pesagens e registros do diário.
+- Incluem, quando disponíveis: peso inicial/final, resultado, aplicação, fome, efeitos e observações.
+- São atualizados automaticamente antes de publicar ou baixar backup.
+- Cada semana possui um campo separado para informações adicionais editáveis, que não é apagado na atualização automática.
+
+3. Diário
+- O painel exibe somente um dia por vez.
+- Um seletor de data permite localizar e editar rapidamente qualquer registro.
+- Ao adicionar um dia, o novo registro é aberto automaticamente.
+
+4. Compatibilidade
+- O site público continua usando o mesmo dados.json.
+- O campo lines de cada semana continua sendo produzido para manter compatibilidade com a exibição pública.
