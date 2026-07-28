@@ -299,7 +299,7 @@
     "summary": true,
     "treatment": true,
     "weights": true,
-    "applications": true,
+    "applications": false,
     "weeks": false,
     "analysis": true,
     "diary": true,
