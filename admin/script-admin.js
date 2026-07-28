@@ -791,11 +791,8 @@
 
       if (data.generalObservation || data.medicalNotice) parts.push(section("observations", "Observação geral", `<div class="observation-box"><p>${escapePdfHtml(pdfText(data.generalObservation) || "Sem observação geral.").replace(/\n/g, "<br>")}</p>${data.medicalNotice ? `<p class="notice">${escapePdfHtml(pdfText(data.medicalNotice)).replace(/\n/g, "<br>")}</p>` : ""}</div>`));
 
-      const report = window.open("", "_blank");
-      if (!report) throw new Error("O navegador bloqueou a janela do relatório. Permita pop-ups para o site e tente novamente.");
       const subtitle = [data.profile?.name, data.profile?.age ? `${data.profile.age} anos` : "", data.profile?.heightM ? `${String(data.profile.heightM).replace(".", ",")} m` : ""].filter(Boolean).join(" • ");
-      report.document.open();
-      report.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapePdfHtml(pdfFileName(data))}</title><style>
+      const reportHtml = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapePdfHtml(pdfFileName(data))}</title><style>
         @page { size:A4; margin:15mm 14mm 17mm; }
         *{box-sizing:border-box} body{margin:0;color:#173532;font-family:Arial,Helvetica,sans-serif;font-size:10pt;line-height:1.38;background:#fff} .actions{position:sticky;top:0;z-index:10;display:flex;justify-content:center;gap:8px;padding:10px;background:#fff;border-bottom:1px solid #d7e1df}.actions button{padding:10px 18px;border:0;border-radius:9px;background:#117d73;color:#fff;font-weight:800;cursor:pointer}
         .report-header{margin:-15mm -14mm 10mm;padding:13mm 14mm 10mm;background:#137d73;color:#fff}.report-header .header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.report-header h1{margin:0 0 3mm;font-size:23pt;line-height:1.08}.report-header p{margin:0;font-size:11pt}.report-header time{font-weight:800;white-space:nowrap;margin-top:3mm}
@@ -803,13 +800,40 @@
         table{width:100%;border-collapse:collapse;table-layout:auto} th,td{padding:2.5mm 3mm;border:1px solid #d4dfdd;text-align:left;vertical-align:top;overflow-wrap:anywhere} thead th{background:#137d73;color:#fff;font-size:9pt} tbody td{font-size:9pt}.detail-table th{width:17%;background:#f3f7f6;color:#425d59}.treatment-table td{width:33%} tr{break-inside:avoid}
         .chart-wrap{padding:3mm 0 0}.chart-wrap svg{display:block;width:100%;height:auto}.chart-grid{stroke:#d8e2e0;stroke-width:1}.chart-base{stroke:#233936;stroke-width:2}.chart-line{fill:none;stroke:#137d73;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}.chart-point{fill:#fff;stroke:#137d73;stroke-width:4}.chart-axis{fill:#536b67;font-size:18px}.chart-value{fill:#173532;font-size:17px;font-weight:800}
         .weeks-list,.diary-list{display:grid;gap:3mm}.week-card{padding:4mm;border:1px solid #d4dfdd;break-inside:avoid}.week-card.current{border-color:#137d73;background:#e4f5f2}.week-card h3,.diary-card h3{margin:0 0 2mm;color:#08736a;font-size:13pt}.week-card h3 span{font-weight:700}.week-card ul{margin:0;padding-left:5mm}.week-card li{margin:.6mm 0}.diary-card{break-inside:avoid}.diary-card.compact h3{margin-bottom:1.5mm}.diary-card.compact th,.diary-card.compact td{padding:1.8mm 2.5mm;font-size:8.5pt}.observation-box{padding:4mm;border:1px solid #d4dfdd;background:#f8fbfa}.observation-box p{margin:0 0 3mm}.observation-box p:last-child{margin-bottom:0}.notice{color:#637672;font-size:9pt}.empty-note{color:#6f807d}
-        .report-footer{margin-top:10mm;padding-top:3mm;border-top:1px solid #d4dfdd;color:#6a7b78;font-size:8.5pt;display:flex;justify-content:space-between}.report-footer::after{content:"TirzeTrack 2.6.0"}
+        .report-footer{margin-top:10mm;padding-top:3mm;border-top:1px solid #d4dfdd;color:#6a7b78;font-size:8.5pt;display:flex;justify-content:space-between}.report-footer::after{content:"TirzeTrack 2.6.1"}
         @media print{.actions{display:none!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-header{break-after:avoid}.chart-section{break-inside:avoid}.report-footer{position:running(footer)}}
         @media(max-width:700px){.summary-grid{grid-template-columns:repeat(2,1fr)}.summary-grid>div:nth-child(2){border-right:0}.summary-grid>div:nth-child(-n+2){border-bottom:1px solid #d4dfdd}.report-header .header-row{display:block}.report-header time{display:block}.progress-box>div:first-child{flex-wrap:wrap}.progress-box em{margin-left:0;width:100%}}
-      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header class="report-header"><div class="header-row"><div><h1>${escapePdfHtml(data.title || "Acompanhamento com Tirzepatida")}</h1><p>${escapePdfHtml(subtitle)}</p></div><time>Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</time></div></header><main>${parts.join("")}</main><footer class="report-footer"><span>Relatório de acompanhamento</span></footer><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),450));<\/script></body></html>`);
-      report.document.close();
+      </style></head><body><div class="actions"><button type="button" onclick="window.print()">Salvar como PDF / Imprimir</button></div><header class="report-header"><div class="header-row"><div><h1>${escapePdfHtml(data.title || "Acompanhamento com Tirzepatida")}</h1><p>${escapePdfHtml(subtitle)}</p></div><time>Atualizado em ${escapePdfHtml(data.updatedAt || "-")}</time></div></header><main>${parts.join("")}</main><footer class="report-footer"><span>Relatório de acompanhamento</span></footer></body></html>`;
+
+      // Usa um iframe invisível para evitar bloqueio de pop-up no Chrome do celular.
+      document.getElementById("tirzetrackPrintFrame")?.remove();
+      const printFrame = document.createElement("iframe");
+      printFrame.id = "tirzetrackPrintFrame";
+      printFrame.title = "Relatório TirzeTrack";
+      printFrame.setAttribute("aria-hidden", "true");
+      printFrame.style.position = "fixed";
+      printFrame.style.width = "1px";
+      printFrame.style.height = "1px";
+      printFrame.style.right = "0";
+      printFrame.style.bottom = "0";
+      printFrame.style.border = "0";
+      printFrame.style.opacity = "0";
+      document.body.appendChild(printFrame);
+
+      const frameDocument = printFrame.contentDocument || printFrame.contentWindow?.document;
+      if (!frameDocument) throw new Error("Não foi possível preparar a tela de impressão neste navegador.");
+      frameDocument.open();
+      frameDocument.write(reportHtml);
+      frameDocument.close();
       closePdfOptions();
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const frameWindow = printFrame.contentWindow;
+      if (!frameWindow || typeof frameWindow.print !== "function") throw new Error("A impressão não está disponível neste navegador.");
+      frameWindow.focus();
+      frameWindow.print();
       showToast("Relatório preparado. Escolha ‘Salvar como PDF’ na tela de impressão.");
+      setTimeout(() => printFrame.remove(), 60000);
     } catch (error) {
       console.error(error);
       showToast(error.message || "Não foi possível preparar o PDF.", "error");
