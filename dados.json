@@ -263,6 +263,6 @@
     "weeks": true,
     "analysis": true,
     "diary": true,
-    "notes": true
+    "notes": false
   }
 }
