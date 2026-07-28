@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.1";
+  const ADMIN_BUILD = "2.3.3";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -321,7 +321,9 @@
     const oldFields = extractWeekFields(oldItem);
     const previousGenerated = oldItem?.generatedFields?.[key];
     const current = oldFields[key];
-    const wasManuallyChanged = current && previousGenerated !== undefined && current !== previousGenerated;
+    // Se ainda não existe referência do valor automático anterior, trate um valor
+    // já preenchido como manual para não apagá-lo na primeira regeneração.
+    const wasManuallyChanged = Boolean(current) && (previousGenerated === undefined || current !== previousGenerated);
     return wasManuallyChanged ? current : generatedValue;
   }
 

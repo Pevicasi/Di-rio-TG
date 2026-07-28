@@ -69,3 +69,19 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • admin/script-admin.js
 • script-admin.js
 • HISTORICO_DE_ALTERACOES.txt
+
+--------------------------------------------------
+Versão 2.3.3
+Data: 28/07/2026
+
+Correções
+• Corrigida a identificação interna da versão do painel administrativo.
+• Atualizado o parâmetro de versão do JavaScript público para evitar cache antigo no navegador.
+• Removida a dependência externa de PDF.js, que não é mais necessária no fluxo administrativo atual.
+• Campos do resumo semanal já preenchidos passam a ser preservados na primeira regeneração automática.
+
+Verificações técnicas
+• Sintaxe dos arquivos JavaScript validada.
+• IDs utilizados pelo JavaScript administrativo conferidos no HTML.
+• Estrutura do ZIP e presença de apenas um arquivo TXT conferidas.
+
