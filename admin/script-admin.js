@@ -3,7 +3,8 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.8";
+  const ADMIN_BUILD = "2.4.0";
+  const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -337,12 +338,8 @@
 
   function preserveManualValue(oldItem, key, generatedValue) {
     const oldFields = extractWeekFields(oldItem);
-    const previousGenerated = oldItem?.generatedFields?.[key];
-    const current = oldFields[key];
-    // Se ainda não existe referência do valor automático anterior, trate um valor
-    // já preenchido como manual para não apagá-lo na primeira regeneração.
-    const wasManuallyChanged = Boolean(current) && (previousGenerated === undefined || current !== previousGenerated);
-    return wasManuallyChanged ? current : generatedValue;
+    const isManual = Boolean(oldItem?.manualFields?.[key]);
+    return isManual ? oldFields[key] : generatedValue;
   }
 
   function generateWeeklySummaries({ notify = false } = {}) {
@@ -403,7 +400,8 @@
         effects: preserveManualValue(old, "effects", generatedFields.effects),
         observation: preserveManualValue(old, "observation", generatedFields.observation),
         additional: extractWeekFields(old).additional,
-        generatedFields
+        generatedFields,
+        manualFields: { ...(old.manualFields || {}) }
       };
       item.lines = weekLines(item);
       return item;
@@ -499,6 +497,7 @@
     appData.weeks = collectList("weeks").map((item, index) => {
       const merged = { ...(appData.weeks[index] || {}), ...item };
       merged.generatedFields = appData.weeks[index]?.generatedFields || {};
+      merged.manualFields = appData.weeks[index]?.manualFields || {};
       merged.lines = weekLines(merged);
       return merged;
     });
@@ -764,6 +763,7 @@
 
       localStorage.removeItem(DRAFT_KEY);
       localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
+      localStorage.setItem(LIVE_PREVIEW_KEY, JSON.stringify({ data, publishedAt: Date.now() }));
       dirty = false;
       setStatus("Publicado com sucesso", "published");
       showToast("Alterações publicadas no GitHub.");
@@ -831,7 +831,17 @@
 
   // Marca como alterado quando o usuário edita qualquer campo do painel.
   document.addEventListener("input", event => {
-    if (event.target.matches("input, textarea, select")) markDirty();
+    if (event.target.matches("input, textarea, select")) {
+      const weekItem = event.target.closest('.editable-item[data-type="weeks"]');
+      const field = event.target.dataset.field;
+      if (weekItem && field) {
+        const index = Number(weekItem.dataset.index);
+        if (appData?.weeks?.[index]) {
+          appData.weeks[index].manualFields = { ...(appData.weeks[index].manualFields || {}), [field]: true };
+        }
+      }
+      markDirty();
+    }
   });
   document.addEventListener("change", event => {
     if (event.target.matches("input, textarea, select")) markDirty();
