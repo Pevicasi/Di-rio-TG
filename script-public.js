@@ -31,7 +31,7 @@ const defaultData = {
   weeks: [
     { title: "Semana 1", period: "06/07 a 12/07", current: false, lines: ["Peso: 117,50 → 113,95 kg", "Resultado: -3,55 kg", "Fome: intensa no início e progressivamente menor.", "Efeitos: boca seca, estufamento, arrotos com odor e salivação durante o sono.", "Observação: sintomas melhoraram ao longo dos dias."] },
     { title: "Semana 2", period: "13/07 a 19/07", current: false, lines: ["Peso: 113,95 → 111,30 kg", "Resultado: -2,65 kg", "Fome: ausência de fome na maior parte dos dias.", "Efeitos: praticamente nenhum efeito colateral relevante.", "Observação: apenas um episódio de fome leve em 19/07."] },
-    { title: "Semana 3", period: "Iniciada em 20/07", current: true, lines: ["Peso inicial: 111,30 kg", "Aplicação: 20/07 às 15:15", "Fome: sem fome no momento do registro.", "Efeitos: nenhum relatado.", "Observação: aplicação abaixo do umbigo."] }
+    { title: "Semana 3", period: "Iniciada em 20/07", current: true, lines: ["Peso: 111,30 → aguardando nova pesagem", "Resultado: aguardando nova pesagem", "Aplicação: 20/07 às 15:15", "Fome: sem fome no momento do registro.", "Efeitos: nenhum relatado.", "Observação: aplicação abaixo do umbigo."] }
   ],
   diary: [
     { date: "06/07/2026", meals: "09:30: pesagem inicial; 20:00: jantar normal.", hunger: "Fome intensa à tarde, menor no jantar e forte vontade de comer às 22:39.", effects: "Leve dor de cabeça e boca muito seca.", notes: "1ª aplicação às 10:00, no lado esquerdo do umbigo." },
@@ -202,31 +202,84 @@ function currentGoalStage(data, current, target) {
   return { startWeight, startDate, history };
 }
 
+function median(values) {
+  const ordered = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(ordered.length / 2);
+  return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
+}
+
+function buildWeightForecast(stageWeights, current, target) {
+  const intervals = [];
+  for (let index = 1; index < stageWeights.length; index += 1) {
+    const previous = stageWeights[index - 1];
+    const next = stageWeights[index];
+    const days = Math.max(1, (next.date - previous.date) / 86400000);
+    const weeklyRate = (previous.value - next.value) * (7 / days);
+    if (Number.isFinite(weeklyRate) && weeklyRate > -0.5 && weeklyRate < 8) intervals.push(weeklyRate);
+  }
+  const positive = intervals.filter(value => value > 0.05).slice(-6);
+  if (!positive.length) return null;
+
+  const weights = positive.map((_, index) => index + 1);
+  const weightedRate = positive.reduce((sum, value, index) => sum + value * weights[index], 0) /
+    weights.reduce((sum, value) => sum + value, 0);
+  const typicalRate = median(positive);
+  const biologicalCap = current * 0.0125;
+  const initialRate = Math.max(0.15, Math.min(weightedRate, typicalRate * 1.15, biologicalCap));
+  const decay = 0.93;
+  const minimumRate = Math.max(0.15, current * 0.0025);
+
+  function simulate(multiplier) {
+    let projected = current;
+    let weeks = 0;
+    while (projected > target && weeks < 104) {
+      const rate = Math.max(minimumRate, initialRate * multiplier * Math.pow(decay, weeks));
+      projected -= rate;
+      weeks += 1;
+    }
+    return projected <= target ? weeks : null;
+  }
+
+  const centralWeeks = simulate(1);
+  const optimisticWeeks = simulate(1.18);
+  const conservativeWeeks = simulate(0.82);
+  if (!centralWeeks) return null;
+  const confidence = positive.length >= 5 ? "alta" : positive.length >= 3 ? "média" : "preliminar";
+  return {
+    centralWeeks,
+    minWeeks: Math.min(optimisticWeeks || centralWeeks, conservativeWeeks || centralWeeks),
+    maxWeeks: Math.max(optimisticWeeks || centralWeeks, conservativeWeeks || centralWeeks),
+    currentRate: initialRate,
+    confidence,
+    samples: positive.length
+  };
+}
+
 function renderGoalExtras(data, current, target, stage) {
   const estimate = $("goalEstimate");
   const historyBox = $("goalsHistory");
   const weights = Array.isArray(data.weights) ? data.weights : [];
   const stageStartDate = parseBrDate(stage.startDate);
   const stageWeights = weights.map(item => ({ date: parseBrDate(item.date), value: Number(item.valueKg) }))
-    .filter(item => item.date && Number.isFinite(item.value) && (!stageStartDate || item.date >= stageStartDate));
-  const recent = stageWeights.slice(-5);
+    .filter(item => item.date && Number.isFinite(item.value) && (!stageStartDate || item.date >= stageStartDate))
+    .sort((a, b) => a.date - b.date);
 
   if (current <= target) {
     estimate.innerHTML = `<strong>Meta alcançada.</strong> Você chegou a ${kg(target)}.`;
-  } else if (recent.length >= 2) {
-    const first = recent[0];
-    const last = recent[recent.length - 1];
-    const elapsedWeeks = Math.max(1 / 7, (last.date - first.date) / 604800000);
-    const weeklyLoss = (first.value - last.value) / elapsedWeeks;
-    if (weeklyLoss > 0.05) {
-      const weeksRemaining = Math.max(1, Math.ceil((current - target) / weeklyLoss));
-      const estimateDate = addDays(last.date, weeksRemaining * 7);
-      estimate.innerHTML = `Estimativa: <strong>${weeksRemaining} ${weeksRemaining === 1 ? "semana" : "semanas"}</strong> — por volta de <strong>${formatBrDate(estimateDate)}</strong>.`;
+  } else if (stageWeights.length >= 2) {
+    const forecast = buildWeightForecast(stageWeights, current, target);
+    if (forecast) {
+      const lastDate = stageWeights[stageWeights.length - 1].date;
+      const centralDate = addDays(lastDate, forecast.centralWeeks * 7);
+      const rangeText = forecast.minWeeks === forecast.maxWeeks
+        ? `${forecast.centralWeeks} ${forecast.centralWeeks === 1 ? "semana" : "semanas"}`
+        : `entre ${forecast.minWeeks} e ${forecast.maxWeeks} semanas`;
+      estimate.innerHTML = `<strong>Estimativa ${forecast.confidence}:</strong> ${rangeText}, por volta de <strong>${formatBrDate(centralDate)}</strong>.<br><small>Ritmo de referência: ${forecast.currentRate.toFixed(2).replace(".", ",")} kg/semana, com desaceleração gradual prevista. A projeção se ajusta a cada nova pesagem.</small>`;
     } else {
-      estimate.textContent = "Ainda não há ritmo de perda suficiente nesta nova etapa para calcular uma estimativa.";
+      estimate.textContent = "Ainda não há uma tendência de perda suficiente para calcular uma estimativa confiável.";
     }
   } else {
-    estimate.textContent = "A estimativa desta etapa aparecerá após pelo menos duas pesagens.";
+    estimate.textContent = "A estimativa aparecerá após pelo menos duas pesagens nesta etapa.";
   }
 
   historyBox.innerHTML = stage.history.length ? stage.history.map(item => {
@@ -272,6 +325,7 @@ function renderAll() {
 
   renderApplications();
   renderWeeks();
+  renderAnalysis(d, stage);
 
   $("generalObservation").textContent = d.generalObservation || "";
   $("medicalNotice").textContent = d.medicalNotice || "";
@@ -280,6 +334,38 @@ function renderAll() {
   renderDiary();
   drawChart();
   renderWeightSummary();
+}
+
+
+function renderAnalysis(data, stage) {
+  const box = $("analysisGrid");
+  if (!box) return;
+  const summary = weightSummary(data);
+  const ordered = summary.ordered;
+  const losses = [];
+  for (let index = 1; index < ordered.length; index += 1) {
+    const days = Math.max(1, (ordered[index].parsedDate - ordered[index - 1].parsedDate) / 86400000);
+    losses.push((ordered[index - 1].valueKg - ordered[index].valueKg) * (7 / days));
+  }
+  const positive = losses.filter(value => value > 0);
+  const recent = positive.slice(-4);
+  const averageRecent = recent.length ? recent.reduce((sum, value) => sum + value, 0) / recent.length : null;
+  const current = summary.current;
+  const initial = summary.initial;
+  const totalLoss = initial - current;
+  const height = Number(data.profile?.heightM);
+  const bmi = Number.isFinite(height) && height > 0 ? current / (height * height) : null;
+  const forecast = buildWeightForecast(ordered.map(item => ({ date: item.parsedDate, value: item.valueKg })), current, Number(data.goal.targetWeightKg));
+  const nextWeight = forecast ? Math.max(Number(data.goal.targetWeightKg), current - forecast.currentRate) : null;
+  const cards = [
+    ["Maior perda semanal", positive.length ? kg(Math.max(...positive)) : "—"],
+    ["Menor perda semanal", positive.length ? kg(Math.min(...positive)) : "—"],
+    ["Média das últimas semanas", averageRecent != null ? `${averageRecent.toFixed(2).replace(".", ",")} kg/semana` : "—"],
+    ["Total perdido", Number.isFinite(totalLoss) ? kg(totalLoss) : "—"],
+    ["IMC atual", bmi != null ? bmi.toFixed(1).replace(".", ",") : "—"],
+    ["Próxima pesagem estimada", nextWeight != null ? kg(nextWeight) : "—"]
+  ];
+  box.innerHTML = cards.map(([label, value]) => `<div class="analysis-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
 }
 
 function renderApplications() {

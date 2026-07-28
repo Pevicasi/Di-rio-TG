@@ -28,3 +28,27 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • script-admin.js
 • style.css
 • HISTORICO_DE_ALTERACOES.txt
+
+--------------------------------------------------
+
+Versão 2.1.0
+Data: 27/07/2026
+
+NOVIDADES
+• Criada a seção “Análise da evolução” com indicadores automáticos.
+• A estimativa da meta agora usa as pesagens recentes, média ponderada e desaceleração gradual.
+• A previsão apresenta faixa de semanas, data central, ritmo de referência e nível de confiança.
+
+MELHORIAS
+• O resumo semanal mantém sempre o formato “Peso: início → fim” e “Resultado”.
+• Em semana ainda aberta, o sistema mostra “aguardando nova pesagem” em vez de “Peso inicial”.
+• A projeção é recalculada automaticamente a cada nova pesagem.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• index.html
+• script-public.js
+• script-admin.js
+• admin/script-admin.js
+• style.css
+• dados.json
+• HISTORICO_DE_ALTERACOES.txt
