@@ -1,754 +1,499 @@
-import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+(() => {
+  "use strict";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+  const DRAFT_KEY = "tirzetrack-admin-draft-v2";
+  const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
+  const $ = id => document.getElementById(id);
+  let appData = null;
+  let dirty = false;
 
-const STORAGE_KEY = "tirzetrack-data-v1";
-const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-const PDF_START = "TIRZETRACK_DATA_START";
-const PDF_END = "TIRZETRACK_DATA_END";
+  const emptyData = () => ({
+    schemaVersion: 1,
+    title: "Acompanhamento com Tirzepatida",
+    updatedAt: formatBRDate(new Date()),
+    profile: { name: "", age: "", heightM: "" },
+    goal: {
+      initialWeightKg: "", currentWeightKg: "", targetWeightKg: "",
+      history: [], stageStartWeightKg: "", stageStartDate: ""
+    },
+    treatment: { medication: "", concentration: "", weeklyDose: "", startDate: "" },
+    weights: [], applications: [], weeks: [], diary: [],
+    generalObservation: "",
+    medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico."
+  });
 
-const defaultData = {
-  schemaVersion: 1,
-  title: "Acompanhamento com Tirzepatida",
-  updatedAt: "20/07/2026",
-  profile: { name: "Petrônio Vieira", age: 42, heightM: 1.59 },
-  goal: { initialWeightKg: 117.5, currentWeightKg: 111.3, targetWeightKg: 100 },
-  treatment: {
-    medication: "TG (Indufar)", concentration: "15 mg / 0,5 mL",
-    weeklyDose: "8 UI", startDate: "06/07/2026"
-  },
-  weights: [
-    { date: "06/07/2026", valueKg: 117.5 },
-    { date: "13/07/2026", valueKg: 113.95 },
-    { date: "20/07/2026", valueKg: 111.3 }
-  ],
-  applications: [
-    { number: 1, date: "06/07/2026", time: "10:00", dose: "8 UI", location: "Abdômen, lado esquerdo do umbigo" },
-    { number: 2, date: "13/07/2026", time: "18:50", dose: "8 UI", location: "Abdômen, lado direito do umbigo" },
-    { number: 3, date: "20/07/2026", time: "15:15", dose: "8 UI", location: "Abdômen, abaixo do umbigo" }
-  ],
-  weeks: [
-    { title: "Semana 1", period: "06/07 a 12/07", current: false, lines: ["Peso: 117,50 → 113,95 kg", "Resultado: -3,55 kg", "Fome: intensa no início e progressivamente menor.", "Efeitos: boca seca, estufamento, arrotos com odor e salivação durante o sono.", "Observação: sintomas melhoraram ao longo dos dias."] },
-    { title: "Semana 2", period: "13/07 a 19/07", current: false, lines: ["Peso: 113,95 → 111,30 kg", "Resultado: -2,65 kg", "Fome: ausência de fome na maior parte dos dias.", "Efeitos: praticamente nenhum efeito colateral relevante.", "Observação: apenas um episódio de fome leve em 19/07."] },
-    { title: "Semana 3", period: "Iniciada em 20/07", current: true, lines: ["Peso inicial: 111,30 kg", "Aplicação: 20/07 às 15:15", "Fome: sem fome no momento do registro.", "Efeitos: nenhum relatado.", "Observação: aplicação abaixo do umbigo."] }
-  ],
-  diary: [
-    { date: "06/07/2026", meals: "09:30: pesagem inicial; 20:00: jantar normal.", hunger: "Fome intensa à tarde, menor no jantar e forte vontade de comer às 22:39.", effects: "Leve dor de cabeça e boca muito seca.", notes: "1ª aplicação às 10:00, no lado esquerdo do umbigo." },
-    { date: "07/07/2026", meals: "14:00: primeira refeição após longo jejum, em quantidade menor que a habitual.", hunger: "Fome forte antes do almoço.", effects: "Muita sede, salivação durante o sono, estufamento e arrotos com odor.", notes: "Dia com os sintomas digestivos mais marcantes." },
-    { date: "08/07/2026", meals: "Almoço com carne, legumes e banana; jantar com talharim, carne e legumes.", hunger: "Menor que no dia anterior; jantar mais por vontade de comer.", effects: "Sem estufamento após o almoço.", notes: "Início de melhora clara dos sintomas." },
-    { date: "09/07/2026", meals: "Pão com ovo; almoço; macarrão com frango e legumes; pão com frango e chá.", hunger: "Pouca fome ao acordar, moderada no jantar e lanche noturno por vontade.", effects: "Salivação muito menor e sem desconforto relevante.", notes: "Porções em torno de 40% a 50% do padrão anterior." },
-    { date: "10/07/2026", meals: "Pão de queijo; almoço; pão doce com ovo e mortadela; pão doce com mortadela.", hunger: "Leve fome antes do almoço; demais refeições sem fome ou por vontade.", effects: "Sem efeitos relevantes.", notes: "Apetite já bastante reduzido." },
-    { date: "11/07/2026", meals: "13:40: almoço; 21:15: jantar semelhante ao almoço.", hunger: "Sem fome antes das refeições.", effects: "Sem efeitos relevantes.", notes: "Comeu as refeições completas apesar da ausência de fome." },
-    { date: "12/07/2026", meals: "Bebida láctea; frango, batatas, talharim e legumes; jantar semelhante.", hunger: "Sem fome.", effects: "Salivação excessiva considerada resolvida.", notes: "Fim da 1ª semana com boa adaptação." },
-    { date: "13/07/2026", meals: "Feijão, macarrão, abóbora e verduras; pão francês com ovo e mortadela.", hunger: "Sem fome.", effects: "Dor de garganta, sem efeitos digestivos importantes.", notes: "Peso 113,95 kg. 2ª aplicação às 18:50." },
-    { date: "14/07/2026", meals: "Pão de queijo; frango, batatas e legumes; frango, tomate e banana.", hunger: "Sem fome durante todo o dia.", effects: "Boca seca e garganta melhorando.", notes: "2ª aplicação melhor tolerada." },
-    { date: "15/07/2026", meals: "Pão francês com mortadela; frango grelhado, legumes e vinagrete; jantar semelhante.", hunger: "Sem fome.", effects: "Sem efeitos colaterais.", notes: "Dia estável." },
-    { date: "16/07/2026", meals: "14:10: almoço; 20:00: jantar.", hunger: "Não informado.", effects: "Sem efeitos colaterais.", notes: "Dia corrido; registro apenas dos horários." },
-    { date: "17/07/2026", meals: "Bolinhos de caco e salsicha; carne moída, banana e legumes; jantar semelhante.", hunger: "Sem fome durante todo o dia.", effects: "Sem efeitos colaterais.", notes: "Boa tolerância e controle do apetite." },
-    { date: "18/07/2026", meals: "Pão carteira com omelete; omelete com batata assada; 2 bolinhos de caco.", hunger: "Sem fome.", effects: "Sem efeitos colaterais.", notes: "Lanche noturno feito mesmo sem fome." },
-    { date: "19/07/2026", meals: "Banana, pão com fiambre e bolinho de caco; pipoca; omelete com legumes.", hunger: "Um pouco de fome às 16:30.", effects: "Sem efeitos colaterais.", notes: "Primeiro episódio de fome em vários dias." },
-    { date: "20/07/2026", meals: "14:15: frango, batata, cenoura, chuchu, cebola e pimentão.", hunger: "Sem fome.", effects: "Sem efeitos colaterais.", notes: "Peso 111,30 kg. 3ª aplicação às 15:15, abaixo do umbigo." }
-  ],
-  generalObservation: "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
-  medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico."
-};
+  function normalizeData(raw) {
+    const base = emptyData();
+    const data = raw && typeof raw === "object" ? raw : {};
+    return {
+      ...base,
+      ...data,
+      profile: { ...base.profile, ...(data.profile || {}) },
+      goal: { ...base.goal, ...(data.goal || {}), history: Array.isArray(data?.goal?.history) ? data.goal.history : [] },
+      treatment: { ...base.treatment, ...(data.treatment || {}) },
+      weights: Array.isArray(data.weights) ? data.weights : [],
+      applications: Array.isArray(data.applications) ? data.applications : [],
+      weeks: Array.isArray(data.weeks) ? data.weeks : [],
+      diary: Array.isArray(data.diary) ? data.diary : []
+    };
+  }
 
-let appData = defaultData;
-let pendingData = null;
-let showAll = false;
-let showAllApplications = false;
-let showAllWeeks = false;
-let showAllWeightSummary = false;
-let publicationComplete = false;
+  function parseBRDate(value) {
+    if (!value) return "";
+    const text = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+    const match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : "";
+  }
 
-const $ = (id) => document.getElementById(id);
-const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
-const kg = (value, decimals = 2) => `${Number(value).toFixed(decimals).replace(".", ",")} kg`;
-
-function loadSavedData() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
-}
-
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function loadGithubConfig() {
-  try { return JSON.parse(localStorage.getItem(GITHUB_CONFIG_KEY)) || {}; } catch { return {}; }
-}
-
-function saveGithubConfig(config) {
-  localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
-}
-
-async function loadPublishedData() {
-  const status = $("importStatus");
-  try {
-    const response = await fetch(`../dados.json?v=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const published = await response.json();
-    validateData(published);
-    appData = published;
-    saveData(published);
-    renderAll();
-    status.className = "import-status success";
-    status.textContent = `Dados publicados carregados: ${published.updatedAt}.`;
-  } catch (error) {
-    const cached = loadSavedData();
-    if (cached) {
-      appData = cached;
-      renderAll();
-      status.className = "import-status";
-      status.textContent = "Sem acesso ao arquivo publicado. Exibindo a última versão salva neste navegador.";
-    } else {
-      appData = defaultData;
-      renderAll();
-      status.className = "import-status error";
-      status.textContent = "Não foi possível carregar dados.json. Envie esse arquivo junto com o site.";
+  function formatBRDate(value) {
+    if (!value) return "";
+    if (value instanceof Date) {
+      const d = String(value.getDate()).padStart(2, "0");
+      const m = String(value.getMonth() + 1).padStart(2, "0");
+      return `${d}/${m}/${value.getFullYear()}`;
     }
-  }
-}
-
-function validateData(data) {
-  const errors = [];
-  if (!data || typeof data !== "object") errors.push("dados ausentes");
-  if (Number(data?.schemaVersion) !== 1) errors.push("schemaVersion deve ser 1");
-  if (!data?.profile?.name) errors.push("nome ausente");
-  ["initialWeightKg", "currentWeightKg", "targetWeightKg"].forEach(key => {
-    if (!Number.isFinite(Number(data?.goal?.[key]))) errors.push(`${key} inválido`);
-  });
-  if (!Array.isArray(data?.weights) || data.weights.length < 1) errors.push("histórico de pesos ausente");
-  if (!Array.isArray(data?.applications)) errors.push("aplicações inválidas");
-  if (!Array.isArray(data?.weeks)) errors.push("semanas inválidas");
-  if (!Array.isArray(data?.diary)) errors.push("diário inválido");
-  if (errors.length) throw new Error(errors.join("; "));
-}
-
-
-function parseBrDate(value) {
-  const [day, month, year] = String(value || "").split("/").map(Number);
-  if (!day || !month || !year) return null;
-  return new Date(year, month - 1, day);
-}
-
-function addDays(date, days) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-function formatBrDate(date) {
-  return new Intl.DateTimeFormat("pt-BR").format(date);
-}
-
-function normalizedGoalHistory(data) {
-  const history = Array.isArray(data?.goal?.history) ? data.goal.history.filter(Boolean) : [];
-  return history.map(item => ({
-    targetWeightKg: Number(item.targetWeightKg),
-    startWeightKg: Number(item.startWeightKg),
-    createdAt: item.createdAt || data.treatment?.startDate || data.updatedAt,
-    achievedAt: item.achievedAt || null
-  })).filter(item => Number.isFinite(item.targetWeightKg));
-}
-
-function currentGoalStage(data, current, target) {
-  const history = normalizedGoalHistory(data);
-  const configuredStart = Number(data?.goal?.stageStartWeightKg);
-  let startWeight = Number.isFinite(configuredStart) ? configuredStart : Number(data?.goal?.initialWeightKg);
-  let startDate = data?.goal?.stageStartDate || data?.treatment?.startDate || data?.updatedAt;
-
-  if (!Number.isFinite(configuredStart) && history.length) {
-    const latestAchieved = [...history].reverse().find(item => item.achievedAt);
-    if (latestAchieved) {
-      startWeight = latestAchieved.targetWeightKg;
-      startDate = latestAchieved.achievedAt;
-    }
+    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value);
   }
 
-  if (!Number.isFinite(startWeight) || startWeight <= target) startWeight = Math.max(current, target);
-  return { startWeight, startDate, history };
-}
-
-function renderGoalExtras(data, current, target, stage) {
-  const estimate = $("goalEstimate");
-  const historyBox = $("goalsHistory");
-  const weights = Array.isArray(data.weights) ? data.weights : [];
-  const stageStartDate = parseBrDate(stage.startDate);
-  const stageWeights = weights.map(item => ({ date: parseBrDate(item.date), value: Number(item.valueKg) }))
-    .filter(item => item.date && Number.isFinite(item.value) && (!stageStartDate || item.date >= stageStartDate));
-  const recent = stageWeights.slice(-5);
-
-  if (current <= target) {
-    estimate.innerHTML = `<strong>Meta alcançada.</strong> Você chegou a ${kg(target)}.`;
-  } else if (recent.length >= 2) {
-    const first = recent[0];
-    const last = recent[recent.length - 1];
-    const elapsedWeeks = Math.max(1 / 7, (last.date - first.date) / 604800000);
-    const weeklyLoss = (first.value - last.value) / elapsedWeeks;
-    if (weeklyLoss > 0.05) {
-      const weeksRemaining = Math.max(1, Math.ceil((current - target) / weeklyLoss));
-      const estimateDate = addDays(last.date, weeksRemaining * 7);
-      estimate.innerHTML = `Estimativa: <strong>${weeksRemaining} ${weeksRemaining === 1 ? "semana" : "semanas"}</strong> — por volta de <strong>${formatBrDate(estimateDate)}</strong>.`;
-    } else {
-      estimate.textContent = "Ainda não há ritmo de perda suficiente nesta nova etapa para calcular uma estimativa.";
-    }
-  } else {
-    estimate.textContent = "A estimativa desta etapa aparecerá após pelo menos duas pesagens.";
+  function numeric(value) {
+    if (value === "" || value === null || value === undefined) return "";
+    const n = Number(String(value).replace(",", "."));
+    return Number.isFinite(n) ? n : "";
   }
 
-  historyBox.innerHTML = stage.history.length ? stage.history.map(item => {
-    const achieved = Boolean(item.achievedAt);
-    const status = achieved ? `Alcançada em ${escapeHtml(item.achievedAt)}` : `Criada em ${escapeHtml(item.createdAt)}`;
-    return `<div class="goal-history-item${achieved ? " achieved" : ""}"><strong>${kg(item.targetWeightKg)}</strong><span>${status}</span></div>`;
-  }).join("") : "";
-}
-function renderAll() {
-  const d = appData;
-  const initial = Number(d.goal.initialWeightKg);
-  const current = Number(d.goal.currentWeightKg);
-  const target = Number(d.goal.targetWeightKg);
-  const loss = initial - current;
-  const stage = currentGoalStage(d, current, target);
-  const stageTotal = stage.startWeight - target;
-  const stageLoss = stage.startWeight - current;
-  const progress = stageTotal > 0 ? Math.max(0, Math.min(100, (stageLoss / stageTotal) * 100)) : (current <= target ? 100 : 0);
-  const remaining = Math.max(0, current - target);
-
-  $("siteTitle").textContent = d.title || "Acompanhamento com Tirzepatida";
-  $("profileSubtitle").textContent = `${d.profile.name} • ${d.profile.age} anos • ${String(d.profile.heightM).replace(".", ",")} m`;
-  $("updatedAt").textContent = `Atualizado em ${d.updatedAt}`;
-  $("initialWeight").textContent = kg(initial);
-  $("currentWeight").textContent = kg(current);
-  $("totalLoss").textContent = kg(loss);
-  $("goalWeight").textContent = kg(target);
-  $("goalLabel").textContent = `Progresso até ${String(target).replace(".", ",")} kg`;
-  $("goalPercent").textContent = `${progress.toFixed(1).replace(".", ",")}%`;
-  $("remainingWeight").textContent = kg(remaining);
-  $("progressBar").style.width = `${progress}%`;
-  $("goalScaleStart").textContent = kg(stage.startWeight);
-  $("goalScaleEnd").textContent = `${String(target).replace(".", ",")} kg`;
-  renderGoalExtras(d, current, target, stage);
-
-  const treatmentRows = [
-    ["Medicamento", d.treatment.medication], ["Concentração", d.treatment.concentration],
-    ["Dose semanal", d.treatment.weeklyDose], ["Início", d.treatment.startDate],
-    ["Aplicações", `${d.applications.length} registradas`]
-  ];
-  $("treatmentDetails").innerHTML = treatmentRows.map(([k,v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join("");
-
-  renderApplications();
-  renderWeeks();
-
-  $("generalObservation").textContent = d.generalObservation || "";
-  $("medicalNotice").textContent = d.medicalNotice || "";
-  $("footerText").textContent = `Acompanhamento iniciado em ${d.treatment.startDate}`;
-
-  renderDiary();
-  drawChart();
-  renderWeightSummary();
-}
-
-function renderApplications() {
-  const applications = showAllApplications ? appData.applications : appData.applications.slice(-5);
-  $("timeline").innerHTML = applications.map((a, index) => {
-    const fallbackNumber = showAllApplications ? index + 1 : appData.applications.length - applications.length + index + 1;
-    return `<article class="timeline-item"><div class="timeline-dot">${escapeHtml(a.number ?? fallbackNumber)}</div><div><h3>${escapeHtml(a.number ?? fallbackNumber)}ª aplicação</h3><p>${escapeHtml(a.date)} às ${escapeHtml(a.time)}</p><span>${escapeHtml(a.dose)} • ${escapeHtml(a.location)}</span></div></article>`;
-  }).join("");
-}
-
-function renderWeeks() {
-  const weeks = showAllWeeks ? appData.weeks : appData.weeks.slice(-5);
-  $("weeksGrid").innerHTML = weeks.map(w => `<article class="week-card${w.current ? " current" : ""}"><div class="week-header"><span>${escapeHtml(w.title)}</span><strong>${escapeHtml(w.period)}</strong></div>${w.lines.map(line => { const idx = line.indexOf(":"); return idx > -1 ? `<p><b>${escapeHtml(line.slice(0, idx + 1))}</b>${escapeHtml(line.slice(idx + 1))}</p>` : `<p>${escapeHtml(line)}</p>`; }).join("")}</article>`).join("");
-}
-
-function renderWeightSummary() {
-  const weights = appData.weights;
-  const losses = weights.slice(1).map((item, i) => {
-    const delta = Number(item.valueKg) - Number(weights[i].valueKg);
-    return { week: i + 1, delta };
-  });
-  const visibleLosses = showAllWeightSummary ? losses : losses.slice(-5);
-  $("weightSummary").innerHTML = visibleLosses.map(item => {
-    const sign = item.delta > 0 ? "+" : "";
-    return `<span>${item.week}ª semana: <b>${sign}${item.delta.toFixed(2).replace(".", ",")} kg</b></span>`;
-  }).join("");
-}
-
-function renderDiary() {
-  const list = showAll ? [...appData.diary].reverse() : appData.diary.slice(-5).reverse();
-  $("diaryList").innerHTML = list.map(item => `<article class="diary-item"><button class="diary-toggle"><strong>${escapeHtml(item.date)}</strong><span>Ver detalhes</span></button><div class="diary-content"><div class="diary-grid"><div class="diary-field"><b>Refeições</b><p>${escapeHtml(item.meals)}</p></div><div class="diary-field"><b>Fome</b><p>${escapeHtml(item.hunger)}</p></div><div class="diary-field"><b>Efeitos</b><p>${escapeHtml(item.effects)}</p></div><div class="diary-field"><b>Observações</b><p>${escapeHtml(item.notes)}</p></div></div></div></article>`).join("");
-  document.querySelectorAll(".diary-toggle").forEach(button => button.addEventListener("click", () => {
-    const item = button.closest(".diary-item");
-    item.classList.toggle("open");
-    button.querySelector("span").textContent = item.classList.contains("open") ? "Ocultar" : "Ver detalhes";
-  }));
-}
-
-function drawChart() {
-  const canvas = $("weightChart");
-  const wrap = canvas.closest(".chart-wrap");
-  const weights = Array.isArray(appData.weights) ? appData.weights : [];
-  if (!weights.length || !wrap) return;
-
-  const minPointSpacing = 42;
-  const visibleWidth = Math.max(320, wrap.clientWidth || 320);
-  const cssWidth = Math.max(visibleWidth, 120 + (weights.length - 1) * minPointSpacing);
-  const cssHeight = Math.max(280, wrap.clientHeight || 300);
-  canvas.style.width = `${cssWidth}px`;
-  canvas.style.height = `${cssHeight}px`;
-
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.round(cssWidth * dpr);
-  canvas.height = Math.round(cssHeight * dpr);
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  const width = cssWidth;
-  const height = cssHeight;
-  const pad = { top: 42, right: 34, bottom: 54, left: 58 };
-  const data = weights.map((w, index) => ({
-    index,
-    label: String(w.date || "").slice(0, 5),
-    fullDate: String(w.date || ""),
-    value: Number(w.valueKg)
-  })).filter(item => Number.isFinite(item.value));
-  if (!data.length) return;
-
-  const values = data.map(item => item.value);
-  const goalValues = [];
-  const currentTarget = Number(appData?.goal?.targetWeightKg);
-  if (Number.isFinite(currentTarget)) goalValues.push(currentTarget);
-  const history = Array.isArray(appData?.goal?.history) ? appData.goal.history : [];
-  history.forEach(item => {
-    const target = Number(item?.targetWeightKg);
-    if (Number.isFinite(target)) goalValues.push(target);
-  });
-
-  let min = Math.floor(Math.min(...values, ...goalValues) - 2);
-  let max = Math.ceil(Math.max(...values, ...goalValues) + 2);
-  if (min === max) { min -= 1; max += 1; }
-  const chartW = width - pad.left - pad.right;
-  const chartH = height - pad.top - pad.bottom;
-  const xFor = index => data.length === 1 ? pad.left + chartW / 2 : pad.left + (index / (data.length - 1)) * chartW;
-  const yFor = value => pad.top + ((max - value) / (max - min)) * chartH;
-
-  ctx.clearRect(0, 0, width, height);
-  ctx.font = "12px system-ui";
-  ctx.fillStyle = "#667b78";
-  ctx.strokeStyle = "#d8e3e1";
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 5; i++) {
-    const value = min + (max - min) * (i / 5);
-    const y = pad.top + chartH - (i / 5) * chartH;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(width - pad.right, y);
-    ctx.stroke();
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText(value.toFixed(0), pad.left - 10, y);
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[char]));
   }
 
-  const uniqueGoals = [...new Set(goalValues)].sort((a, b) => b - a);
-  uniqueGoals.forEach(goal => {
-    if (goal < min || goal > max) return;
-    const y = yFor(goal);
-    ctx.save();
-    ctx.setLineDash([7, 6]);
-    ctx.strokeStyle = "#8aa9a5";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(width - pad.right, y);
-    ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle = "#55716d";
-    ctx.font = "700 11px system-ui";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(`Meta ${String(goal).replace(".", ",")} kg`, pad.left + 6, y - 4);
-  });
-
-  const points = data.map((item, index) => ({ ...item, x: xFor(index), y: yFor(item.value) }));
-  const stageTargets = uniqueGoals;
-  const colors = ["#0f766e", "#159a8c", "#3182a0", "#7a6bb7"];
-  const colorForSegment = (a, b) => {
-    const mid = (a.value + b.value) / 2;
-    let stage = 0;
-    for (const target of stageTargets) if (mid <= target) stage += 1;
-    return colors[Math.min(stage, colors.length - 1)];
-  };
-
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  ctx.lineWidth = 4;
-  for (let i = 1; i < points.length; i++) {
-    ctx.strokeStyle = colorForSegment(points[i - 1], points[i]);
-    ctx.beginPath();
-    ctx.moveTo(points[i - 1].x, points[i - 1].y);
-    ctx.lineTo(points[i].x, points[i].y);
-    ctx.stroke();
+  function encodeBase64Utf8(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary);
   }
 
-  points.forEach((point, index) => {
-    const isLast = index === points.length - 1;
-    ctx.beginPath();
-    ctx.fillStyle = isLast ? "#0f766e" : "#ffffff";
-    ctx.strokeStyle = "#0f766e";
-    ctx.lineWidth = isLast ? 4 : 3;
-    ctx.arc(point.x, point.y, isLast ? 7 : 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  });
+  function setValue(id, value) { const el = $(id); if (el) el.value = value ?? ""; }
+  function getValue(id) { return $(id)?.value?.trim() ?? ""; }
 
-  const maxLabels = Math.max(2, Math.floor(chartW / 85));
-  const labelStep = Math.max(1, Math.ceil((data.length - 1) / (maxLabels - 1)));
-  data.forEach((item, index) => {
-    if (index !== 0 && index !== data.length - 1 && index % labelStep !== 0) return;
-    const x = xFor(index);
-    ctx.fillStyle = "#667b78";
-    ctx.font = "11px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillText(item.label, x, height - pad.bottom + 15);
-  });
+  function showToast(message, type = "success") {
+    const toast = $("toast");
+    toast.textContent = message;
+    toast.className = `toast visible ${type}`;
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => { toast.className = "toast"; }, 3500);
+  }
 
-  const last = points[points.length - 1];
-  ctx.fillStyle = "#17312f";
-  ctx.font = "700 12px system-ui";
-  ctx.textAlign = last.x > width - 110 ? "right" : "left";
-  ctx.textBaseline = "bottom";
-  const labelX = last.x > width - 110 ? last.x - 10 : last.x + 10;
-  ctx.fillText(`${last.value.toFixed(2).replace(".", ",")} kg (atual)`, labelX, last.y - 9);
+  function setStatus(message, state = "") {
+    const el = $("saveStatus");
+    el.textContent = message;
+    el.dataset.state = state;
+  }
 
-  canvas.__chartPoints = points;
-  if (!canvas.__tooltipBound) {
-    const showTooltip = event => {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = event.touches?.[0]?.clientX ?? event.clientX;
-      const clientY = event.touches?.[0]?.clientY ?? event.clientY;
-      if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) return;
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const candidates = canvas.__chartPoints || [];
-      let nearest = null;
-      let distance = Infinity;
-      candidates.forEach(point => {
-        const d = Math.hypot(point.x - x, point.y - y);
-        if (d < distance) { nearest = point; distance = d; }
-      });
-      if (!nearest || distance > 28) return;
-      let tooltip = wrap.querySelector(".chart-tooltip");
-      if (!tooltip) {
-        tooltip = document.createElement("div");
-        tooltip.className = "chart-tooltip";
-        wrap.appendChild(tooltip);
+  function markDirty() {
+    dirty = true;
+    setStatus("Alterações não salvas", "dirty");
+  }
+
+  async function loadInitialData() {
+    loadGithubConfig();
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try {
+        appData = normalizeData(JSON.parse(draft));
+        fillEditor();
+        setStatus("Rascunho carregado", "draft");
+        return;
+      } catch (_) {
+        localStorage.removeItem(DRAFT_KEY);
       }
-      tooltip.innerHTML = `<strong>${nearest.value.toFixed(2).replace(".", ",")} kg</strong><span>${escapeHtml(nearest.fullDate)}</span>`;
-      const left = Math.min(Math.max(nearest.x - 55, 8), canvas.offsetWidth - 118);
-      const top = Math.max(8, nearest.y - 66);
-      tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${top}px`;
-      tooltip.classList.add("show");
-      clearTimeout(canvas.__tooltipTimer);
-      canvas.__tooltipTimer = setTimeout(() => tooltip.classList.remove("show"), 2600);
-    };
-    canvas.addEventListener("click", showTooltip);
-    canvas.addEventListener("touchstart", showTooltip, { passive: true });
-    canvas.__tooltipBound = true;
-  }
-
-  if (!wrap.dataset.initialScrollDone && width > visibleWidth) {
-    wrap.scrollLeft = width - visibleWidth;
-    wrap.dataset.initialScrollDone = "1";
-  }
-}
-async function extractPdfText(file) {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-  let text = "";
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    text += content.items.map(item => item.str).join(" ") + "\n";
-  }
-  return text;
-}
-
-function decodeBase64Utf8(value) {
-  const normalized = value.replace(/\s+/g, "");
-  const binary = atob(normalized);
-  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
-  return new TextDecoder("utf-8").decode(bytes);
-}
-
-function parsePdfPayload(text) {
-  const start = text.indexOf(PDF_START);
-  const end = text.indexOf(PDF_END);
-  if (start === -1 || end === -1 || end <= start) throw new Error("Bloco TirzeTrack não encontrado no PDF.");
-  const payload = text.slice(start + PDF_START.length, end).replace(/[^A-Za-z0-9+/=]/g, "");
-  if (!payload) throw new Error("Bloco de dados vazio.");
-  const data = JSON.parse(decodeBase64Utf8(payload));
-  validateData(data);
-  return data;
-}
-
-async function handlePdfImport(file) {
-  const status = $("importStatus");
-  publicationComplete = false;
-  $("publishButton").textContent = "Publicar atualização";
-  status.className = "import-status loading";
-  status.textContent = `Lendo ${file.name}...`;
-  $("publishButton").disabled = true;
-  try {
-    publicationComplete = false;
-    $("publishButton").textContent = "Publicar atualização";
-    const text = await extractPdfText(file);
-    const imported = parsePdfPayload(text);
-    pendingData = imported;
-    appData = imported;
-    renderAll();
-    $("publishButton").disabled = false;
-    status.className = "import-status success";
-    status.textContent = `Relatório validado: ${imported.updatedAt}. Toque em Publicar atualização.`;
-  } catch (error) {
-    pendingData = null;
-    console.error(error);
-    status.className = "import-status error";
-    status.textContent = `Não foi possível importar: ${error.message}`;
-  }
-}
-
-function utf8ToBase64(value) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = "";
-  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
-  return btoa(binary);
-}
-
-async function githubRequest(url, options, token) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      ...(options?.headers || {})
     }
-  });
-  if (!response.ok) {
-    let detail = "";
-    try { detail = (await response.json()).message || ""; } catch {}
-    throw new Error(`${response.status} ${detail || response.statusText}`.trim());
-  }
-  return response.status === 204 ? null : response.json();
-}
-
-async function publishPendingData() {
-  if (!pendingData) return;
-
-  const status = $("importStatus");
-  const button = $("publishButton");
-  const config = loadGithubConfig();
-  const required = ["owner", "repo", "branch", "path", "token"];
-
-  if (required.some(key => !config[key])) {
-    $("adminPanel").classList.remove("hidden");
-    status.className = "import-status error";
-    status.textContent = "Preencha e salve a configuração do GitHub antes de publicar.";
-    return;
+    await loadPublishedData(false);
   }
 
-  status.className = "import-status loading";
-  status.textContent = "Publicando o relatório no GitHub...";
-  button.disabled = true;
-
-  const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
-  const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
-
-  async function getCurrentSha() {
+  async function loadPublishedData(confirmReload = true) {
+    if (confirmReload && dirty && !confirm("Descartar as alterações atuais e recarregar os dados publicados?")) return;
     try {
-      const current = await githubRequest(
-        `${apiUrl}?ref=${encodeURIComponent(config.branch)}`,
-        { method: "GET", cache: "no-store" },
-        config.token
-      );
-      return current.sha;
+      setStatus("Carregando dados publicados...");
+      const response = await fetch(`../dados.json?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Falha ao carregar dados.json (${response.status}).`);
+      appData = normalizeData(await response.json());
+      localStorage.removeItem(DRAFT_KEY);
+      dirty = false;
+      fillEditor();
+      setStatus("Dados publicados carregados", "saved");
+      if (confirmReload) showToast("Dados publicados recarregados.");
     } catch (error) {
-      if (String(error.message).startsWith("404")) return undefined;
-      throw error;
+      appData = emptyData();
+      fillEditor();
+      setStatus("Novo cadastro", "draft");
+      showToast(error.message || "Não foi possível carregar dados.json.", "error");
     }
   }
 
-  async function sendUpdate(sha) {
-    const body = {
-      message: `Atualiza relatório TirzeTrack - ${pendingData.updatedAt}`,
-      content: utf8ToBase64(JSON.stringify(pendingData, null, 2)),
-      branch: config.branch,
-      ...(sha ? { sha } : {})
+  function fillEditor() {
+    setValue("fieldTitle", appData.title);
+    setValue("fieldUpdatedAt", parseBRDate(appData.updatedAt));
+    setValue("fieldSchemaVersion", appData.schemaVersion);
+    setValue("fieldName", appData.profile.name);
+    setValue("fieldAge", appData.profile.age);
+    setValue("fieldHeight", appData.profile.heightM);
+    setValue("fieldInitialWeight", appData.goal.initialWeightKg);
+    setValue("fieldCurrentWeight", appData.goal.currentWeightKg);
+    setValue("fieldTargetWeight", appData.goal.targetWeightKg);
+    setValue("fieldStageStartWeight", appData.goal.stageStartWeightKg);
+    setValue("fieldStageStartDate", parseBRDate(appData.goal.stageStartDate));
+    setValue("fieldMedication", appData.treatment.medication);
+    setValue("fieldConcentration", appData.treatment.concentration);
+    setValue("fieldWeeklyDose", appData.treatment.weeklyDose);
+    setValue("fieldTreatmentStart", parseBRDate(appData.treatment.startDate));
+    setValue("fieldGeneralObservation", appData.generalObservation);
+    setValue("fieldMedicalNotice", appData.medicalNotice);
+    renderLists();
+  }
+
+  function renderLists() {
+    renderGoalHistory();
+    renderWeights();
+    renderApplications();
+    renderWeeks();
+    renderDiary();
+  }
+
+  function itemHeader(title, index, type) {
+    return `<div class="editable-item-header"><strong>${escapeHtml(title)}</strong><button class="delete-button" type="button" data-delete="${type}" data-index="${index}">Excluir</button></div>`;
+  }
+
+  function renderGoalHistory() {
+    $("goalHistoryList").innerHTML = appData.goal.history.length ? appData.goal.history.map((item, index) => `
+      <article class="editable-item" data-type="goalHistory" data-index="${index}">
+        ${itemHeader(`Meta anterior ${index + 1}`, index, "goalHistory")}
+        <div class="admin-grid four-columns">
+          <label>Meta (kg)<input data-field="targetWeightKg" type="number" step="0.01" value="${escapeHtml(item.targetWeightKg)}"></label>
+          <label>Peso inicial da etapa (kg)<input data-field="startWeightKg" type="number" step="0.01" value="${escapeHtml(item.startWeightKg ?? item.stageStartWeightKg ?? "")}"></label>
+          <label>Data de início<input data-field="startDate" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.startDate ?? item.stageStartDate))}"></label>
+          <label>Data de conclusão<input data-field="completedAt" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.completedAt))}"></label>
+        </div>
+      </article>`).join("") : '<p class="empty-list">Nenhuma meta anterior cadastrada.</p>';
+  }
+
+  function renderWeights() {
+    $("weightsList").innerHTML = appData.weights.length ? appData.weights.map((item, index) => `
+      <article class="editable-item compact-item" data-type="weights" data-index="${index}">
+        ${itemHeader(`Pesagem ${index + 1}`, index, "weights")}
+        <div class="admin-grid two-columns">
+          <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
+          <label>Peso (kg)<input data-field="valueKg" type="number" step="0.01" inputmode="decimal" value="${escapeHtml(item.valueKg)}"></label>
+        </div>
+      </article>`).join("") : '<p class="empty-list">Nenhuma pesagem cadastrada.</p>';
+  }
+
+  function renderApplications() {
+    $("applicationsList").innerHTML = appData.applications.length ? appData.applications.map((item, index) => `
+      <article class="editable-item" data-type="applications" data-index="${index}">
+        ${itemHeader(`Aplicação ${item.number || index + 1}`, index, "applications")}
+        <div class="admin-grid four-columns">
+          <label>Número<input data-field="number" type="number" min="1" step="1" value="${escapeHtml(item.number)}"></label>
+          <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
+          <label>Horário<input data-field="time" type="time" value="${escapeHtml(item.time)}"></label>
+          <label>Dose<input data-field="dose" type="text" value="${escapeHtml(item.dose)}"></label>
+          <label class="wide-field">Local da aplicação<input data-field="location" type="text" value="${escapeHtml(item.location)}"></label>
+        </div>
+      </article>`).join("") : '<p class="empty-list">Nenhuma aplicação cadastrada.</p>';
+  }
+
+  function renderWeeks() {
+    $("weeksList").innerHTML = appData.weeks.length ? appData.weeks.map((item, index) => `
+      <article class="editable-item" data-type="weeks" data-index="${index}">
+        ${itemHeader(item.title || `Semana ${index + 1}`, index, "weeks")}
+        <div class="admin-grid three-columns">
+          <label>Título<input data-field="title" type="text" value="${escapeHtml(item.title)}"></label>
+          <label>Período<input data-field="period" type="text" value="${escapeHtml(item.period)}"></label>
+          <label class="checkbox-label"><input data-field="current" type="checkbox" ${item.current ? "checked" : ""}> Semana atual</label>
+          <label class="wide-field">Linhas do resumo<textarea data-field="lines" data-lines="true" rows="6">${escapeHtml((item.lines || []).join("\n"))}</textarea></label>
+        </div>
+      </article>`).join("") : '<p class="empty-list">Nenhum resumo semanal cadastrado.</p>';
+  }
+
+  function renderDiary() {
+    $("diaryEditorList").innerHTML = appData.diary.length ? appData.diary.map((item, index) => `
+      <article class="editable-item" data-type="diary" data-index="${index}">
+        ${itemHeader(item.date || `Registro ${index + 1}`, index, "diary")}
+        <div class="admin-grid two-columns">
+          <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
+          <label>Refeições<textarea data-field="meals" rows="4">${escapeHtml(item.meals)}</textarea></label>
+          <label>Fome<textarea data-field="hunger" rows="4">${escapeHtml(item.hunger)}</textarea></label>
+          <label>Efeitos<textarea data-field="effects" rows="4">${escapeHtml(item.effects)}</textarea></label>
+          <label class="wide-field">Observações<textarea data-field="notes" rows="4">${escapeHtml(item.notes)}</textarea></label>
+        </div>
+      </article>`).join("") : '<p class="empty-list">Nenhum registro diário cadastrado.</p>';
+  }
+
+  function collectDataFromDOM() {
+    appData.title = getValue("fieldTitle");
+    appData.updatedAt = formatBRDate(getValue("fieldUpdatedAt"));
+    appData.schemaVersion = numeric(getValue("fieldSchemaVersion")) || 1;
+    appData.profile = {
+      name: getValue("fieldName"), age: numeric(getValue("fieldAge")), heightM: numeric(getValue("fieldHeight"))
     };
-
-    return githubRequest(
-      apiUrl,
-      {
-        method: "PUT",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" }
-      },
-      config.token
-    );
+    appData.goal = {
+      ...appData.goal,
+      initialWeightKg: numeric(getValue("fieldInitialWeight")),
+      currentWeightKg: numeric(getValue("fieldCurrentWeight")),
+      targetWeightKg: numeric(getValue("fieldTargetWeight")),
+      stageStartWeightKg: numeric(getValue("fieldStageStartWeight")),
+      stageStartDate: formatBRDate(getValue("fieldStageStartDate")),
+      history: collectList("goalHistory")
+    };
+    appData.treatment = {
+      medication: getValue("fieldMedication"), concentration: getValue("fieldConcentration"),
+      weeklyDose: getValue("fieldWeeklyDose"), startDate: formatBRDate(getValue("fieldTreatmentStart"))
+    };
+    appData.weights = collectList("weights");
+    appData.applications = collectList("applications");
+    appData.weeks = collectList("weeks");
+    appData.diary = collectList("diary");
+    appData.generalObservation = getValue("fieldGeneralObservation");
+    appData.medicalNotice = getValue("fieldMedicalNotice");
+    return appData;
   }
 
-  try {
-    let sha = await getCurrentSha();
-
-    try {
-      await sendUpdate(sha);
-    } catch (error) {
-      if (!String(error.message).startsWith("409")) throw error;
-      status.textContent = "Atualizando a versão do arquivo e tentando novamente...";
-      sha = await getCurrentSha();
-      await sendUpdate(sha);
-    }
-
-    saveData(pendingData);
-    appData = pendingData;
-    pendingData = null;
-    publicationComplete = true;
-
-    button.disabled = false;
-    button.textContent = "Ir para o site";
-    status.className = "import-status success";
-    status.textContent = "Relatório publicado com sucesso. O site pode levar alguns instantes para atualizar em outros dispositivos.";
-  } catch (error) {
-    console.error(error);
-    button.disabled = false;
-    status.className = "import-status error";
-    status.textContent = `Falha ao publicar: ${error.message}`;
-  }
-}
-
-
-async function setNewGoal() {
-  const input = $("newGoalWeight");
-  const newTarget = Number(String(input.value).replace(",", "."));
-  if (!Number.isFinite(newTarget) || newTarget < 30 || newTarget > 300) {
-    $("importStatus").className = "import-status error";
-    $("importStatus").textContent = "Informe uma nova meta válida entre 30 e 300 kg.";
-    return;
-  }
-
-  const base = pendingData ? structuredClone(pendingData) : structuredClone(appData);
-  const current = Number(base.goal.currentWeightKg);
-  const oldTarget = Number(base.goal.targetWeightKg);
-  const history = normalizedGoalHistory(base);
-  const alreadyStored = history.some(item => Math.abs(item.targetWeightKg - oldTarget) < 0.001);
-  if (!alreadyStored) {
-    history.push({
-      targetWeightKg: oldTarget,
-      createdAt: base.treatment?.startDate || base.updatedAt,
-      achievedAt: current <= oldTarget ? base.updatedAt : null
+  function collectList(type) {
+    return [...document.querySelectorAll(`.editable-item[data-type="${type}"]`)].map(item => {
+      const obj = {};
+      item.querySelectorAll("[data-field]").forEach(input => {
+        const key = input.dataset.field;
+        if (input.type === "checkbox") obj[key] = input.checked;
+        else if (input.dataset.lines) obj[key] = input.value.split("\n").map(line => line.trim()).filter(Boolean);
+        else if (input.dataset.date) obj[key] = formatBRDate(input.value);
+        else if (input.type === "number") obj[key] = numeric(input.value);
+        else obj[key] = input.value.trim();
+      });
+      return obj;
     });
-  } else if (current <= oldTarget) {
-    const old = history.find(item => Math.abs(item.targetWeightKg - oldTarget) < 0.001);
-    if (old && !old.achievedAt) old.achievedAt = base.updatedAt;
   }
 
-  base.goal.history = history;
-  base.goal.stageStartWeightKg = current <= oldTarget ? oldTarget : current;
-  base.goal.stageStartDate = base.updatedAt;
-  base.goal.targetWeightKg = newTarget;
-  pendingData = base;
-  appData = base;
-  renderAll();
-  input.value = "";
-  $("publishButton").disabled = false;
-  $("publishButton").textContent = "Publicar atualização";
-  publicationComplete = false;
-  $("importStatus").className = "import-status loading";
-  $("importStatus").textContent = `Salvando a nova meta de ${kg(newTarget)}...`;
-
-  // Publica imediatamente para que a nova meta permaneça após atualizar a página.
-  await publishPendingData();
-}
-
-function fillGithubForm() {
-  const config = loadGithubConfig();
-  const pagesOwner = location.hostname.endsWith("github.io") ? location.hostname.split(".")[0] : "";
-  const pagesRepo = location.hostname.endsWith("github.io") ? location.pathname.split("/").filter(Boolean)[0] || "" : "";
-  $("githubOwner").value = config.owner || pagesOwner;
-  $("githubRepo").value = config.repo || pagesRepo;
-  $("githubBranch").value = config.branch || "main";
-  $("githubPath").value = config.path || "dados.json";
-  $("githubToken").value = config.token || "";
-}
-
-function persistGithubForm() {
-  const config = {
-    owner: $("githubOwner").value.trim(),
-    repo: $("githubRepo").value.trim(),
-    branch: $("githubBranch").value.trim() || "main",
-    path: $("githubPath").value.trim() || "dados.json",
-    token: $("githubToken").value.trim()
-  };
-  if (!config.owner || !config.repo || !config.token) {
-    $("importStatus").className = "import-status error";
-    $("importStatus").textContent = "Informe usuário, repositório e token.";
-    return;
+  function addItem(type) {
+    collectDataFromDOM();
+    if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
+    if (type === "weights") appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" });
+    if (type === "applications") appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" });
+    if (type === "weeks") appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, lines: [] });
+    if (type === "diary") appData.diary.push({ date: formatBRDate(new Date()), meals: "", hunger: "", effects: "", notes: "" });
+    renderLists();
+    markDirty();
+    const selector = type === "goalHistory" ? "#goalHistoryList .editable-item:last-child" : `[data-type="${type}"]:last-child`;
+    document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
-  saveGithubConfig(config);
-  $("adminPanel").classList.add("hidden");
-  $("importStatus").className = "import-status success";
-  $("importStatus").textContent = "Configuração do GitHub salva neste navegador.";
-}
 
-$("toggleAll").addEventListener("click", event => {
-  showAll = !showAll;
-  event.currentTarget.textContent = showAll ? "Mostrar recentes" : "Mostrar todos";
-  renderDiary();
-});
-
-$("toggleApplications").addEventListener("click", event => {
-  showAllApplications = !showAllApplications;
-  event.currentTarget.textContent = showAllApplications ? "Mostrar recentes" : "Mostrar todos";
-  renderApplications();
-});
-
-$("toggleWeeks").addEventListener("click", event => {
-  showAllWeeks = !showAllWeeks;
-  event.currentTarget.textContent = showAllWeeks ? "Mostrar recentes" : "Mostrar todos";
-  renderWeeks();
-});
-
-$("toggleWeightSummary").addEventListener("click", event => {
-  showAllWeightSummary = !showAllWeightSummary;
-  event.currentTarget.textContent = showAllWeightSummary ? "Mostrar recentes" : "Mostrar todos";
-  renderWeightSummary();
-});
-
-$("pdfInput").addEventListener("change", event => {
-  const file = event.target.files?.[0];
-  if (file) handlePdfImport(file);
-  event.target.value = "";
-});
-
-$("publishButton").addEventListener("click", () => {
-  if (publicationComplete) {
-    window.location.href = "../";
-    return;
+  function deleteItem(type, index) {
+    if (!confirm("Tem certeza de que deseja excluir este registro?")) return;
+    collectDataFromDOM();
+    const list = type === "goalHistory" ? appData.goal.history : appData[type];
+    if (!Array.isArray(list)) return;
+    list.splice(index, 1);
+    if (type === "applications") list.forEach((item, i) => { if (!item.number) item.number = i + 1; });
+    renderLists();
+    markDirty();
   }
-  publishPendingData();
-});
-$("openAdmin").addEventListener("click", () => { fillGithubForm(); $("adminPanel").classList.remove("hidden"); });
-$("closeAdmin").addEventListener("click", () => $("adminPanel").classList.add("hidden"));
-$("saveGithubConfig").addEventListener("click", persistGithubForm);
-$("setNewGoal").addEventListener("click", setNewGoal);
 
-window.addEventListener("resize", () => {
-  clearTimeout(window.__chartTimer);
-  window.__chartTimer = setTimeout(drawChart, 150);
-});
+  function sortByDate(list) {
+    const time = date => {
+      const iso = parseBRDate(date);
+      return iso ? new Date(`${iso}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
+    };
+    return list.sort((a, b) => time(a.date) - time(b.date));
+  }
 
-fillGithubForm();
-loadPublishedData();
+  function recalculateWeights() {
+    collectDataFromDOM();
+    sortByDate(appData.weights);
+    const valid = appData.weights.filter(item => Number.isFinite(Number(item.valueKg)));
+    if (!valid.length) return showToast("Cadastre ao menos uma pesagem válida.", "error");
+    appData.goal.initialWeightKg = Number(valid[0].valueKg);
+    appData.goal.currentWeightKg = Number(valid[valid.length - 1].valueKg);
+    if (!appData.goal.stageStartWeightKg) appData.goal.stageStartWeightKg = Number(valid[0].valueKg);
+    if (!appData.goal.stageStartDate) appData.goal.stageStartDate = valid[0].date;
+    fillEditor();
+    markDirty();
+    showToast("Peso inicial e peso atual recalculados.");
+  }
+
+  function validateData(data) {
+    const errors = [];
+    if (!data.title) errors.push("Informe o título do site.");
+    if (!data.updatedAt) errors.push("Informe a data de atualização.");
+    if (!data.profile.name) errors.push("Informe o nome do perfil.");
+    ["initialWeightKg", "currentWeightKg", "targetWeightKg"].forEach(key => {
+      if (!Number.isFinite(Number(data.goal[key]))) errors.push(`Informe um valor válido para ${key}.`);
+    });
+    data.weights.forEach((item, i) => {
+      if (!item.date || !Number.isFinite(Number(item.valueKg))) errors.push(`Pesagem ${i + 1} está incompleta.`);
+    });
+    data.applications.forEach((item, i) => {
+      if (!item.date || !item.dose) errors.push(`Aplicação ${i + 1} está incompleta.`);
+    });
+    data.diary.forEach((item, i) => { if (!item.date) errors.push(`Registro diário ${i + 1} está sem data.`); });
+    return errors;
+  }
+
+  function prepareData() {
+    collectDataFromDOM();
+    sortByDate(appData.weights);
+    sortByDate(appData.applications);
+    sortByDate(appData.diary);
+    appData.applications.forEach((item, index) => { item.number = numeric(item.number) || index + 1; });
+    const errors = validateData(appData);
+    if (errors.length) throw new Error(errors.slice(0, 5).join("\n"));
+    return appData;
+  }
+
+  function saveDraft() {
+    try {
+      collectDataFromDOM();
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(appData));
+      dirty = false;
+      setStatus("Rascunho salvo neste navegador", "saved");
+      showToast("Rascunho salvo.");
+    } catch (error) { showToast(error.message, "error"); }
+  }
+
+  function downloadBackup() {
+    try {
+      const data = prepareData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup-tirzetrack-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast("Backup gerado.");
+    } catch (error) { showToast(error.message, "error"); }
+  }
+
+  async function importJson(file) {
+    try {
+      const text = await file.text();
+      appData = normalizeData(JSON.parse(text));
+      fillEditor();
+      markDirty();
+      showToast("JSON importado. Revise e publique quando estiver pronto.");
+    } catch (_) { showToast("O arquivo JSON é inválido.", "error"); }
+  }
+
+  function loadGithubConfig() {
+    try {
+      const config = JSON.parse(localStorage.getItem(GITHUB_CONFIG_KEY) || "{}");
+      setValue("githubOwner", config.owner);
+      setValue("githubRepo", config.repo);
+      setValue("githubBranch", config.branch || "main");
+      setValue("githubPath", config.path || "dados.json");
+      setValue("githubToken", config.token);
+    } catch (_) { /* configuração vazia */ }
+  }
+
+  function getGithubConfig() {
+    return {
+      owner: getValue("githubOwner"), repo: getValue("githubRepo"),
+      branch: getValue("githubBranch") || "main", path: getValue("githubPath") || "dados.json",
+      token: getValue("githubToken")
+    };
+  }
+
+  function saveGithubConfig() {
+    const config = getGithubConfig();
+    if (!config.owner || !config.repo || !config.token) return showToast("Preencha usuário, repositório e token.", "error");
+    localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
+    showToast("Configuração do GitHub salva.");
+  }
+
+  async function publishToGithub() {
+    const button = $("publishButton");
+    try {
+      const data = prepareData();
+      const config = getGithubConfig();
+      if (!config.owner || !config.repo || !config.branch || !config.path || !config.token) {
+        document.querySelector("#github")?.scrollIntoView({ behavior: "smooth" });
+        throw new Error("Configure usuário, repositório, branch, arquivo e token do GitHub.");
+      }
+      button.disabled = true;
+      button.textContent = "Publicando...";
+      setStatus("Publicando no GitHub...");
+
+      const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
+      const endpoint = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
+      const headers = {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${config.token}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json"
+      };
+
+      let sha;
+      const current = await fetch(`${endpoint}?ref=${encodeURIComponent(config.branch)}`, { headers });
+      if (current.ok) sha = (await current.json()).sha;
+      else if (current.status !== 404) {
+        const detail = await current.json().catch(() => ({}));
+        throw new Error(detail.message || `Não foi possível consultar o arquivo (${current.status}).`);
+      }
+
+      const payload = {
+        message: `Atualiza dados do TirzeTrack em ${data.updatedAt}`,
+        content: encodeBase64Utf8(`${JSON.stringify(data, null, 2)}\n`),
+        branch: config.branch,
+        ...(sha ? { sha } : {})
+      };
+      const response = await fetch(endpoint, { method: "PUT", headers, body: JSON.stringify(payload) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || `Falha ao publicar (${response.status}).`);
+
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
+      dirty = false;
+      setStatus("Publicado com sucesso", "published");
+      showToast("Alterações publicadas no GitHub.");
+    } catch (error) {
+      setStatus("Falha na publicação", "error");
+      showToast(error.message || "Não foi possível publicar.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Publicar no GitHub";
+    }
+  }
+
+  document.addEventListener("input", event => {
+    if (event.target.matches("input, textarea")) markDirty();
+  });
+  document.addEventListener("change", event => {
+    if (event.target.matches("input, textarea")) markDirty();
+  });
+  document.addEventListener("click", event => {
+    const add = event.target.closest("[data-add]");
+    if (add) addItem(add.dataset.add);
+    const del = event.target.closest("[data-delete]");
+    if (del) deleteItem(del.dataset.delete, Number(del.dataset.index));
+  });
+
+  $("saveDraft").addEventListener("click", saveDraft);
+  $("downloadBackup").addEventListener("click", downloadBackup);
+  $("reloadPublished").addEventListener("click", () => loadPublishedData(true));
+  $("recalculateWeights").addEventListener("click", recalculateWeights);
+  $("saveGithubConfig").addEventListener("click", saveGithubConfig);
+  $("publishButton").addEventListener("click", publishToGithub);
+  $("jsonInput").addEventListener("change", event => {
+    const file = event.target.files?.[0];
+    if (file) importJson(file);
+    event.target.value = "";
+  });
+  window.addEventListener("beforeunload", event => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
+  loadInitialData();
+})();
