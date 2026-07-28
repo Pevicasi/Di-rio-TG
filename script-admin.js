@@ -756,6 +756,15 @@
     }
   }
 
+  document.querySelectorAll("[data-admin-tab]").forEach(button => {
+    button.addEventListener("click", () => {
+      const targetId = button.dataset.adminTab;
+      if (!targetId || !$(targetId)) return;
+      collectEditorData();
+      activateTab(targetId, true);
+    });
+  });
+
   $("publishButton").addEventListener("click", publishToGithub);
   $("jsonInput").addEventListener("change", event => {
     const file = event.target.files?.[0];

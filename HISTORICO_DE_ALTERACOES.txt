@@ -52,3 +52,20 @@ ARQUIVOS PRINCIPAIS ALTERADOS
 • style.css
 • dados.json
 • HISTORICO_DE_ALTERACOES.txt
+
+--------------------------------------------------
+
+Versão 2.3.2
+Data: 28/07/2026
+
+CORREÇÕES
+• Corrigida a navegação entre as abas da área administrativa no celular.
+• Os botões Geral, Perfil, Metas, Tratamento, Pesagens, Aplicações, Semanas, Diário, Observações e GitHub voltaram a alternar corretamente a seção visível.
+• Antes de trocar de aba, os valores preenchidos na seção atual são recolhidos para evitar perda de alterações ainda não salvas.
+• Atualizado o identificador de cache do JavaScript administrativo para forçar o navegador a carregar a correção.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• admin/index.html
+• admin/script-admin.js
+• script-admin.js
+• HISTORICO_DE_ALTERACOES.txt
