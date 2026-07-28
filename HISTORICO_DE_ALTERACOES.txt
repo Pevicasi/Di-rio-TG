@@ -99,3 +99,16 @@ Correções
 Validações
 • Sintaxe dos arquivos JavaScript verificada.
 • Referências de funções usadas na inicialização e navegação revisadas.
+
+
+--------------------------------------------------
+Versão 2.3.5
+Data: 28/07/2026
+
+Correções
+• Ligados os botões Salvar rascunho, Baixar backup, Recarregar publicado, Recalcular pesos, Gerar resumos e Salvar configuração do GitHub.
+• Ligados os botões dinâmicos Adicionar e Excluir em pesagens, aplicações, metas e diário.
+• Corrigida a seleção de uma data diferente no editor do diário.
+• Corrigido o controle da data automática.
+• Removido um campo duplicado de data de conclusão no histórico de metas.
+• Edições em campos e opções de visibilidade agora marcam o painel como alterado.
