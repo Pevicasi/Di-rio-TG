@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "2.3.0";
+  const ADMIN_BUILD = "2.3.1";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
@@ -345,7 +345,11 @@
       const isCurrent = index === applications.length - 1 && today <= nominalEnd;
       const displayEnd = isCurrent && today < end ? today : end;
       const startWeight = latestWeightOnOrBefore(start);
-      const endWeight = latestWeightOnOrBefore(displayEnd);
+      // A pesagem feita no dia da aplicação seguinte encerra a semana anterior.
+      // Isso mantém o período visual (ex.: 06/07 a 12/07), mas usa a pesagem
+      // de 13/07 como resultado final da Semana 1.
+      const closingWeightDate = nextStart || displayEnd;
+      const endWeight = latestWeightOnOrBefore(closingWeightDate);
       const entries = appData.diary.filter(item => dateInRange(item.date, start, displayEnd));
 
       let weight = "";
@@ -692,7 +696,7 @@
       button.textContent = "Publicando...";
       setStatus("Publicando no GitHub...");
 
-      const encodedPath = config.path.split("/").map(encodeURIComponent).join("/");
+      const encodedPath = config.path.split("/").filter(Boolean).map(encodeURIComponent).join("/");
       const endpoint = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath}`;
       const headers = {
         Accept: "application/vnd.github+json",
@@ -701,23 +705,42 @@
         "Content-Type": "application/json"
       };
 
-      let sha;
-      const current = await fetch(`${endpoint}?ref=${encodeURIComponent(config.branch)}`, { headers });
-      if (current.ok) sha = (await current.json()).sha;
-      else if (current.status !== 404) {
+      async function fetchCurrentSha() {
+        const separator = endpoint.includes("?") ? "&" : "?";
+        const url = `${endpoint}${separator}ref=${encodeURIComponent(config.branch)}&_=${Date.now()}`;
+        const current = await fetch(url, { headers, cache: "no-store" });
+        if (current.ok) return (await current.json()).sha;
+        if (current.status === 404) return undefined;
         const detail = await current.json().catch(() => ({}));
         throw new Error(detail.message || `Não foi possível consultar o arquivo (${current.status}).`);
       }
 
-      const payload = {
-        message: `Atualiza dados do TirzeTrack em ${data.updatedAt}`,
-        content: encodeBase64Utf8(`${JSON.stringify(data, null, 2)}\n`),
-        branch: config.branch,
-        ...(sha ? { sha } : {})
-      };
-      const response = await fetch(endpoint, { method: "PUT", headers, body: JSON.stringify(payload) });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || `Falha ao publicar (${response.status}).`);
+      let response;
+      let result = {};
+      // Se outro envio alterou dados.json entre a consulta e a gravação, o GitHub
+      // devolve conflito de SHA. Nesse caso, buscamos o SHA mais recente e tentamos novamente.
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        const sha = await fetchCurrentSha();
+        const payload = {
+          message: `Atualiza dados do TirzeTrack em ${data.updatedAt}`,
+          content: encodeBase64Utf8(`${JSON.stringify(data, null, 2)}\n`),
+          branch: config.branch,
+          ...(sha ? { sha } : {})
+        };
+        response = await fetch(endpoint, {
+          method: "PUT",
+          headers,
+          cache: "no-store",
+          body: JSON.stringify(payload)
+        });
+        result = await response.json().catch(() => ({}));
+        if (response.ok) break;
+        const shaConflict = (response.status === 409 || response.status === 422) && /sha|does not match|conflict/i.test(result.message || "");
+        if (!shaConflict || attempt === 3) {
+          throw new Error(result.message || `Falha ao publicar (${response.status}).`);
+        }
+        await new Promise(resolve => setTimeout(resolve, 450 * attempt));
+      }
 
       localStorage.removeItem(DRAFT_KEY);
       localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
@@ -733,37 +756,6 @@
     }
   }
 
-  document.addEventListener("input", event => {
-    if (event.target.matches("input, textarea")) markDirty();
-  });
-  document.addEventListener("change", event => {
-    if (event.target.id === "fieldAutoUpdatedAt") {
-      $("fieldUpdatedAt").disabled = event.target.checked;
-      if (event.target.checked) setValue("fieldUpdatedAt", parseBRDate(formatBRDate(new Date())));
-    }
-    if (event.target.id === "diaryDateSelector") {
-      collectDiaryFromDOM();
-      selectedDiaryIndex = Number(event.target.value);
-      renderDiary();
-      return;
-    }
-    if (event.target.matches("input, textarea, select")) markDirty();
-  });
-  document.addEventListener("click", event => {
-    const tab = event.target.closest("[data-admin-tab]");
-    if (tab) { activateTab(tab.dataset.adminTab, true); return; }
-    const add = event.target.closest("[data-add]");
-    if (add) addItem(add.dataset.add);
-    const del = event.target.closest("[data-delete]");
-    if (del) deleteItem(del.dataset.delete, Number(del.dataset.index));
-  });
-
-  $("saveDraft").addEventListener("click", saveDraft);
-  $("downloadBackup").addEventListener("click", downloadBackup);
-  $("reloadPublished").addEventListener("click", () => loadPublishedData(true));
-  $("recalculateWeights").addEventListener("click", recalculateWeights);
-  $("generateWeeks").addEventListener("click", () => { collectDataFromDOM(); generateWeeklySummaries({ notify: true }); });
-  $("saveGithubConfig").addEventListener("click", saveGithubConfig);
   $("publishButton").addEventListener("click", publishToGithub);
   $("jsonInput").addEventListener("change", event => {
     const file = event.target.files?.[0];
