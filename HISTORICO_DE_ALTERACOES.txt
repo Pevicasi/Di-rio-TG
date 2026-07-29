@@ -300,3 +300,11 @@ AJUSTE DA VERSÃO 3.2.0
 • Cadastro de alimentos passou a exibir a lista inicial de forma visível, organizada por categorias.
 • Adicionados campo de pesquisa, campo para novo alimento, botão de cadastro e opção de exclusão.
 • Alimentos cadastrados continuam reutilizáveis nas refeições e são salvos no dados.json ao publicar.
+
+
+CORREÇÃO 2 DA VERSÃO 3.2.0
+- Substituído o campo de pesquisa pouco visível no celular por uma lista suspensa com todos os alimentos cadastrados.
+- Adicionado cadastro de novo alimento dentro de cada refeição.
+- O botão “Cadastrar e adicionar” salva o alimento no catálogo e o inclui imediatamente na refeição.
+- O catálogo geral foi movido para o início da seção Diário, antes do editor da refeição.
+- Mantidos a mensagem de aniversário e todos os módulos já validados.

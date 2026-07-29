@@ -848,3 +848,15 @@ body.header-hidden .hero-grid { margin-top: 0; }
   .food-catalog-controls{grid-template-columns:1fr}
   .food-catalog-controls button{width:100%}
 }
+
+/* v3.2.0 correção 2 — controles de alimentos visíveis no celular */
+.meal-food-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;padding:14px;border:1px solid rgba(8,115,106,.18);border-radius:18px;background:#f5fbfa}
+.meal-food-controls label{margin:0}
+.meal-food-controls button{min-height:48px}
+.food-catalog-manager{margin:18px 0 24px}
+.food-catalog-list{margin-top:16px}
+.food-category{margin-bottom:16px}
+.food-chips{display:flex;flex-wrap:wrap;gap:8px}
+.food-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#e4f3f1;color:#075e57;font-weight:700}
+.food-chip button{border:0;background:transparent;color:#a32626;font-size:20px;line-height:1;cursor:pointer}
+@media(max-width:700px){.meal-food-controls{grid-template-columns:1fr}.meal-food-controls button{width:100%}.food-catalog-controls{display:grid;grid-template-columns:1fr}.food-catalog-controls button{width:100%}}
