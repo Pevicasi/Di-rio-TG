@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.5.0";
+  const ADMIN_BUILD = "3.5.1";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -11,6 +11,8 @@
   let selectedDiaryIndex = -1;
   let selectedMealIndex = 0;
   let selectedWeightIndex = -1;
+  let selectedApplicationIndex = -1;
+  let selectedWeekIndex = -1;
   let activeMealCard = null;
 
   const emptyData = () => ({
@@ -359,9 +361,26 @@
   }
 
   function renderApplications() {
-    $("applicationsList").innerHTML = appData.applications.length ? appData.applications.map((item, index) => `
-      <article class="editable-item" data-type="applications" data-index="${index}">
-        ${itemHeader(`Aplicação ${item.number || index + 1}`, index, "applications")}
+    const list = $("applicationsList");
+    if (!appData.applications.length) {
+      selectedApplicationIndex = -1;
+      list.innerHTML = '<div class="empty-state-action"><p>Nenhuma aplicação cadastrada.</p><button type="button" class="add-button" data-add="applications">+ Cadastrar primeira aplicação</button></div>';
+      return;
+    }
+    sortByDate(appData.applications);
+    if (selectedApplicationIndex < 0 || selectedApplicationIndex >= appData.applications.length) selectedApplicationIndex = appData.applications.length - 1;
+    const item = appData.applications[selectedApplicationIndex];
+    list.innerHTML = `
+      <div class="single-record-picker application-finder">
+        <label>Localizar aplicação
+          <input id="applicationSearch" type="search" placeholder="Pesquisar por número, data, dose ou local" autocomplete="off">
+        </label>
+        <label>Aplicação selecionada
+          <select id="applicationSelector">${appData.applications.map((application, index) => `<option value="${index}" ${index === selectedApplicationIndex ? "selected" : ""}>Aplicação ${escapeHtml(application.number || index + 1)} — ${escapeHtml(application.date || "Sem data")}${application.dose ? ` — ${escapeHtml(application.dose)}` : ""}</option>`).join("")}</select>
+        </label>
+      </div>
+      <article class="editable-item compact-item" data-type="applications" data-index="${selectedApplicationIndex}">
+        ${itemHeader(`Aplicação ${item.number || selectedApplicationIndex + 1}${item.date ? ` — ${item.date}` : ""}`, selectedApplicationIndex, "applications")}
         <div class="admin-grid four-columns">
           <label>Número<input data-field="number" type="number" min="1" step="1" value="${escapeHtml(item.number)}"></label>
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
@@ -369,7 +388,7 @@
           <label>Dose<input data-field="dose" type="text" value="${escapeHtml(item.dose)}"></label>
           <label class="wide-field">Local da aplicação<input data-field="location" type="text" value="${escapeHtml(item.location)}"></label>
         </div>
-      </article>`).join("") : '<p class="empty-list">Nenhuma aplicação cadastrada.</p>';
+      </article>`;
   }
 
   function dateFromBR(value) {
@@ -536,11 +555,26 @@
   }
 
   function renderWeeks() {
-    $("weeksList").innerHTML = appData.weeks.length ? appData.weeks.map((item, index) => {
-      const fields = extractWeekFields(item);
-      return `
-      <article class="editable-item" data-type="weeks" data-index="${index}">
-        ${itemHeader(item.title || `Semana ${index + 1}`, index, "weeks")}
+    const list = $("weeksList");
+    if (!appData.weeks.length) {
+      selectedWeekIndex = -1;
+      list.innerHTML = '<p class="empty-list">Nenhum resumo semanal. Clique em “Gerar resumos automaticamente”.</p>';
+      return;
+    }
+    if (selectedWeekIndex < 0 || selectedWeekIndex >= appData.weeks.length) selectedWeekIndex = appData.weeks.length - 1;
+    const item = appData.weeks[selectedWeekIndex];
+    const fields = extractWeekFields(item);
+    list.innerHTML = `
+      <div class="single-record-picker week-finder">
+        <label>Localizar resumo semanal
+          <input id="weekSearch" type="search" placeholder="Pesquisar por semana ou período" autocomplete="off">
+        </label>
+        <label>Resumo selecionado
+          <select id="weekSelector">${appData.weeks.map((week, index) => `<option value="${index}" ${index === selectedWeekIndex ? "selected" : ""}>${escapeHtml(week.title || `Semana ${index + 1}`)}${week.period ? ` — ${escapeHtml(week.period)}` : ""}</option>`).join("")}</select>
+        </label>
+      </div>
+      <article class="editable-item compact-item" data-type="weeks" data-index="${selectedWeekIndex}">
+        ${itemHeader(item.title || `Semana ${selectedWeekIndex + 1}`, selectedWeekIndex, "weeks")}
         <div class="admin-grid two-columns weekly-fields-grid">
           <label>Título<input data-field="title" type="text" value="${escapeHtml(item.title)}"></label>
           <label>Período<input data-field="period" type="text" value="${escapeHtml(item.period)}"></label>
@@ -549,12 +583,11 @@
           <label>Resultado<input data-field="result" type="text" value="${escapeHtml(fields.result)}" placeholder="Ex.: -1,50 kg"></label>
           <label>Aplicação<input data-field="application" type="text" value="${escapeHtml(fields.application)}" placeholder="Data, horário e detalhes"></label>
           <label>Fome<textarea data-field="hunger" rows="3">${escapeHtml(fields.hunger)}</textarea></label>
-          <label>Efeitos<textarea data-field="effects" rows="3">${escapeHtml(fields.effects)}</textarea></label>
+          <label>Efeitos colaterais<textarea data-field="effects" rows="3">${escapeHtml(fields.effects)}</textarea></label>
           <label class="wide-field">Observação<textarea data-field="observation" rows="3">${escapeHtml(fields.observation)}</textarea></label>
           <label class="wide-field">Informações adicionais<textarea data-field="additional" rows="3" placeholder="Informações extras que não entram nos campos acima.">${escapeHtml(fields.additional)}</textarea></label>
         </div>
       </article>`;
-    }).join("") : '<p class="empty-list">Nenhum resumo semanal. Clique em “Gerar resumos automaticamente”.</p>';
   }
 
   function collectDiaryFromDOM() {
@@ -770,14 +803,16 @@
     };
     const visibleWeight = collectList("weights")[0];
     if (visibleWeight && selectedWeightIndex >= 0) appData.weights[selectedWeightIndex] = { ...(appData.weights[selectedWeightIndex] || {}), ...visibleWeight };
-    appData.applications = collectList("applications");
-    appData.weeks = collectList("weeks").map((item, index) => {
-      const merged = { ...(appData.weeks[index] || {}), ...item };
-      merged.generatedFields = appData.weeks[index]?.generatedFields || {};
-      merged.manualFields = appData.weeks[index]?.manualFields || {};
+    const visibleApplication = collectList("applications")[0];
+    if (visibleApplication && selectedApplicationIndex >= 0) appData.applications[selectedApplicationIndex] = { ...(appData.applications[selectedApplicationIndex] || {}), ...visibleApplication };
+    const visibleWeek = collectList("weeks")[0];
+    if (visibleWeek && selectedWeekIndex >= 0) {
+      const merged = { ...(appData.weeks[selectedWeekIndex] || {}), ...visibleWeek };
+      merged.generatedFields = appData.weeks[selectedWeekIndex]?.generatedFields || {};
+      merged.manualFields = appData.weeks[selectedWeekIndex]?.manualFields || {};
       merged.lines = weekLines(merged);
-      return merged;
-    });
+      appData.weeks[selectedWeekIndex] = merged;
+    }
     collectDiaryFromDOM();
     appData.generalObservation = getValue("fieldGeneralObservation");
     appData.medicalNotice = getValue("fieldMedicalNotice");
@@ -815,8 +850,8 @@
     collectDataFromDOM();
     if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
     if (type === "weights") { appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" }); selectedWeightIndex = appData.weights.length - 1; }
-    if (type === "applications") appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" });
-    if (type === "weeks") appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, generatedLines: [], customLines: [], lines: [] });
+    if (type === "applications") { appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" }); selectedApplicationIndex = appData.applications.length - 1; }
+    if (type === "weeks") { appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, generatedLines: [], customLines: [], lines: [] }); selectedWeekIndex = appData.weeks.length - 1; }
     if (type === "diary") {
       const today = formatBRDate(new Date());
       const existingIndex = appData.diary.findIndex(item => item.date === today);
@@ -843,7 +878,8 @@
     list.splice(index, 1);
     if (type === "diary") { selectedDiaryIndex = Math.min(index, list.length - 1); selectedMealIndex = 0; }
     if (type === "weights") selectedWeightIndex = Math.min(index, list.length - 1);
-    if (type === "applications") list.forEach((item, i) => { if (!item.number) item.number = i + 1; });
+    if (type === "applications") { selectedApplicationIndex = Math.min(index, list.length - 1); list.forEach((item, i) => { if (!item.number) item.number = i + 1; }); }
+    if (type === "weeks") selectedWeekIndex = Math.min(index, list.length - 1);
     renderLists();
     markDirty();
   }
@@ -1105,7 +1141,7 @@
       if(selectedSections.has("weights") && (data.weights||[]).length){doc.sectionTitle("Histórico de pesagens");doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
       if(selectedSections.has("applications") && (data.applications||[]).length){doc.sectionTitle("Linha do tempo das aplicações");doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}
       if(selectedSections.has("weeks") && (data.weeks||[]).length){doc.sectionTitle("Resumo semanal");for(const week of data.weeks){const lines=(week.lines||[]).map(pdfText).filter(Boolean), title=`${week.title||"Semana"}${week.period?` - ${week.period}`:""}`, height=34+Math.max(1,lines.length)*15;doc.ensure(height+10);doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,height,week.current?[228,245,242]:null,week.current?doc.teal:doc.border);doc.text(title,doc.margin+10,doc.y+20,12,true,[8,115,106]);let yy=doc.y+39;(lines.length?lines:["Sem informações registradas."]).forEach(line=>{doc.text(`• ${line}`,doc.margin+12,yy,9,false,doc.dark);yy+=15;});doc.y+=height+9;}}
-      if(selectedSections.has("diary") && (data.diary||[]).length){doc.sectionTitle("Registros diários");const compact=$("pdfCompactDiary")?.checked!==false;for(const item of data.diary){doc.ensure(compact?92:112);doc.text(item.date||"Sem data",doc.margin,doc.y,12,true,[8,115,106]);doc.y+=10;doc.table(["Campo","Registro"],[["Refeições",pdfText(item.meals)||"-"],["Fome",pdfText(item.hunger)||"-"],["Efeitos",pdfText(item.effects)||"-"],["Observações",pdfText(item.notes)||"-"]],[85,426]);}}
+      if(selectedSections.has("diary") && (data.diary||[]).length){doc.sectionTitle("Registros diários");const compact=$("pdfCompactDiary")?.checked!==false;for(const item of data.diary){doc.ensure(compact?92:112);doc.text(item.date||"Sem data",doc.margin,doc.y,12,true,[8,115,106]);doc.y+=10;doc.table(["Campo","Registro"],[["Refeições",pdfText(item.meals)||"-"],["Fome",pdfText(item.hunger)||"-"],["Efeitos colaterais",pdfText(item.effects)||"-"],["Observações",pdfText(item.notes)||"-"]],[85,426]);}}
       if(selectedSections.has("observations") && (data.generalObservation||data.medicalNotice)){doc.sectionTitle("Observação geral");doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,1,null,null);doc.paragraph(data.generalObservation||"Sem observação geral.",doc.margin,doc.width-doc.margin*2,10,14);if(data.medicalNotice){doc.y+=6;doc.paragraph(data.medicalNotice,doc.margin,doc.width-doc.margin*2,9,13,doc.gray);}doc.y+=10;}
       const total=doc.pages.length;doc.pages.forEach((commands,index)=>{doc.page=index;doc.rgb(doc.border,true);doc.cmd(`0.7 w ${doc.margin} ${doc.height-815} m ${doc.width-doc.margin} ${doc.height-815} l S`);doc.text("Relatório gerado pelo TirzeTrack",doc.margin,826,8,false,doc.gray);doc.text(`Página ${index+1} de ${total}`,doc.width-doc.margin,826,8,false,doc.gray,"right");});doc.page=total-1;
       const blob=doc.build(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=pdfFileName(data);document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);closePdfOptions();showToast("PDF gerado e baixado com sucesso.");
@@ -1337,6 +1373,44 @@
       if (visibleWeight && selectedWeightIndex >= 0) appData.weights[selectedWeightIndex] = { ...(appData.weights[selectedWeightIndex] || {}), ...visibleWeight };
       selectedWeightIndex = Number(event.target.value);
       renderWeights();
+    }
+  });
+
+  $("applicationsList")?.addEventListener("input", event => {
+    if (event.target.id !== "applicationSearch") return;
+    const query = event.target.value.trim().toLocaleLowerCase("pt-BR");
+    const selector = $("applicationSelector");
+    if (!selector) return;
+    Array.from(selector.options).forEach(option => { option.hidden = query && !option.textContent.toLocaleLowerCase("pt-BR").includes(query); });
+  });
+
+  $("applicationsList")?.addEventListener("change", event => {
+    if (event.target.id === "applicationSelector") {
+      const visible = collectList("applications")[0];
+      if (visible && selectedApplicationIndex >= 0) appData.applications[selectedApplicationIndex] = { ...(appData.applications[selectedApplicationIndex] || {}), ...visible };
+      selectedApplicationIndex = Number(event.target.value);
+      renderApplications();
+    }
+  });
+
+  $("weeksList")?.addEventListener("input", event => {
+    if (event.target.id !== "weekSearch") return;
+    const query = event.target.value.trim().toLocaleLowerCase("pt-BR");
+    const selector = $("weekSelector");
+    if (!selector) return;
+    Array.from(selector.options).forEach(option => { option.hidden = query && !option.textContent.toLocaleLowerCase("pt-BR").includes(query); });
+  });
+
+  $("weeksList")?.addEventListener("change", event => {
+    if (event.target.id === "weekSelector") {
+      const visible = collectList("weeks")[0];
+      if (visible && selectedWeekIndex >= 0) {
+        const merged = { ...(appData.weeks[selectedWeekIndex] || {}), ...visible };
+        merged.lines = weekLines(merged);
+        appData.weeks[selectedWeekIndex] = merged;
+      }
+      selectedWeekIndex = Number(event.target.value);
+      renderWeeks();
     }
   });
 

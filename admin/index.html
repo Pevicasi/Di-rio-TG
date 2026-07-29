@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
   <title>Administração • TirzeTrack</title>
-  <link rel="stylesheet" href="../style.css?v=20260729-v3-5-0" />
+  <link rel="stylesheet" href="../style.css?v=20260729-v3-5-1" />
 </head>
 <body class="admin-editor-page">
   <header class="topbar">
@@ -63,7 +63,7 @@
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weights" checked><span><strong>Histórico de pesagens</strong><small>Data, peso e variação</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="applications" checked><span><strong>Aplicações</strong><small>Data, hora, dose e local</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weeks" checked><span><strong>Resumos semanais</strong><small>Resultados, fome, efeitos e observações</small></span></label>
-          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="diary"><span><strong>Registros diários</strong><small>Refeições, fome, efeitos e observações</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="diary"><span><strong>Registros diários</strong><small>Refeições, fome, efeitos colaterais e observações</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="observations" checked><span><strong>Observação geral</strong><small>Conclusão e aviso médico</small></span></label>
         </div>
 
@@ -172,7 +172,7 @@
     <section class="card admin-form-section" id="weeks">
       <div class="section-header"><div><p class="eyebrow">Análise</p><h2>Resumos semanais</h2></div><div class="section-header-actions"><label class="visibility-toggle"><input id="visibilityWeeks" type="checkbox" checked> Exibir resumos</label><label class="visibility-toggle"><input id="visibilityAnalysis" type="checkbox" checked> Exibir análise</label><button class="add-button" id="generateWeeks" type="button">Gerar resumos automaticamente</button></div></div>
       <label class="inline-option"><input id="fieldAutoWeeks" type="checkbox" checked /> Atualizar os resumos automaticamente antes de publicar ou baixar backup</label>
-      <p class="form-help">Peso, resultado, aplicação, fome, efeitos e observação são gerados em campos separados. Todos podem ser alterados manualmente.</p>
+      <p class="form-help">Peso, resultado, aplicação, fome, efeitos colaterais e observação são gerados em campos separados. Todos podem ser alterados manualmente.</p>
       <div id="weeksList" class="editable-list"></div>
     </section>
 
@@ -266,6 +266,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260729-v3-5-0"></script>
+  <script src="./script-admin.js?v=20260729-v3-5-1"></script>
 </body>
 </html>
