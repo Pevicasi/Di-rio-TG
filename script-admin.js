@@ -3,12 +3,14 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.3.0";
+  const ADMIN_BUILD = "3.4.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
   let selectedDiaryIndex = -1;
+  let selectedMealIndex = 0;
+  let selectedWeightIndex = -1;
   let activeMealCard = null;
 
   const emptyData = () => ({
@@ -329,14 +331,27 @@
   }
 
   function renderWeights() {
-    $("weightsList").innerHTML = appData.weights.length ? appData.weights.map((item, index) => `
-      <article class="editable-item compact-item" data-type="weights" data-index="${index}">
-        ${itemHeader(`Pesagem ${index + 1}`, index, "weights")}
+    const list = $("weightsList");
+    if (!appData.weights.length) {
+      selectedWeightIndex = -1;
+      list.innerHTML = '<p class="empty-list">Nenhuma pesagem cadastrada.</p>';
+      return;
+    }
+    if (selectedWeightIndex < 0 || selectedWeightIndex >= appData.weights.length) selectedWeightIndex = appData.weights.length - 1;
+    const item = appData.weights[selectedWeightIndex];
+    list.innerHTML = `
+      <div class="single-record-picker">
+        <label>Escolha a pesagem para visualizar ou alterar
+          <select id="weightSelector">${appData.weights.map((weight, index) => `<option value="${index}" ${index === selectedWeightIndex ? "selected" : ""}>${escapeHtml(weight.date || `Pesagem ${index + 1}`)} — ${escapeHtml(String(weight.valueKg || ""))} kg</option>`).join("")}</select>
+        </label>
+      </div>
+      <article class="editable-item compact-item" data-type="weights" data-index="${selectedWeightIndex}">
+        ${itemHeader(item.date ? `Pesagem de ${item.date}` : "Nova pesagem", selectedWeightIndex, "weights")}
         <div class="admin-grid two-columns">
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
           <label>Peso (kg)<input data-field="valueKg" type="number" step="0.01" inputmode="decimal" value="${escapeHtml(item.valueKg)}"></label>
         </div>
-      </article>`).join("") : '<p class="empty-list">Nenhuma pesagem cadastrada.</p>';
+      </article>`;
   }
 
   function renderApplications() {
@@ -549,12 +564,17 @@
       if (input.dataset.date) obj[key] = formatBRDate(input.value);
       else obj[key] = input.value.trim();
     });
-    obj.mealEntries = Array.from(editor.querySelectorAll("[data-meal-index]")).map(card => ({
-      type: card.querySelector('[data-meal-field="type"]')?.value || "Outro",
-      time: card.querySelector('[data-meal-field="time"]')?.value || "",
-      foods: String(card.querySelector('[data-meal-field="foods"]')?.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean),
-      note: card.querySelector('[data-meal-field="note"]')?.value.trim() || ""
-    }));
+    obj.mealEntries = Array.isArray(previous.mealEntries) ? previous.mealEntries.map(meal => ({ ...meal, foods: Array.isArray(meal.foods) ? [...meal.foods] : [] })) : [];
+    const visibleMealCard = editor.querySelector("[data-meal-index]");
+    if (visibleMealCard) {
+      const mealIndex = Number(visibleMealCard.dataset.mealIndex);
+      obj.mealEntries[mealIndex] = {
+        type: visibleMealCard.querySelector('[data-meal-field="type"]')?.value || "Outro",
+        time: visibleMealCard.querySelector('[data-meal-field="time"]')?.value || "",
+        foods: String(visibleMealCard.querySelector('[data-meal-field="foods"]')?.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean),
+        note: visibleMealCard.querySelector('[data-meal-field="note"]')?.value.trim() || ""
+      };
+    }
     obj.meals = mealText(obj.mealEntries);
     if (obj.hunger === "__custom__") obj.hunger = editor.querySelector("[data-hunger-custom]")?.value.trim() || "";
     const selectedEffects = Array.from(editor.querySelectorAll("[data-effect]:checked")).map(input => input.dataset.effect);
@@ -622,9 +642,11 @@
     $("diaryDateSelector").innerHTML = appData.diary.map((item, index) => `<option value="${index}" ${index === selectedDiaryIndex ? "selected" : ""}>${escapeHtml(item.date || `Registro ${index + 1}`)}</option>`).join("");
     const item = normalizeDiaryItem(appData.diary[selectedDiaryIndex]);
     appData.diary[selectedDiaryIndex] = item;
-    const meals = item.mealEntries.map((meal, mealIndex) => `
-      <article class="meal-editor" data-meal-index="${mealIndex}">
-        <div class="meal-editor-header"><strong>Refeição ${mealIndex + 1}</strong><button type="button" class="delete-button" data-delete-meal="${mealIndex}">Excluir refeição</button></div>
+    if (selectedMealIndex < 0 || selectedMealIndex >= item.mealEntries.length) selectedMealIndex = Math.max(0, item.mealEntries.length - 1);
+    const meal = item.mealEntries[selectedMealIndex];
+    const mealEditor = meal ? `
+      <article class="meal-editor" data-meal-index="${selectedMealIndex}">
+        <div class="meal-editor-header"><strong>${escapeHtml(meal.type || "Refeição")}</strong><button type="button" class="delete-button" data-delete-meal="${selectedMealIndex}">Excluir ${escapeHtml(meal.type || "refeição")}</button></div>
         <div class="admin-grid two-columns">
           <label>Tipo<select data-meal-field="type">${["Café da manhã","Lanche da manhã","Almoço","Lanche da tarde","Jantar","Ceia","Outro"].map(type => `<option ${meal.type===type?'selected':''}>${type}</option>`).join('')}</select></label>
           <label>Horário<input data-meal-field="time" type="time" value="${escapeHtml(meal.time)}"></label>
@@ -634,19 +656,24 @@
             <div class="selected-food-chips" data-selected-foods>
               ${(meal.foods || []).length ? (meal.foods || []).map(food => `<span class="selected-food-chip"><span>${escapeHtml(food)}</span><button type="button" data-remove-meal-food="${escapeHtml(food)}" aria-label="Remover ${escapeHtml(food)}">×</button></span>`).join("") : '<p class="empty-foods">Nenhum alimento adicionado.</p>'}
             </div>
-            <button type="button" class="add-button open-food-picker" data-open-food-picker="${mealIndex}">+ Adicionar alimento</button>
+            <button type="button" class="add-button open-food-picker" data-open-food-picker="${selectedMealIndex}">+ Adicionar alimento</button>
           </div>
           <label class="wide-field">Observação da refeição<textarea data-meal-field="note" rows="2">${escapeHtml(meal.note)}</textarea></label>
         </div>
-      </article>`).join("");
+      </article>` : '<p class="empty-list">Nenhuma refeição cadastrada neste dia.</p>';
     $("diarySingleEditor").innerHTML = `
       <datalist id="foodCatalogOptions">${foodOptions()}</datalist>
       <article class="editable-item" data-type="diary" data-index="${selectedDiaryIndex}">
         ${itemHeader(item.date || `Registro ${selectedDiaryIndex + 1}`, selectedDiaryIndex, "diary")}
         <div class="admin-grid two-columns">
           <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
-          <div class="wide-field meals-toolbar"><strong>Refeições do dia</strong><button type="button" class="add-button" data-add-meal>+ Adicionar refeição</button></div>
-          <div class="wide-field meals-list">${meals || '<p class="empty-list">Nenhuma refeição cadastrada neste dia.</p>'}</div>
+          <div class="wide-field meal-navigation">
+            <label>Refeição para visualizar ou alterar
+              <select id="mealSelector">${item.mealEntries.length ? item.mealEntries.map((entry, index) => `<option value="${index}" ${index === selectedMealIndex ? "selected" : ""}>${escapeHtml(entry.type || `Refeição ${index + 1}`)}${entry.time ? ` — ${escapeHtml(entry.time)}` : ""}</option>`).join("") : '<option value="">Nenhuma refeição</option>'}</select>
+            </label>
+            <button type="button" class="add-button" data-add-meal>+ Adicionar refeição</button>
+          </div>
+          <div class="wide-field meals-list">${mealEditor}</div>
           <label>Fome
             <select data-field="hunger"><option value="" ${!item.hunger ? "selected" : ""}>Selecione</option><option value="Sem fome" ${item.hunger === "Sem fome" ? "selected" : ""}>Sem fome</option><option value="Pouca fome" ${item.hunger === "Pouca fome" ? "selected" : ""}>Pouca fome</option><option value="Bastante fome" ${item.hunger === "Bastante fome" ? "selected" : ""}>Bastante fome</option><option value="__custom__" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "selected" : ""}>Descrição personalizada</option></select>
             <textarea data-hunger-custom rows="2" placeholder="Descreva a fome" ${item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? "" : "hidden"}>${escapeHtml(item.hunger && !["Sem fome","Pouca fome","Bastante fome"].includes(item.hunger) ? item.hunger : "")}</textarea>
@@ -681,7 +708,8 @@
       medication: $("fieldMedicationSelect")?.value === "__custom__" ? getValue("fieldMedication") : getValue("fieldMedicationSelect"), concentration: $("fieldConcentration")?.value === "__custom__" ? getValue("fieldConcentrationCustom") : getValue("fieldConcentration"),
       weeklyDose: getValue("fieldWeeklyDose"), startDate: formatBRDate(getValue("fieldTreatmentStart"))
     };
-    appData.weights = collectList("weights");
+    const visibleWeight = collectList("weights")[0];
+    if (visibleWeight && selectedWeightIndex >= 0) appData.weights[selectedWeightIndex] = { ...(appData.weights[selectedWeightIndex] || {}), ...visibleWeight };
     appData.applications = collectList("applications");
     appData.weeks = collectList("weeks").map((item, index) => {
       const merged = { ...(appData.weeks[index] || {}), ...item };
@@ -726,7 +754,7 @@
   function addItem(type) {
     collectDataFromDOM();
     if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
-    if (type === "weights") appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" });
+    if (type === "weights") { appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" }); selectedWeightIndex = appData.weights.length - 1; }
     if (type === "applications") appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" });
     if (type === "weeks") appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, generatedLines: [], customLines: [], lines: [] });
     if (type === "diary") {
@@ -753,7 +781,8 @@
     const list = type === "goalHistory" ? appData.goal.history : appData[type];
     if (!Array.isArray(list)) return;
     list.splice(index, 1);
-    if (type === "diary") selectedDiaryIndex = Math.min(index, list.length - 1);
+    if (type === "diary") { selectedDiaryIndex = Math.min(index, list.length - 1); selectedMealIndex = 0; }
+    if (type === "weights") selectedWeightIndex = Math.min(index, list.length - 1);
     if (type === "applications") list.forEach((item, i) => { if (!item.number) item.number = i + 1; });
     renderLists();
     markDirty();
@@ -1205,7 +1234,29 @@
     collectDiaryFromDOM();
     const nextIndex = Number(event.target.value);
     selectedDiaryIndex = Number.isInteger(nextIndex) ? nextIndex : -1;
+    selectedMealIndex = 0;
     renderDiary();
+  });
+
+  $("weightsList")?.addEventListener("change", event => {
+    if (event.target.id === "weightSelector") {
+      const visibleWeight = collectList("weights")[0];
+      if (visibleWeight && selectedWeightIndex >= 0) appData.weights[selectedWeightIndex] = { ...(appData.weights[selectedWeightIndex] || {}), ...visibleWeight };
+      selectedWeightIndex = Number(event.target.value);
+      renderWeights();
+    }
+  });
+
+  $("diarySingleEditor")?.addEventListener("change", event => {
+    if (event.target.id === "mealSelector") {
+      collectDiaryFromDOM();
+      selectedMealIndex = Number(event.target.value) || 0;
+      renderDiary();
+    }
+    if (event.target.matches('[data-meal-field="type"]')) {
+      collectDiaryFromDOM();
+      renderDiary();
+    }
   });
 
   $("foodCatalogSearch")?.addEventListener("input", renderFoodCatalog);
@@ -1272,13 +1323,17 @@
     const addMealButton = event.target.closest("[data-add-meal]");
     if (addMealButton) {
       event.preventDefault(); collectDiaryFromDOM();
-      appData.diary[selectedDiaryIndex].mealEntries.push({ type: "Café da manhã", time: "", foods: [], note: "" });
+      const existingTypes = new Set(appData.diary[selectedDiaryIndex].mealEntries.map(meal => meal.type));
+      const nextType = ["Café da manhã","Lanche da manhã","Almoço","Lanche da tarde","Jantar","Ceia","Outro"].find(type => !existingTypes.has(type)) || "Outro";
+      appData.diary[selectedDiaryIndex].mealEntries.push({ type: nextType, time: "", foods: [], note: "" });
+      selectedMealIndex = appData.diary[selectedDiaryIndex].mealEntries.length - 1;
       renderDiary(); markDirty(); return;
     }
     const deleteMealButton = event.target.closest("[data-delete-meal]");
     if (deleteMealButton) {
       event.preventDefault(); collectDiaryFromDOM();
       appData.diary[selectedDiaryIndex].mealEntries.splice(Number(deleteMealButton.dataset.deleteMeal), 1);
+      selectedMealIndex = Math.max(0, Math.min(selectedMealIndex, appData.diary[selectedDiaryIndex].mealEntries.length - 1));
       appData.diary[selectedDiaryIndex].meals = mealText(appData.diary[selectedDiaryIndex].mealEntries);
       renderDiary(); markDirty(); return;
     }

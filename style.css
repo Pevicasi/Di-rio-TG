@@ -917,3 +917,7 @@ body.modal-open{overflow:hidden}
   .food-picker-header h2{font-size:1.35rem}
   .food-picker-item{min-height:56px}
 }
+
+
+/* TirzeTrack v3.4.0 — editores únicos para refeições e pesagens */
+.single-record-picker,.meal-navigation{padding:14px;border:1px solid #c9ddda;border-radius:16px;background:#f1f8f7;margin-bottom:14px}.single-record-picker label,.meal-navigation label{display:grid;gap:8px;font-weight:700;color:#245f5a}.single-record-picker select,.meal-navigation select{width:100%}.meal-navigation{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px}.meal-navigation .add-button{white-space:nowrap}.meals-list{display:block}.meal-editor{margin:0}.meal-editor-header strong{font-size:1.2rem}.compact-item{margin-top:0}@media(max-width:640px){.meal-navigation{grid-template-columns:1fr}.meal-navigation .add-button{width:100%}.single-record-picker,.meal-navigation{padding:12px}.meal-editor-header{flex-direction:column;align-items:stretch}.meal-editor-header .delete-button{width:100%}}

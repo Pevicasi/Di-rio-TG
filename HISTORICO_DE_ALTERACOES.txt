@@ -1,3 +1,23 @@
+VERSÃO 3.4.0 — 28/07/2026
+
+MELHORIAS DE USABILIDADE
+• O Diário agora exibe somente uma refeição por vez.
+• Adicionado seletor para escolher a refeição pelo tipo e horário.
+• Ao adicionar uma refeição, apenas a nova refeição fica aberta para edição.
+• O título e o botão de exclusão acompanham o tipo escolhido.
+• A seção Pesagens agora exibe somente uma pesagem por vez.
+• Adicionado seletor por data e peso para localizar rapidamente uma pesagem antiga.
+• Adicionar uma nova pesagem abre diretamente o novo registro.
+• Mantidos o PDF e os demais módulos já validados.
+
+ARQUIVOS ALTERADOS
+• admin/index.html
+• admin/script-admin.js
+• script-admin.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt
+
+
 VERSÃO 3.3.0
 Data: 28/07/2026
 
