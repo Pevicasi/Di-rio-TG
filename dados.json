@@ -173,25 +173,23 @@
       "weight": "109,80 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
-      "hunger": "Sem fome",
-      "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
+      "hunger": "",
+      "effects": "",
       "observation": "",
       "additional": "",
       "generatedFields": {
         "weight": "109,80 → aguardando nova pesagem",
         "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
-        "hunger": "Sem fome",
-        "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
+        "hunger": "",
+        "effects": "",
         "observation": ""
       },
       "manualFields": {},
       "lines": [
         "Peso: 109,80 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
-        "Aplicação: 27/07/2026 às 09:30",
-        "Fome: Sem fome",
-        "Efeitos: Náusea; Diarreia; Constipação; Vômito; Estufamento"
+        "Aplicação: 27/07/2026 às 09:30"
       ]
     }
   ],
@@ -452,8 +450,8 @@
       ]
     },
     {
-      "date": "28/07/2026",
-      "meals": "Almoço — 14:10: Frango, Banana, Cenoura",
+      "date": "29/07/2026",
+      "meals": "Almoço — 14:10: Frango, Banana, Cenoura\nCafé da manhã — 08:00: Pão, Ovo",
       "hunger": "Sem fome",
       "notes": "",
       "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
@@ -465,6 +463,15 @@
             "Frango",
             "Banana",
             "Cenoura"
+          ],
+          "note": ""
+        },
+        {
+          "type": "Café da manhã",
+          "time": "08:00",
+          "foods": [
+            "Pão",
+            "Ovo"
           ],
           "note": ""
         }
