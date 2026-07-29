@@ -389,3 +389,8 @@ CORREÇÃO 2 DA VERSÃO 3.2.0
 - O botão “Cadastrar e adicionar” salva o alimento no catálogo e o inclui imediatamente na refeição.
 - O catálogo geral foi movido para o início da seção Diário, antes do editor da refeição.
 - Mantidos a mensagem de aniversário e todos os módulos já validados.
+
+
+Versão 3.5.3
+- Corrigida a paginação do PDF para evitar títulos sobrepostos a tabelas e gráficos.
+- Reserva de espaço antes das seções Evolução do peso, Histórico de pesagens, Linha do tempo das aplicações e Observação geral.
