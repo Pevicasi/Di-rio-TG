@@ -1,3 +1,9 @@
+VERSÃO 3.5.1
+- Alterado o nome “Efeitos” para “Efeitos colaterais” no Diário, resumos, site público e PDF.
+- Aplicações reorganizadas no mesmo padrão das Pesagens: pesquisa, seletor e apenas um registro visível por vez.
+- Resumos semanais também reorganizados com pesquisa, seletor e apenas um resumo visível por vez, evitando listas longas.
+- Preservadas as demais funcionalidades validadas e a estrutura do dados.json.
+
 VERSÃO 3.5.0 — 29/07/2026
 
 MELHORIAS DE USABILIDADE
