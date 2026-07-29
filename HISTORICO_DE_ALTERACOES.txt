@@ -394,3 +394,13 @@ CORREÇÃO 2 DA VERSÃO 3.2.0
 Versão 3.5.3
 - Corrigida a paginação do PDF para evitar títulos sobrepostos a tabelas e gráficos.
 - Reserva de espaço antes das seções Evolução do peso, Histórico de pesagens, Linha do tempo das aplicações e Observação geral.
+
+
+VERSÃO 3.5.4 — CORREÇÃO DEFINITIVA DA PAGINAÇÃO DO PDF
+
+- Corrigido o cache do painel administrativo: a referência do script agora usa v3-5-4.
+- Os títulos de seção agora reservam espaço para o conteúdo seguinte antes de serem desenhados.
+- Cabeçalhos de tabelas permanecem junto da primeira linha.
+- Cabeçalhos são repetidos automaticamente quando uma tabela continua em outra página.
+- Parágrafos longos passam a quebrar página linha por linha, sem sobreposição.
+- Corrigidas as seções Evolução do peso, Histórico de pesagens, Linha do tempo das aplicações e Observação geral.

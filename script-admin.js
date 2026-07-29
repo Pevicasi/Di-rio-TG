@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.5.3";
+  const ADMIN_BUILD = "3.5.4";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -1078,20 +1078,45 @@
     }
     paragraph(text,x,width,size=10,lineHeight=14,color=this.dark,bold=false) {
       const lines=[]; String(text ?? "").split(/\n/).forEach(p => lines.push(...this.wrap(p,width,size)));
-      this.ensure(lines.length*lineHeight+4);
-      lines.forEach(line => { this.text(line,x,this.y,size,bold,color); this.y += lineHeight; });
+      lines.forEach(line => {
+        this.ensure(lineHeight + 2);
+        this.text(line,x,this.y,size,bold,color);
+        this.y += lineHeight;
+      });
       return lines.length*lineHeight;
     }
-    sectionTitle(title) { this.ensure(34); this.text(title,this.margin,this.y,16,true,this.dark); this.y += 24; }
+    sectionTitle(title, minContentHeight = 0) {
+      this.ensure(24 + Math.max(0, minContentHeight));
+      this.text(title,this.margin,this.y,16,true,this.dark);
+      this.y += 24;
+    }
     table(headers, rows, widths) {
-      const total = this.width - this.margin*2; const cols = widths || headers.map(()=>total/headers.length);
-      const drawHeader = () => { this.ensure(24); let x=this.margin; headers.forEach((h,i)=>{this.rect(x,this.y,cols[i],24,this.teal,this.teal);this.text(h,x+7,this.y+16,8.5,true,[255,255,255]);x+=cols[i];}); this.y+=24; };
+      const total = this.width - this.margin*2;
+      const cols = widths || headers.map(()=>total/headers.length);
+      const prepared = rows.map(row => {
+        const wrapped = row.map((cell,i)=>this.wrap(cell,cols[i]-14,8.5));
+        const height = Math.max(24,...wrapped.map(lines=>lines.length*11+10));
+        return { wrapped, height };
+      });
+      const drawHeader = () => {
+        let x=this.margin;
+        headers.forEach((h,i)=>{this.rect(x,this.y,cols[i],24,this.teal,this.teal);this.text(h,x+7,this.y+16,8.5,true,[255,255,255]);x+=cols[i];});
+        this.y+=24;
+      };
+      // Mantém o cabeçalho junto com a primeira linha da tabela.
+      this.ensure(24 + (prepared[0]?.height || 0));
       drawHeader();
-      rows.forEach(row => {
-        const wrapped = row.map((cell,i)=>this.wrap(cell,cols[i]-14,8.5)); const h=Math.max(24,...wrapped.map(lines=>lines.length*11+10));
-        if (this.y+h > this.height-this.bottom) { this.addPage(); drawHeader(); }
-        let x=this.margin; wrapped.forEach((lines,i)=>{this.rect(x,this.y,cols[i],h,null,this.border); lines.forEach((line,j)=>this.text(line,x+7,this.y+15+j*11,8.5,false,this.dark)); x+=cols[i];}); this.y+=h;
-      }); this.y+=12;
+      prepared.forEach(({wrapped,height}) => {
+        if (this.y + height > this.height-this.bottom) {
+          this.addPage();
+          this.ensure(24 + height);
+          drawHeader();
+        }
+        let x=this.margin;
+        wrapped.forEach((lines,i)=>{this.rect(x,this.y,cols[i],height,null,this.border);lines.forEach((line,j)=>this.text(line,x+7,this.y+15+j*11,8.5,false,this.dark));x+=cols[i];});
+        this.y+=height;
+      });
+      this.y+=12;
     }
     build() {
       const objects=[]; const add=obj=>{objects.push(obj);return objects.length;};
@@ -1140,15 +1165,15 @@
         ],[92,164,92,163]);
       }
       if(selectedSections.has("chart") && (data.weights||[]).length>1){
-        doc.ensure(220); doc.sectionTitle("Evolução do peso"); doc.ensure(190); const x0=doc.margin+35,y0=doc.y+12,w=doc.width-doc.margin*2-55,h=145,pts=data.weights.map(i=>({d:i.date,v:Number(i.valueKg)})).filter(i=>Number.isFinite(i.v)); const vals=pts.map(p=>p.v),min=Math.floor(Math.min(...vals)-1),max=Math.ceil(Math.max(...vals)+1),range=Math.max(1,max-min);
+        doc.sectionTitle("Evolução do peso", 190); const x0=doc.margin+35,y0=doc.y+12,w=doc.width-doc.margin*2-55,h=145,pts=data.weights.map(i=>({d:i.date,v:Number(i.valueKg)})).filter(i=>Number.isFinite(i.v)); const vals=pts.map(p=>p.v),min=Math.floor(Math.min(...vals)-1),max=Math.ceil(Math.max(...vals)+1),range=Math.max(1,max-min);
         for(let i=0;i<5;i++){const yy=y0+i*h/4;doc.line(x0,yy,x0+w,yy,[220,229,227],0.5);doc.text((max-range*i/4).toFixed(1).replace(".",","),x0-8,yy+3,8,false,doc.gray,"right");}
         const coords=pts.map((p,i)=>({x:x0+i*w/Math.max(1,pts.length-1),y:y0+(max-p.v)*h/range,p})); coords.forEach((c,i)=>{if(i)doc.line(coords[i-1].x,coords[i-1].y,c.x,c.y,doc.teal,3);doc.rect(c.x-2,c.y-2,4,4,[255,255,255],doc.teal);doc.text(`${c.p.v.toFixed(2).replace(".",",")} kg`,c.x,c.y-8,8,true,doc.dark,"center");doc.text(String(c.p.d).replace(/\/\d{4}$/,"") ,c.x,y0+h+17,8,false,doc.gray,"center");}); doc.y=y0+h+36;
       }
-      if(selectedSections.has("weights") && (data.weights||[]).length){doc.ensure(140);doc.sectionTitle("Histórico de pesagens");doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
-      if(selectedSections.has("applications") && (data.applications||[]).length){doc.ensure(160);doc.sectionTitle("Linha do tempo das aplicações");doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}
+      if(selectedSections.has("weights") && (data.weights||[]).length){doc.sectionTitle("Histórico de pesagens", 48);doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
+      if(selectedSections.has("applications") && (data.applications||[]).length){doc.sectionTitle("Linha do tempo das aplicações", 48);doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}
       if(selectedSections.has("weeks") && (data.weeks||[]).length){doc.sectionTitle("Resumo semanal");for(const week of data.weeks){const lines=(week.lines||[]).map(pdfText).filter(Boolean), title=`${week.title||"Semana"}${week.period?` - ${week.period}`:""}`, height=34+Math.max(1,lines.length)*15;doc.ensure(height+10);doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,height,week.current?[228,245,242]:null,week.current?doc.teal:doc.border);doc.text(title,doc.margin+10,doc.y+20,12,true,[8,115,106]);let yy=doc.y+39;(lines.length?lines:["Sem informações registradas."]).forEach(line=>{doc.text(`• ${line}`,doc.margin+12,yy,9,false,doc.dark);yy+=15;});doc.y+=height+9;}}
       if(selectedSections.has("diary") && (data.diary||[]).length){doc.sectionTitle("Registros diários");const compact=$("pdfCompactDiary")?.checked!==false;for(const item of data.diary){doc.ensure(compact?92:112);doc.text(item.date||"Sem data",doc.margin,doc.y,12,true,[8,115,106]);doc.y+=10;doc.table(["Campo","Registro"],[["Refeições",pdfText(item.meals)||"-"],["Fome",pdfText(item.hunger)||"-"],["Efeitos colaterais",pdfText(item.effects)||"-"],["Observações",pdfText(item.notes)||"-"]],[85,426]);}}
-      if(selectedSections.has("observations") && (data.generalObservation||data.medicalNotice)){doc.ensure(120);doc.sectionTitle("Observação geral");doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,1,null,null);doc.paragraph(data.generalObservation||"Sem observação geral.",doc.margin,doc.width-doc.margin*2,10,14);if(data.medicalNotice){doc.y+=6;doc.paragraph(data.medicalNotice,doc.margin,doc.width-doc.margin*2,9,13,doc.gray);}doc.y+=10;}
+      if(selectedSections.has("observations") && (data.generalObservation||data.medicalNotice)){doc.sectionTitle("Observação geral", 48);doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,1,null,null);doc.paragraph(data.generalObservation||"Sem observação geral.",doc.margin,doc.width-doc.margin*2,10,14);if(data.medicalNotice){doc.y+=6;doc.paragraph(data.medicalNotice,doc.margin,doc.width-doc.margin*2,9,13,doc.gray);}doc.y+=10;}
       const total=doc.pages.length;doc.pages.forEach((commands,index)=>{doc.page=index;doc.rgb(doc.border,true);doc.cmd(`0.7 w ${doc.margin} ${doc.height-815} m ${doc.width-doc.margin} ${doc.height-815} l S`);doc.text("Relatório gerado pelo TirzeTrack",doc.margin,826,8,false,doc.gray);doc.text(`Página ${index+1} de ${total}`,doc.width-doc.margin,826,8,false,doc.gray,"right");});doc.page=total-1;
       const blob=doc.build(),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=pdfFileName(data);document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);closePdfOptions();showToast("PDF gerado e baixado com sucesso.");
     }catch(error){console.error(error);showToast(error.message||"Não foi possível gerar o PDF.","error");}
