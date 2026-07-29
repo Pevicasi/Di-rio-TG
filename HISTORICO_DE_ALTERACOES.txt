@@ -1,3 +1,8 @@
+VERSÃO 3.5.2
+- Corrigido o botão “Adicionar aplicação”: a nova aplicação agora é selecionada e exibida imediatamente, mesmo quando existem registros com datas futuras.
+- A numeração de novas aplicações passa a usar o maior número existente mais 1, evitando repetição ou retorno a números anteriores.
+- Atualizada a identificação de versão e o parâmetro de cache do painel administrativo.
+
 VERSÃO 3.5.1
 - Alterado o nome “Efeitos” para “Efeitos colaterais” no Diário, resumos, site público e PDF.
 - Aplicações reorganizadas no mesmo padrão das Pesagens: pesquisa, seletor e apenas um registro visível por vez.
