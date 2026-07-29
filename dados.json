@@ -10,7 +10,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 108.8,
+    "currentWeightKg": 107,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -42,6 +42,10 @@
     {
       "date": "03/08/2026",
       "valueKg": 108.8
+    },
+    {
+      "date": "10/08/2026",
+      "valueKg": 107
     }
   ],
   "applications": [
@@ -449,7 +453,7 @@
     },
     {
       "date": "28/07/2026",
-      "meals": "Café da manhã — 09:30: Pão, Ovo\nAlmoço — 14:10: Macarrão, Arroz, Feijão, Frango",
+      "meals": "Café da manhã — 09:30: Pão, Ovo\nAlmoço — 14:10: Macarrão, Arroz, Feijão, Frango\nLanche da manhã\nLanche da tarde\nJantar",
       "hunger": "Sem fome",
       "notes": "",
       "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
@@ -472,6 +476,24 @@
             "Feijão",
             "Frango"
           ],
+          "note": ""
+        },
+        {
+          "type": "Lanche da manhã",
+          "time": "",
+          "foods": [],
+          "note": ""
+        },
+        {
+          "type": "Lanche da tarde",
+          "time": "",
+          "foods": [],
+          "note": ""
+        },
+        {
+          "type": "Jantar",
+          "time": "",
+          "foods": [],
           "note": ""
         }
       ]
