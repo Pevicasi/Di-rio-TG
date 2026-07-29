@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "28/07/2026",
+  "updatedAt": "29/07/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -10,7 +10,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 107,
+    "currentWeightKg": 105,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -46,6 +46,10 @@
     {
       "date": "10/08/2026",
       "valueKg": 107
+    },
+    {
+      "date": "17/08/2026",
+      "valueKg": 105
     }
   ],
   "applications": [
@@ -524,34 +528,6 @@
       "hunger": "",
       "effects": "",
       "notes": ""
-    },
-    {
-      "date": "29/07/2026",
-      "meals": "Almoço — 14:10: Frango, Banana, Cenoura\nCafé da manhã — 08:00: Pão, Ovo",
-      "hunger": "Sem fome",
-      "notes": "",
-      "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
-      "mealEntries": [
-        {
-          "type": "Almoço",
-          "time": "14:10",
-          "foods": [
-            "Frango",
-            "Banana",
-            "Cenoura"
-          ],
-          "note": ""
-        },
-        {
-          "type": "Café da manhã",
-          "time": "08:00",
-          "foods": [
-            "Pão",
-            "Ovo"
-          ],
-          "note": ""
-        }
-      ]
     }
   ],
   "foods": [
@@ -573,7 +549,7 @@
     "Água",
     "Suco"
   ],
-  "generalObservation": "Até 28/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 29/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
