@@ -1,3 +1,18 @@
+VERSÃO 3.5.0 — 29/07/2026
+
+MELHORIAS DE USABILIDADE
+- Novo fluxo para cadastrar dias anteriores: o botão “Novo dia” abre uma janela para escolher qualquer data.
+- Quando a data já existe, o sistema abre o registro em vez de criar duplicidade.
+- Navegação rápida entre o dia anterior e o próximo dia.
+- Removido o campo de data duplicado de dentro do cartão do Diário.
+- O Diário mostra claramente qual data está sendo editada.
+- Novo fluxo de pesagens com janela própria para informar data e peso.
+- Pesquisa de pesagens por data ou peso.
+- Mantido apenas um registro de pesagem visível por vez.
+- Se já houver pesagem na mesma data, ela é aberta para alteração.
+- Layout otimizado para celulares.
+- PDF, tratamento, medicamentos, concentrações, fome e efeitos colaterais não foram alterados.
+
 VERSÃO 3.4.0 — 28/07/2026
 
 MELHORIAS DE USABILIDADE

@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.4.0";
+  const ADMIN_BUILD = "3.5.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -334,14 +334,18 @@
     const list = $("weightsList");
     if (!appData.weights.length) {
       selectedWeightIndex = -1;
-      list.innerHTML = '<p class="empty-list">Nenhuma pesagem cadastrada.</p>';
+      list.innerHTML = '<div class="empty-state-action"><p>Nenhuma pesagem cadastrada.</p><button type="button" class="add-button" id="emptyNewWeight">+ Cadastrar primeira pesagem</button></div>';
       return;
     }
+    sortByDate(appData.weights);
     if (selectedWeightIndex < 0 || selectedWeightIndex >= appData.weights.length) selectedWeightIndex = appData.weights.length - 1;
     const item = appData.weights[selectedWeightIndex];
     list.innerHTML = `
-      <div class="single-record-picker">
-        <label>Escolha a pesagem para visualizar ou alterar
+      <div class="single-record-picker weight-finder">
+        <label>Localizar pesagem
+          <input id="weightSearch" type="search" placeholder="Pesquisar por data ou peso" autocomplete="off">
+        </label>
+        <label>Pesagem selecionada
           <select id="weightSelector">${appData.weights.map((weight, index) => `<option value="${index}" ${index === selectedWeightIndex ? "selected" : ""}>${escapeHtml(weight.date || `Pesagem ${index + 1}`)} — ${escapeHtml(String(weight.valueKg || ""))} kg</option>`).join("")}</select>
         </label>
       </div>
@@ -665,10 +669,11 @@
       <datalist id="foodCatalogOptions">${foodOptions()}</datalist>
       <article class="editable-item" data-type="diary" data-index="${selectedDiaryIndex}">
         ${itemHeader(item.date || `Registro ${selectedDiaryIndex + 1}`, selectedDiaryIndex, "diary")}
+        <input data-field="date" data-date="true" type="hidden" value="${escapeHtml(parseBRDate(item.date))}">
         <div class="admin-grid two-columns">
-          <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
+          <div class="wide-field day-summary"><span>Você está editando</span><strong>${escapeHtml(item.date)}</strong></div>
           <div class="wide-field meal-navigation">
-            <label>Refeição para visualizar ou alterar
+            <label>Refeição deste dia
               <select id="mealSelector">${item.mealEntries.length ? item.mealEntries.map((entry, index) => `<option value="${index}" ${index === selectedMealIndex ? "selected" : ""}>${escapeHtml(entry.type || `Refeição ${index + 1}`)}${entry.time ? ` — ${escapeHtml(entry.time)}` : ""}</option>`).join("") : '<option value="">Nenhuma refeição</option>'}</select>
             </label>
             <button type="button" class="add-button" data-add-meal>+ Adicionar refeição</button>
@@ -683,6 +688,61 @@
         </div>
       </article>`;
     renderFoodCatalog();
+  }
+
+  function openSimpleModal(id) {
+    const modal = $(id);
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+  }
+
+  function closeSimpleModals() {
+    document.querySelectorAll(".simple-modal").forEach(modal => { modal.hidden = true; });
+    if ($("foodPickerModal")?.hidden !== false) document.body.classList.remove("modal-open");
+  }
+
+  function openOrCreateDiaryDay(dateValue) {
+    const date = formatBRDate(dateValue);
+    if (!date) return showToast("Escolha uma data válida.", "error");
+    collectDiaryFromDOM();
+    let index = appData.diary.findIndex(item => item.date === date);
+    if (index < 0) {
+      appData.diary.push({ date, meals: "", mealEntries: [], hunger: "", effects: "", notes: "" });
+      sortByDate(appData.diary);
+      index = appData.diary.findIndex(item => item.date === date);
+      showToast("Novo dia cadastrado. Agora adicione as informações.");
+    } else {
+      showToast("Esse dia já existia e foi aberto para edição.");
+    }
+    selectedDiaryIndex = index;
+    selectedMealIndex = 0;
+    closeSimpleModals();
+    renderDiary();
+    markDirty();
+    $("diarySingleEditor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function openOrCreateWeight(dateValue, weightValue) {
+    const date = formatBRDate(dateValue);
+    if (!date) return showToast("Escolha uma data válida.", "error");
+    const numericValue = numeric(String(weightValue || "").replace(",", "."));
+    collectDataFromDOM();
+    let index = appData.weights.findIndex(item => item.date === date);
+    if (index < 0) {
+      appData.weights.push({ date, valueKg: Number.isFinite(numericValue) ? numericValue : "" });
+      sortByDate(appData.weights);
+      index = appData.weights.findIndex(item => item.date === date);
+      showToast("Pesagem cadastrada.");
+    } else {
+      if (Number.isFinite(numericValue)) appData.weights[index].valueKg = numericValue;
+      showToast("A pesagem dessa data foi aberta para alteração.");
+    }
+    selectedWeightIndex = index;
+    closeSimpleModals();
+    renderWeights();
+    markDirty();
+    $("weightsList")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function collectDataFromDOM() {
@@ -1230,12 +1290,45 @@
     markDirty();
   });
 
+  $("openNewDiaryDay")?.addEventListener("click", () => {
+    $("newDiaryDate").value = new Date().toISOString().slice(0, 10);
+    openSimpleModal("newDiaryModal");
+  });
+  $("useTodayDiary")?.addEventListener("click", () => { $("newDiaryDate").value = new Date().toISOString().slice(0, 10); });
+  $("confirmNewDiary")?.addEventListener("click", () => openOrCreateDiaryDay($("newDiaryDate")?.value));
+  $("openNewWeight")?.addEventListener("click", () => {
+    $("newWeightDate").value = new Date().toISOString().slice(0, 10);
+    $("newWeightValue").value = "";
+    openSimpleModal("newWeightModal");
+  });
+  document.addEventListener("click", event => {
+    if (event.target.matches("[data-close-simple-modal]")) closeSimpleModals();
+    if (event.target.id === "emptyNewWeight") $("openNewWeight")?.click();
+  });
+  $("confirmNewWeight")?.addEventListener("click", () => openOrCreateWeight($("newWeightDate")?.value, $("newWeightValue")?.value));
+  $("previousDiaryDay")?.addEventListener("click", () => {
+    collectDiaryFromDOM();
+    if (selectedDiaryIndex > 0) { selectedDiaryIndex--; selectedMealIndex = 0; renderDiary(); }
+  });
+  $("nextDiaryDay")?.addEventListener("click", () => {
+    collectDiaryFromDOM();
+    if (selectedDiaryIndex < appData.diary.length - 1) { selectedDiaryIndex++; selectedMealIndex = 0; renderDiary(); }
+  });
+
   $("diaryDateSelector")?.addEventListener("change", event => {
     collectDiaryFromDOM();
     const nextIndex = Number(event.target.value);
     selectedDiaryIndex = Number.isInteger(nextIndex) ? nextIndex : -1;
     selectedMealIndex = 0;
     renderDiary();
+  });
+
+  $("weightsList")?.addEventListener("input", event => {
+    if (event.target.id !== "weightSearch") return;
+    const query = event.target.value.trim().toLocaleLowerCase("pt-BR");
+    const selector = $("weightSelector");
+    if (!selector) return;
+    Array.from(selector.options).forEach(option => { option.hidden = query && !option.textContent.toLocaleLowerCase("pt-BR").includes(query); });
   });
 
   $("weightsList")?.addEventListener("change", event => {
