@@ -166,7 +166,7 @@
       "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
       "hunger": "Sem fome",
-      "effects": "Nenhum • Náusea; Arrotos; Boca seca",
+      "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
       "observation": "",
       "additional": "",
       "generatedFields": {
@@ -174,7 +174,7 @@
         "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
         "hunger": "Sem fome",
-        "effects": "Nenhum • Náusea; Arrotos; Boca seca",
+        "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
         "observation": ""
       },
       "manualFields": {},
@@ -183,7 +183,7 @@
         "Resultado: aguardando nova pesagem",
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
-        "Efeitos: Nenhum • Náusea; Arrotos; Boca seca"
+        "Efeitos: Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça"
       ]
     }
   ],
@@ -507,7 +507,26 @@
         }
       ],
       "hunger": "Sem fome",
-      "effects": "Náusea; Arrotos; Boca seca",
+      "effects": "Náusea; Estufamento; Arrotos; Boca seca",
+      "notes": ""
+    },
+    {
+      "date": "29/07/2026",
+      "meals": "Almoço — 14:30: Ovo, Tomate, Pepino",
+      "mealEntries": [
+        {
+          "type": "Almoço",
+          "time": "14:30",
+          "foods": [
+            "Ovo",
+            "Tomate",
+            "Pepino"
+          ],
+          "note": ""
+        }
+      ],
+      "hunger": "Sem fome",
+      "effects": "Náusea; Boca seca; Dor de cabeça",
       "notes": ""
     }
   ],
@@ -528,7 +547,8 @@
     "Café",
     "Chá",
     "Água",
-    "Suco"
+    "Suco",
+    "Pepino"
   ],
   "generalObservation": "Até 29/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
