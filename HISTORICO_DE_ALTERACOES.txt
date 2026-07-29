@@ -1,3 +1,13 @@
+VERSÃO 3.2.1
+- Reconstruído o seletor de alimentos do Diário.
+- Adicionado botão visível “Adicionar alimento” em cada refeição.
+- Adicionada janela de seleção com pesquisa e lista completa de alimentos.
+- Adicionado cadastro de novo alimento diretamente na janela de seleção.
+- Alimentos selecionados agora aparecem como etiquetas removíveis.
+- Mantida a lista inicial e o catálogo geral de alimentos.
+- Adicionada identificação explícita da versão 3.2.1 para conferência após a publicação.
+- PDF e demais módulos validados não foram alterados.
+
 ==================================================
 TIRZETRACK — HISTÓRICO DE ALTERAÇÕES
 ==================================================

@@ -3,12 +3,13 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.2.0 (correção 2)";
+  const ADMIN_BUILD = "3.2.1";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
   let dirty = false;
   let selectedDiaryIndex = -1;
+  let activeMealCard = null;
 
   const emptyData = () => ({
     schemaVersion: 1,
@@ -564,13 +565,48 @@
     appData.diary[selectedDiaryIndex] = obj;
   }
 
+  function syncMealFoodChips(card) {
+    if (!card) return;
+    const input = card.querySelector('[data-meal-field="foods"]');
+    const chips = card.querySelector('[data-selected-foods]');
+    if (!input || !chips) return;
+    const foods = String(input.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
+    chips.innerHTML = foods.length ? foods.map(food => `<span class="selected-food-chip"><span>${escapeHtml(food)}</span><button type="button" data-remove-meal-food="${escapeHtml(food)}" aria-label="Remover ${escapeHtml(food)}">×</button></span>`).join("") : '<p class="empty-foods">Nenhum alimento adicionado.</p>';
+  }
+
   function addFoodNameToMealCard(card, food) {
-    if (!card || !food) return;
-    const area = card.querySelector('[data-meal-field="foods"]');
-    if (!area) return;
-    const current = String(area.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
-    if (!current.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"))) current.push(food);
-    area.value = current.join(", ");
+    const input = card?.querySelector('[data-meal-field="foods"]');
+    if (!input) return;
+    const values = String(input.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
+    if (!values.some(value => value.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"))) values.push(food);
+    input.value = values.join(", ");
+    syncMealFoodChips(card);
+  }
+
+  function openFoodPicker(card) {
+    activeMealCard = card;
+    const modal = $("foodPickerModal");
+    if (!modal) return;
+    $("foodPickerSearch").value = "";
+    renderFoodPickerList();
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    setTimeout(() => $("foodPickerSearch")?.focus(), 0);
+  }
+
+  function closeFoodPicker() {
+    const modal = $("foodPickerModal");
+    if (modal) modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    activeMealCard = null;
+  }
+
+  function renderFoodPickerList() {
+    const list = $("foodPickerList");
+    if (!list) return;
+    const query = String($("foodPickerSearch")?.value || "").trim().toLocaleLowerCase("pt-BR");
+    const foods = (appData?.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).filter(food => food.toLocaleLowerCase("pt-BR").includes(query));
+    list.innerHTML = foods.length ? foods.map(food => `<button type="button" class="food-picker-item" data-pick-food="${escapeHtml(food)}"><span>${escapeHtml(food)}</span><strong>Adicionar</strong></button>`).join("") : '<p class="empty-list">Nenhum alimento encontrado.</p>';
   }
 
   function renderDiary() {
@@ -592,19 +628,13 @@
         <div class="admin-grid two-columns">
           <label>Tipo<select data-meal-field="type">${["Café da manhã","Lanche da manhã","Almoço","Lanche da tarde","Jantar","Ceia","Outro"].map(type => `<option ${meal.type===type?'selected':''}>${type}</option>`).join('')}</select></label>
           <label>Horário<input data-meal-field="time" type="time" value="${escapeHtml(meal.time)}"></label>
-          <label class="wide-field">Lista de alimentos<textarea data-meal-field="foods" rows="3" placeholder="Digite ou selecione alimentos separados por vírgula">${escapeHtml((meal.foods||[]).join(', '))}</textarea></label>
-          <div class="wide-field meal-food-controls">
-            <label>Selecionar alimento cadastrado
-              <select data-food-select>
-                <option value="">Selecione um alimento</option>
-                ${(appData.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).map(food => `<option value="${escapeHtml(food)}">${escapeHtml(food)}</option>`).join("")}
-              </select>
-            </label>
-            <button type="button" class="secondary-button" data-add-selected-food="${mealIndex}">Adicionar à refeição</button>
-            <label>Cadastrar novo alimento
-              <input type="text" data-new-meal-food placeholder="Ex.: Batata-doce">
-            </label>
-            <button type="button" class="add-button" data-register-meal-food="${mealIndex}">Cadastrar e adicionar</button>
+          <div class="wide-field meal-food-box">
+            <span class="field-label">Alimentos da refeição</span>
+            <input type="hidden" data-meal-field="foods" value="${escapeHtml((meal.foods||[]).join(', '))}">
+            <div class="selected-food-chips" data-selected-foods>
+              ${(meal.foods || []).length ? (meal.foods || []).map(food => `<span class="selected-food-chip"><span>${escapeHtml(food)}</span><button type="button" data-remove-meal-food="${escapeHtml(food)}" aria-label="Remover ${escapeHtml(food)}">×</button></span>`).join("") : '<p class="empty-foods">Nenhum alimento adicionado.</p>'}
+            </div>
+            <button type="button" class="add-button open-food-picker" data-open-food-picker="${mealIndex}">+ Adicionar alimento</button>
           </div>
           <label class="wide-field">Observação da refeição<textarea data-meal-field="note" rows="2">${escapeHtml(meal.note)}</textarea></label>
         </div>
@@ -1197,8 +1227,52 @@
     if (event.key === "Enter") { event.preventDefault(); $("addFoodCatalog")?.click(); }
   });
 
+  $("foodPickerSearch")?.addEventListener("input", renderFoodPickerList);
+  $("closeFoodPicker")?.addEventListener("click", closeFoodPicker);
+  $("foodPickerBackdrop")?.addEventListener("click", closeFoodPicker);
+  $("registerFoodFromModal")?.addEventListener("click", () => {
+    const input = $("foodPickerNewFood");
+    const food = String(input?.value || "").trim();
+    if (!food) return showToast("Digite o nome do alimento.", "error");
+    const exists = appData.foods.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"));
+    if (!exists) appData.foods.push(food);
+    if (activeMealCard) addFoodNameToMealCard(activeMealCard, food);
+    input.value = "";
+    renderFoodCatalog();
+    renderFoodPickerList();
+    markDirty();
+    showToast(exists ? "Alimento adicionado à refeição." : "Alimento cadastrado e adicionado.");
+  });
+
   // Botões criados dinamicamente: refeições, alimentos e registros.
   document.addEventListener("click", event => {
+    const openPickerButton = event.target.closest("[data-open-food-picker]");
+    if (openPickerButton) {
+      event.preventDefault();
+      openFoodPicker(openPickerButton.closest("[data-meal-index]"));
+      return;
+    }
+    const pickFoodButton = event.target.closest("[data-pick-food]");
+    if (pickFoodButton) {
+      event.preventDefault();
+      if (activeMealCard) addFoodNameToMealCard(activeMealCard, pickFoodButton.dataset.pickFood);
+      markDirty();
+      closeFoodPicker();
+      showToast("Alimento adicionado à refeição.");
+      return;
+    }
+    const removeMealFoodButton = event.target.closest("[data-remove-meal-food]");
+    if (removeMealFoodButton) {
+      event.preventDefault();
+      const card = removeMealFoodButton.closest("[data-meal-index]");
+      const input = card?.querySelector('[data-meal-field="foods"]');
+      const target = removeMealFoodButton.dataset.removeMealFood.toLocaleLowerCase("pt-BR");
+      const foods = String(input?.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean).filter(value => value.toLocaleLowerCase("pt-BR") !== target);
+      if (input) input.value = foods.join(", ");
+      syncMealFoodChips(card);
+      markDirty();
+      return;
+    }
     const removeFoodButton = event.target.closest("[data-remove-food]");
     if (removeFoodButton) {
       event.preventDefault();
