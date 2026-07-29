@@ -453,7 +453,7 @@
     },
     {
       "date": "28/07/2026",
-      "meals": "Café da manhã — 09:30: Pão, Ovo\nAlmoço — 14:10: Macarrão, Arroz, Feijão, Frango\nLanche da manhã\nLanche da tarde\nJantar",
+      "meals": "Café da manhã — 09:30: Pão, Ovo\nAlmoço — 14:10: Macarrão, Arroz, Feijão, Frango\nJantar — 19:45: Banana, Macarrão, Arroz",
       "hunger": "Sem fome",
       "notes": "",
       "effects": "Náusea; Diarreia; Constipação; Vômito; Estufamento",
@@ -479,21 +479,13 @@
           "note": ""
         },
         {
-          "type": "Lanche da manhã",
-          "time": "",
-          "foods": [],
-          "note": ""
-        },
-        {
-          "type": "Lanche da tarde",
-          "time": "",
-          "foods": [],
-          "note": ""
-        },
-        {
           "type": "Jantar",
-          "time": "",
-          "foods": [],
+          "time": "19:45",
+          "foods": [
+            "Banana",
+            "Macarrão",
+            "Arroz"
+          ],
           "note": ""
         }
       ]
