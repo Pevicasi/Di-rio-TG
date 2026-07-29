@@ -496,27 +496,9 @@
       "notes": ""
     },
     {
-      "date": "26/07/2026",
+      "date": "27/07/2026",
       "meals": "",
       "mealEntries": [],
-      "hunger": "",
-      "effects": "",
-      "notes": ""
-    },
-    {
-      "date": "27/07/2026",
-      "meals": "Almoço — 14:00: Feijão, Arroz",
-      "mealEntries": [
-        {
-          "type": "Almoço",
-          "time": "14:00",
-          "foods": [
-            "Feijão",
-            "Arroz"
-          ],
-          "note": ""
-        }
-      ],
       "hunger": "Sem fome",
       "effects": "Nenhum",
       "notes": ""
