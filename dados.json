@@ -10,7 +10,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 105,
+    "currentWeightKg": 109.8,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -38,18 +38,6 @@
     {
       "date": "27/07/2026",
       "valueKg": 109.8
-    },
-    {
-      "date": "03/08/2026",
-      "valueKg": 108.8
-    },
-    {
-      "date": "10/08/2026",
-      "valueKg": 107
-    },
-    {
-      "date": "17/08/2026",
-      "valueKg": 105
     }
   ],
   "applications": [
@@ -79,21 +67,7 @@
       "date": "27/07/2026",
       "time": "09:30",
       "dose": "8 UI",
-      "location": "Coxa"
-    },
-    {
-      "number": 6,
-      "date": "29/07/2026",
-      "time": "10:30",
-      "dose": "8 UI",
-      "location": "Coxa"
-    },
-    {
-      "number": 5,
-      "date": "03/08/2026",
-      "time": "10:00",
-      "dose": "8 UI",
-      "location": "Coxa"
+      "location": "Coxa direita na parte de cima"
     }
   ],
   "weeks": [
@@ -186,8 +160,8 @@
     },
     {
       "title": "Semana 4",
-      "period": "27/07 a 28/07",
-      "current": false,
+      "period": "Iniciada em 27/07",
+      "current": true,
       "weight": "109,80 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
@@ -210,58 +184,6 @@
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
         "Efeitos: Nenhum • Náusea; Arrotos; Boca seca"
-      ]
-    },
-    {
-      "title": "Semana 5",
-      "period": "29/07 a 02/08",
-      "current": false,
-      "weight": "109,80 → 108,80 kg",
-      "result": "-1,00 kg",
-      "application": "29/07/2026 às 10:30",
-      "hunger": "",
-      "effects": "",
-      "observation": "",
-      "additional": "",
-      "generatedFields": {
-        "weight": "109,80 → 108,80 kg",
-        "result": "-1,00 kg",
-        "application": "29/07/2026 às 10:30",
-        "hunger": "",
-        "effects": "",
-        "observation": ""
-      },
-      "manualFields": {},
-      "lines": [
-        "Peso: 109,80 → 108,80 kg",
-        "Resultado: -1,00 kg",
-        "Aplicação: 29/07/2026 às 10:30"
-      ]
-    },
-    {
-      "title": "Semana 6",
-      "period": "Iniciada em 03/08",
-      "current": true,
-      "weight": "108,80 → aguardando nova pesagem",
-      "result": "aguardando nova pesagem",
-      "application": "03/08/2026 às 10:00",
-      "hunger": "",
-      "effects": "",
-      "observation": "",
-      "additional": "",
-      "generatedFields": {
-        "weight": "108,80 → aguardando nova pesagem",
-        "result": "aguardando nova pesagem",
-        "application": "03/08/2026 às 10:00",
-        "hunger": "",
-        "effects": "",
-        "observation": ""
-      },
-      "manualFields": {},
-      "lines": [
-        "Peso: 108,80 → aguardando nova pesagem",
-        "Resultado: aguardando nova pesagem",
-        "Aplicação: 03/08/2026 às 10:00"
       ]
     }
   ],
