@@ -178,7 +178,7 @@
       "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
       "hunger": "Sem fome",
-      "effects": "Nenhum",
+      "effects": "Nenhum • Náusea; Arrotos; Boca seca",
       "observation": "",
       "additional": "",
       "generatedFields": {
@@ -186,7 +186,7 @@
         "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
         "hunger": "Sem fome",
-        "effects": "Nenhum",
+        "effects": "Nenhum • Náusea; Arrotos; Boca seca",
         "observation": ""
       },
       "manualFields": {},
@@ -195,7 +195,7 @@
         "Resultado: aguardando nova pesagem",
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
-        "Efeitos: Nenhum"
+        "Efeitos: Nenhum • Náusea; Arrotos; Boca seca"
       ]
     }
   ],
@@ -523,10 +523,21 @@
     },
     {
       "date": "28/07/2026",
-      "meals": "",
-      "mealEntries": [],
-      "hunger": "",
-      "effects": "",
+      "meals": "Almoço — 14:10: Frango, Banana, Cenoura",
+      "mealEntries": [
+        {
+          "type": "Almoço",
+          "time": "14:10",
+          "foods": [
+            "Frango",
+            "Banana",
+            "Cenoura"
+          ],
+          "note": ""
+        }
+      ],
+      "hunger": "Sem fome",
+      "effects": "Náusea; Arrotos; Boca seca",
       "notes": ""
     }
   ],
