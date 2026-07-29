@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.5.1";
+  const ADMIN_BUILD = "3.5.2";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -850,7 +850,13 @@
     collectDataFromDOM();
     if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
     if (type === "weights") { appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" }); selectedWeightIndex = appData.weights.length - 1; }
-    if (type === "applications") { appData.applications.push({ number: appData.applications.length + 1, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" }); selectedApplicationIndex = appData.applications.length - 1; }
+    if (type === "applications") {
+      const nextNumber = appData.applications.reduce((highest, application) => Math.max(highest, numeric(application.number) || 0), 0) + 1;
+      const newApplication = { number: nextNumber, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" };
+      appData.applications.push(newApplication);
+      sortByDate(appData.applications);
+      selectedApplicationIndex = appData.applications.indexOf(newApplication);
+    }
     if (type === "weeks") { appData.weeks.push({ title: `Semana ${appData.weeks.length + 1}`, period: "", current: false, generatedLines: [], customLines: [], lines: [] }); selectedWeekIndex = appData.weeks.length - 1; }
     if (type === "diary") {
       const today = formatBRDate(new Date());
