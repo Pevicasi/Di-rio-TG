@@ -220,7 +220,23 @@
     </section>
   </main>
 
+  <div class="food-picker-modal" id="foodPickerModal" hidden>
+    <button class="food-picker-backdrop" id="foodPickerBackdrop" type="button" aria-label="Fechar seleção"></button>
+    <section class="food-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="foodPickerTitle">
+      <div class="food-picker-header">
+        <div><p class="eyebrow">Catálogo</p><h2 id="foodPickerTitle">Adicionar alimento</h2></div>
+        <button id="closeFoodPicker" class="modal-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <label>Pesquisar alimento<input id="foodPickerSearch" type="search" placeholder="Digite para pesquisar"></label>
+      <div id="foodPickerList" class="food-picker-list"></div>
+      <div class="food-picker-register">
+        <label>Novo alimento<input id="foodPickerNewFood" type="text" placeholder="Ex.: Batata-doce"></label>
+        <button id="registerFoodFromModal" class="add-button" type="button">Cadastrar e adicionar</button>
+      </div>
+    </section>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260728-v3-2-0-fix2"></script>
+  <script src="./script-admin.js?v=20260728-v3-2-1"></script>
 </body>
 </html>
