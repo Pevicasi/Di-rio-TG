@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.2.0";
+  const ADMIN_BUILD = "3.2.0 (correção 2)";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -564,6 +564,15 @@
     appData.diary[selectedDiaryIndex] = obj;
   }
 
+  function addFoodNameToMealCard(card, food) {
+    if (!card || !food) return;
+    const area = card.querySelector('[data-meal-field="foods"]');
+    if (!area) return;
+    const current = String(area.value || "").split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
+    if (!current.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"))) current.push(food);
+    area.value = current.join(", ");
+  }
+
   function renderDiary() {
     sortByDate(appData.diary);
     if (!appData.diary.length) {
@@ -584,7 +593,19 @@
           <label>Tipo<select data-meal-field="type">${["Café da manhã","Lanche da manhã","Almoço","Lanche da tarde","Jantar","Ceia","Outro"].map(type => `<option ${meal.type===type?'selected':''}>${type}</option>`).join('')}</select></label>
           <label>Horário<input data-meal-field="time" type="time" value="${escapeHtml(meal.time)}"></label>
           <label class="wide-field">Lista de alimentos<textarea data-meal-field="foods" rows="3" placeholder="Digite ou selecione alimentos separados por vírgula">${escapeHtml((meal.foods||[]).join(', '))}</textarea></label>
-          <label class="wide-field food-quick-add">Pesquisar alimento<input type="search" list="foodCatalogOptions" data-food-search placeholder="Ex.: arroz"><button type="button" class="secondary-button" data-add-food-to-meal="${mealIndex}">Adicionar à refeição</button></label>
+          <div class="wide-field meal-food-controls">
+            <label>Selecionar alimento cadastrado
+              <select data-food-select>
+                <option value="">Selecione um alimento</option>
+                ${(appData.foods || []).slice().sort((a,b) => a.localeCompare(b, "pt-BR")).map(food => `<option value="${escapeHtml(food)}">${escapeHtml(food)}</option>`).join("")}
+              </select>
+            </label>
+            <button type="button" class="secondary-button" data-add-selected-food="${mealIndex}">Adicionar à refeição</button>
+            <label>Cadastrar novo alimento
+              <input type="text" data-new-meal-food placeholder="Ex.: Batata-doce">
+            </label>
+            <button type="button" class="add-button" data-register-meal-food="${mealIndex}">Cadastrar e adicionar</button>
+          </div>
           <label class="wide-field">Observação da refeição<textarea data-meal-field="note" rows="2">${escapeHtml(meal.note)}</textarea></label>
         </div>
       </article>`).join("");
@@ -1199,18 +1220,36 @@
       appData.diary[selectedDiaryIndex].meals = mealText(appData.diary[selectedDiaryIndex].mealEntries);
       renderDiary(); markDirty(); return;
     }
-    const addFoodToMeal = event.target.closest("[data-add-food-to-meal]");
-    if (addFoodToMeal) {
+    const addSelectedFood = event.target.closest("[data-add-selected-food]");
+    if (addSelectedFood) {
       event.preventDefault();
-      const card = addFoodToMeal.closest("[data-meal-index]");
-      const search = card?.querySelector("[data-food-search]");
-      const food = search?.value.trim();
-      if (!food) return showToast("Digite ou selecione um alimento.", "error");
-      if (!appData.foods.some(item => item.toLowerCase() === food.toLowerCase())) appData.foods.push(food);
-      const area = card.querySelector('[data-meal-field="foods"]');
-      const current = area.value.split(/[;,\n]+/).map(value => value.trim()).filter(Boolean);
-      if (!current.some(item => item.toLowerCase() === food.toLowerCase())) current.push(food);
-      area.value = current.join(", "); search.value = ""; markDirty(); return;
+      const card = addSelectedFood.closest("[data-meal-index]");
+      const select = card?.querySelector("[data-food-select]");
+      const food = String(select?.value || "").trim();
+      if (!food) return showToast("Selecione um alimento cadastrado.", "error");
+      addFoodNameToMealCard(card, food);
+      select.value = "";
+      markDirty();
+      showToast("Alimento adicionado à refeição.");
+      return;
+    }
+    const registerMealFood = event.target.closest("[data-register-meal-food]");
+    if (registerMealFood) {
+      event.preventDefault();
+      const card = registerMealFood.closest("[data-meal-index]");
+      const input = card?.querySelector("[data-new-meal-food]");
+      const food = String(input?.value || "").trim();
+      if (!food) return showToast("Digite o nome do novo alimento.", "error");
+      const exists = appData.foods.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"));
+      if (!exists) appData.foods.push(food);
+      addFoodNameToMealCard(card, food);
+      input.value = "";
+      renderFoodCatalog();
+      collectDiaryFromDOM();
+      renderDiary();
+      markDirty();
+      showToast(exists ? "Alimento adicionado à refeição." : "Alimento cadastrado e adicionado.");
+      return;
     }
     const addButton = event.target.closest("[data-add]");
     if (addButton) {
