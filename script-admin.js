@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.5.4";
+  const ADMIN_BUILD = "3.5.5";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -1086,9 +1086,13 @@
       return lines.length*lineHeight;
     }
     sectionTitle(title, minContentHeight = 0) {
-      this.ensure(24 + Math.max(0, minContentHeight));
+      // Mantém um respiro visual consistente entre uma seção e a próxima.
+      // Na primeira seção de uma página não é necessário adicionar espaço extra.
+      const topGap = this.y > this.margin + 2 ? 20 : 0;
+      this.ensure(topGap + 24 + Math.max(0, minContentHeight));
+      if (topGap) this.y += topGap;
       this.text(title,this.margin,this.y,16,true,this.dark);
-      this.y += 24;
+      this.y += 28;
     }
     table(headers, rows, widths) {
       const total = this.width - this.margin*2;
@@ -1167,7 +1171,7 @@
       if(selectedSections.has("chart") && (data.weights||[]).length>1){
         doc.sectionTitle("Evolução do peso", 190); const x0=doc.margin+35,y0=doc.y+12,w=doc.width-doc.margin*2-55,h=145,pts=data.weights.map(i=>({d:i.date,v:Number(i.valueKg)})).filter(i=>Number.isFinite(i.v)); const vals=pts.map(p=>p.v),min=Math.floor(Math.min(...vals)-1),max=Math.ceil(Math.max(...vals)+1),range=Math.max(1,max-min);
         for(let i=0;i<5;i++){const yy=y0+i*h/4;doc.line(x0,yy,x0+w,yy,[220,229,227],0.5);doc.text((max-range*i/4).toFixed(1).replace(".",","),x0-8,yy+3,8,false,doc.gray,"right");}
-        const coords=pts.map((p,i)=>({x:x0+i*w/Math.max(1,pts.length-1),y:y0+(max-p.v)*h/range,p})); coords.forEach((c,i)=>{if(i)doc.line(coords[i-1].x,coords[i-1].y,c.x,c.y,doc.teal,3);doc.rect(c.x-2,c.y-2,4,4,[255,255,255],doc.teal);doc.text(`${c.p.v.toFixed(2).replace(".",",")} kg`,c.x,c.y-8,8,true,doc.dark,"center");doc.text(String(c.p.d).replace(/\/\d{4}$/,"") ,c.x,y0+h+17,8,false,doc.gray,"center");}); doc.y=y0+h+36;
+        const coords=pts.map((p,i)=>({x:x0+i*w/Math.max(1,pts.length-1),y:y0+(max-p.v)*h/range,p})); coords.forEach((c,i)=>{if(i)doc.line(coords[i-1].x,coords[i-1].y,c.x,c.y,doc.teal,3);doc.rect(c.x-2,c.y-2,4,4,[255,255,255],doc.teal);doc.text(`${c.p.v.toFixed(2).replace(".",",")} kg`,c.x,c.y-8,8,true,doc.dark,"center");doc.text(String(c.p.d).replace(/\/\d{4}$/,"") ,c.x,y0+h+17,8,false,doc.gray,"center");}); doc.y=y0+h+44;
       }
       if(selectedSections.has("weights") && (data.weights||[]).length){doc.sectionTitle("Histórico de pesagens", 48);doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
       if(selectedSections.has("applications") && (data.applications||[]).length){doc.sectionTitle("Linha do tempo das aplicações", 48);doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}

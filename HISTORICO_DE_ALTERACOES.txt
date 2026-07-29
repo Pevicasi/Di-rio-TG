@@ -404,3 +404,13 @@ VERSÃO 3.5.4 — CORREÇÃO DEFINITIVA DA PAGINAÇÃO DO PDF
 - Cabeçalhos são repetidos automaticamente quando uma tabela continua em outra página.
 - Parágrafos longos passam a quebrar página linha por linha, sem sobreposição.
 - Corrigidas as seções Evolução do peso, Histórico de pesagens, Linha do tempo das aplicações e Observação geral.
+
+VERSÃO 3.5.5 — AJUSTE DE ESPAÇAMENTO ENTRE SEÇÕES DO PDF
+Data: 29/07/2026
+
+- Corrigido o pouco espaço visual entre a tabela de Tratamento e o título Evolução do peso.
+- Aumentado o espaço entre o gráfico e o título Histórico de pesagens.
+- Aumentado o espaço entre tabelas e os títulos das seções seguintes.
+- A seção Observação geral agora começa com distância adequada da tabela de aplicações.
+- Mantida a quebra automática de página implementada anteriormente.
+- Atualizado o identificador de cache do painel para carregar a versão 3.5.5.
