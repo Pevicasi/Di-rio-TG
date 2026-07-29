@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.2.1";
+  const ADMIN_BUILD = "3.3.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -1230,19 +1230,7 @@
   $("foodPickerSearch")?.addEventListener("input", renderFoodPickerList);
   $("closeFoodPicker")?.addEventListener("click", closeFoodPicker);
   $("foodPickerBackdrop")?.addEventListener("click", closeFoodPicker);
-  $("registerFoodFromModal")?.addEventListener("click", () => {
-    const input = $("foodPickerNewFood");
-    const food = String(input?.value || "").trim();
-    if (!food) return showToast("Digite o nome do alimento.", "error");
-    const exists = appData.foods.some(item => item.toLocaleLowerCase("pt-BR") === food.toLocaleLowerCase("pt-BR"));
-    if (!exists) appData.foods.push(food);
-    if (activeMealCard) addFoodNameToMealCard(activeMealCard, food);
-    input.value = "";
-    renderFoodCatalog();
-    renderFoodPickerList();
-    markDirty();
-    showToast(exists ? "Alimento adicionado à refeição." : "Alimento cadastrado e adicionado.");
-  });
+
 
   // Botões criados dinamicamente: refeições, alimentos e registros.
   document.addEventListener("click", event => {

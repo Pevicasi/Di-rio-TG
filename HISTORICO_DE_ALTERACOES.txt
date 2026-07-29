@@ -1,3 +1,28 @@
+VERSÃO 3.3.0
+Data: 28/07/2026
+
+NOVIDADES
+• Criada uma aba exclusiva chamada “Alimentos”.
+• O cadastro, a pesquisa e a exclusão de alimentos foram retirados do Diário.
+• O Diário agora usa o catálogo somente para selecionar alimentos nas refeições.
+
+MELHORIAS
+• Reformulado o seletor de alimentos para funcionar como uma janela móvel responsiva.
+• Removido o cadastro de alimentos de dentro da janela de seleção.
+• Ajustado o layout do catálogo para telas pequenas.
+• Atualizados os identificadores de cache do CSS e do JavaScript para a versão 3.3.0.
+• Mantida a compatibilidade com os alimentos e refeições já salvos no dados.json.
+• PDF, tratamento, medicamentos, concentrações, fome e efeitos colaterais não foram alterados.
+
+ARQUIVOS PRINCIPAIS ALTERADOS
+• admin/index.html
+• admin/script-admin.js
+• script-admin.js
+• style.css
+• HISTORICO_DE_ALTERACOES.txt
+
+--------------------------------------------------
+
 VERSÃO 3.2.1
 - Reconstruído o seletor de alimentos do Diário.
 - Adicionado botão visível “Adicionar alimento” em cada refeição.

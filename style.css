@@ -879,3 +879,41 @@ body.header-hidden .hero-grid { margin-top: 0; }
 .food-picker-register{display:grid;grid-template-columns:1fr auto;align-items:end;gap:10px;padding-top:16px;border-top:1px solid #dce9e7}.food-picker-register label{margin:0}
 body.modal-open{overflow:hidden}
 @media(max-width:640px){.open-food-picker{width:100%}.food-picker-modal{padding:0}.food-picker-dialog{border-radius:24px 24px 0 0;padding:18px}.food-picker-register{grid-template-columns:1fr}.food-picker-register button{width:100%}}
+
+/* TirzeTrack v3.3.0 — catálogo em aba separada e seletor móvel */
+.section-description{margin:.35rem 0 0;color:#607773;font-size:.96rem;max-width:680px}
+.catalog-count{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border-radius:999px;background:#e1f2ef;color:#096d64;font-weight:800;white-space:nowrap}
+.food-register-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;padding:18px;border:1px solid #cfe1de;border-radius:18px;background:linear-gradient(135deg,#f3faf9,#e8f5f3);margin:18px 0}
+.food-register-card label,.food-search-bar label{margin:0}
+.food-register-card button{min-height:50px}
+.food-search-bar{margin:0 0 18px}.food-search-bar input{background:#fff}
+.food-catalog-list{display:grid;gap:18px}
+.food-category{padding:16px;border:1px solid #d8e7e5;border-radius:18px;background:#fff}
+.food-category h4{margin:0 0 12px;color:#285f59;font-size:1rem}
+.food-chips{display:flex;flex-wrap:wrap;gap:9px}
+.food-chip{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:7px 7px 7px 13px;border:1px solid #c9dfdc;border-radius:999px;background:#f3faf9;color:#174f49;font-weight:700}
+.food-chip button{display:grid;place-items:center;width:29px;height:29px;padding:0;border:0;border-radius:50%;background:#fff;color:#a12727;font-size:20px;line-height:1;box-shadow:0 1px 4px rgba(30,70,65,.12)}
+
+.food-picker-modal[hidden]{display:none!important}
+.food-picker-modal{position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.food-picker-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(4,31,28,.68)}
+.food-picker-dialog{position:relative;z-index:1;width:min(620px,100%);max-height:86vh;overflow:auto;padding:20px;border-radius:24px;background:#fff;box-shadow:0 28px 80px rgba(0,0,0,.35)}
+.food-picker-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.food-picker-header h2{margin:.15rem 0 0;color:#154e49;font-size:1.55rem}
+.modal-close{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#edf6f5;color:#155e57;font-size:28px;line-height:1}
+.food-picker-dialog>label{display:block;margin:0}
+.food-picker-dialog input{width:100%;min-height:50px;border:1px solid #bfd6d2;border-radius:14px;padding:12px 14px;background:#fff;font-size:1rem}
+.food-picker-list{display:grid;gap:9px;margin:14px 0;max-height:48vh;overflow:auto;padding-right:2px}
+.food-picker-item{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:12px 15px;border:1px solid #d3e3e0;border-radius:14px;background:#f8fcfb;color:#173f3b;text-align:left;font-size:1rem}
+.food-picker-item strong{display:inline-flex;padding:6px 10px;border-radius:999px;background:#dff3ef;color:#087268;font-size:.88rem}
+.food-picker-help{margin:14px 0 0;padding:12px 14px;border-radius:13px;background:#edf7f5;color:#506e6a;font-size:.92rem}
+body.modal-open{overflow:hidden}
+
+@media(max-width:640px){
+  .food-register-card{grid-template-columns:1fr;padding:15px}
+  .food-register-card button{width:100%}
+  .food-picker-modal{padding:0}
+  .food-picker-dialog{width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .food-picker-header h2{font-size:1.35rem}
+  .food-picker-item{min-height:56px}
+}
