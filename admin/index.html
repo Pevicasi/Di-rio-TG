@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
   <title>Administração • TirzeTrack</title>
-  <link rel="stylesheet" href="../style.css?v=20260728-v3-0-0" />
+  <link rel="stylesheet" href="../style.css?v=20260728-v3-3-0" />
 </head>
 <body class="admin-editor-page">
   <header class="topbar">
@@ -85,6 +85,7 @@
       <button type="button" data-admin-tab="applications">Aplicações</button>
       <button type="button" data-admin-tab="weeks">Semanas</button>
       <button type="button" data-admin-tab="diary">Diário</button>
+      <button type="button" data-admin-tab="foods">Alimentos</button>
       <button type="button" data-admin-tab="notes">Observações</button>
       <button type="button" data-admin-tab="github">GitHub</button>
     </nav>
@@ -182,20 +183,27 @@
           <select id="diaryDateSelector"></select>
         </label>
       </div>
-      <section class="food-catalog-manager" aria-labelledby="foodCatalogTitle">
-        <div class="food-catalog-heading">
-          <div><p class="eyebrow">Lista reutilizável</p><h3 id="foodCatalogTitle">Cadastro de alimentos</h3></div>
-          <span id="foodCatalogCount" class="catalog-count">0 alimentos</span>
-        </div>
-        <p class="form-help">Pesquise os alimentos já cadastrados ou adicione um novo. A lista será salva no dados.json quando você publicar.</p>
-        <div class="food-catalog-controls">
-          <label>Pesquisar alimento<input id="foodCatalogSearch" type="search" placeholder="Ex.: arroz, banana ou frango"></label>
-          <label>Novo alimento<input id="newFoodName" type="text" placeholder="Digite o nome do alimento"></label>
-          <button id="addFoodCatalog" class="add-button" type="button">+ Cadastrar alimento</button>
-        </div>
-        <div id="foodCatalogList" class="food-catalog-list"></div>
-      </section>
       <div id="diarySingleEditor" class="editable-list"></div>
+    </section>
+
+
+    <section class="card admin-form-section" id="foods">
+      <div class="section-header">
+        <div><p class="eyebrow">Catálogo</p><h2>Alimentos</h2><p class="section-description">Cadastre e organize os alimentos que poderão ser escolhidos nas refeições do Diário.</p></div>
+        <span id="foodCatalogCount" class="catalog-count">0 alimentos</span>
+      </div>
+      <div class="food-register-card">
+        <label>Nome do novo alimento
+          <input id="newFoodName" type="text" placeholder="Ex.: Batata-doce" autocomplete="off">
+        </label>
+        <button id="addFoodCatalog" class="add-button" type="button">+ Cadastrar alimento</button>
+      </div>
+      <div class="food-search-bar">
+        <label>Pesquisar no catálogo
+          <input id="foodCatalogSearch" type="search" placeholder="Digite o nome do alimento" autocomplete="off">
+        </label>
+      </div>
+      <div id="foodCatalogList" class="food-catalog-list"></div>
     </section>
 
     <section class="card admin-form-section" id="notes">
@@ -229,14 +237,11 @@
       </div>
       <label>Pesquisar alimento<input id="foodPickerSearch" type="search" placeholder="Digite para pesquisar"></label>
       <div id="foodPickerList" class="food-picker-list"></div>
-      <div class="food-picker-register">
-        <label>Novo alimento<input id="foodPickerNewFood" type="text" placeholder="Ex.: Batata-doce"></label>
-        <button id="registerFoodFromModal" class="add-button" type="button">Cadastrar e adicionar</button>
-      </div>
+      <p class="food-picker-help">Para cadastrar ou excluir alimentos, use a aba <strong>Alimentos</strong>.</p>
     </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260728-v3-2-1"></script>
+  <script src="./script-admin.js?v=20260728-v3-3-0"></script>
 </body>
 </html>
