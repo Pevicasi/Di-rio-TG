@@ -1,3 +1,10 @@
+VERSÃO 3.6.1
+- Adicionado o botão “Como medir” na aba Composição corporal do painel admin.
+- Adicionado modal ilustrado mostrando exatamente onde medir pescoço, cintura e quadril em homens e mulheres.
+- Incluídas orientações visuais para posicionamento correto da fita métrica.
+- Imagem otimizada e incluída dentro do próprio projeto, funcionando sem banco de dados e sem depender de links externos.
+- Atualizados versão interna e parâmetros de cache.
+
 VERSÃO 3.5.2
 - Corrigido o botão “Adicionar aplicação”: a nova aplicação agora é selecionada e exibida imediatamente, mesmo quando existem registros com datas futuras.
 - A numeração de novas aplicações passa a usar o maior número existente mais 1, evitando repetição ou retorno a números anteriores.
