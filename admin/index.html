@@ -169,7 +169,7 @@
 
 
     <section class="card admin-form-section" id="composition">
-      <div class="section-header"><div><p class="eyebrow">Medidas</p><h2>Composição corporal</h2><p class="section-description">Estimativa pelo método da Marinha dos EUA ou registro manual de bioimpedância. Tudo é salvo no dados.json.</p></div><div class="section-header-actions"><label class="visibility-toggle"><input id="visibilityComposition" type="checkbox" checked> Exibir no site</label><button class="add-button" data-add="bodyComposition" type="button">+ Nova medição</button></div></div>
+      <div class="section-header"><div><p class="eyebrow">Medidas</p><h2>Composição corporal</h2><p class="section-description">Estimativa pelo método da Marinha dos EUA ou registro manual de bioimpedância. Tudo é salvo no dados.json.</p></div><div class="section-header-actions"><button class="secondary-button measure-guide-button" id="openMeasureGuide" type="button">📏 Como medir</button><label class="visibility-toggle"><input id="visibilityComposition" type="checkbox" checked> Exibir no site</label><button class="add-button" data-add="bodyComposition" type="button">+ Nova medição</button></div></div>
       <div class="composition-info"><strong>Como funciona:</strong> para homens, o cálculo usa altura, cintura e pescoço. Para mulheres, usa também o quadril. O quadril masculino pode ser registrado para acompanhamento, mas é ignorado na fórmula.</div>
       <div id="bodyCompositionList" class="editable-list"></div>
     </section>
@@ -262,6 +262,19 @@
     </section>
   </div>
 
+  <div class="measure-guide-modal" id="measureGuideModal" hidden>
+    <button class="measure-guide-backdrop" id="measureGuideBackdrop" type="button" aria-label="Fechar orientações"></button>
+    <section class="measure-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="measureGuideTitle">
+      <div class="measure-guide-header">
+        <div><p class="eyebrow">Orientação visual</p><h2 id="measureGuideTitle">Como fazer as medidas corporais</h2></div>
+        <button id="closeMeasureGuide" class="modal-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="measure-guide-content">
+        <img src="./assets/como-medir-medidas-corporais.webp" alt="Ilustração mostrando onde medir pescoço, cintura e quadril em homens e mulheres" loading="lazy">
+      </div>
+    </section>
+  </div>
+
   <div class="food-picker-modal" id="foodPickerModal" hidden>
     <button class="food-picker-backdrop" id="foodPickerBackdrop" type="button" aria-label="Fechar seleção"></button>
     <section class="food-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="foodPickerTitle">
@@ -276,6 +289,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260730-v3-6-0"></script>
+  <script src="./script-admin.js?v=20260730-v3-6-1"></script>
 </body>
 </html>

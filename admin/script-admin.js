@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.6.0";
+  const ADMIN_BUILD = "3.6.1";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -438,6 +438,20 @@
         </div>
       </article>`;
     $("compositionSelector")?.addEventListener("change", event => { collectDataFromDOM(); selectedCompositionIndex = Number(event.target.value); renderBodyComposition(); });
+  }
+
+  function openMeasureGuide() {
+    const modal = $("measureGuideModal");
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add("measure-guide-open");
+  }
+
+  function closeMeasureGuide() {
+    const modal = $("measureGuideModal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("measure-guide-open");
   }
 
   function renderApplications() {
@@ -1713,6 +1727,13 @@
     try { initialTab = sessionStorage.getItem("tirzetrack-admin-tab") || "general"; } catch (_) {}
     if (!$(initialTab)) initialTab = "general";
     activateTab(initialTab);
-    loadInitialData();
+    $("openMeasureGuide")?.addEventListener("click", openMeasureGuide);
+  $("closeMeasureGuide")?.addEventListener("click", closeMeasureGuide);
+  $("measureGuideBackdrop")?.addEventListener("click", closeMeasureGuide);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !$("measureGuideModal")?.hidden) closeMeasureGuide();
+  });
+
+  loadInitialData();
   }
 })();
