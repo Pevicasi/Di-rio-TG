@@ -414,3 +414,23 @@ Data: 29/07/2026
 - A seção Observação geral agora começa com distância adequada da tabela de aplicações.
 - Mantida a quebra automática de página implementada anteriormente.
 - Atualizado o identificador de cache do painel para carregar a versão 3.5.5.
+
+
+VERSÃO 3.6.0 — COMPOSIÇÃO CORPORAL
+Data: 30/07/2026
+
+- Adicionado o campo Sexo no Perfil para selecionar a fórmula de estimativa corporal.
+- Criada a aba Composição corporal no painel administrativo.
+- As medições são armazenadas no próprio dados.json; nenhum banco de dados foi adicionado.
+- Cálculo estimado de gordura corporal pelo método de circunferências da Marinha dos EUA.
+- Para homens, a fórmula utiliza altura, cintura e pescoço.
+- Para mulheres, a fórmula utiliza altura, cintura, quadril e pescoço.
+- A medida do quadril masculino pode ser registrada e acompanhada, mas não participa do cálculo.
+- Adicionado campo opcional para percentual obtido por bioimpedância ou outra medição manual; quando preenchido, ele tem prioridade sobre a estimativa.
+- Cálculo automático de massa gorda e massa magra com base no peso da data.
+- Quando o peso não é informado na medição, o sistema usa a pesagem mais próxima anterior.
+- Adicionados campos opcionais de tórax, braço e coxa para acompanhamento.
+- Criados histórico e exibição da composição corporal no site público.
+- Adicionado controle para mostrar ou ocultar a seção no site público.
+- A composição corporal também pode ser incluída no relatório PDF.
+- Atualizados os identificadores de cache para a versão 3.6.0.

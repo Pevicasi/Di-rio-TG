@@ -7,7 +7,7 @@ const defaultData = {
   schemaVersion: 1,
   title: "Acompanhamento com Tirzepatida",
   updatedAt: "20/07/2026",
-  profile: { name: "Petrônio Vieira", age: 42, heightM: 1.59 },
+  profile: { name: "Petrônio Vieira", age: 42, heightM: 1.59, sex: "" },
   goal: { initialWeightKg: 117.5, currentWeightKg: 111.3, targetWeightKg: 100 },
   treatment: {
     medication: "TG (Indufar)", concentration: "15 mg / 0,5 mL",
@@ -18,6 +18,7 @@ const defaultData = {
     { date: "13/07/2026", valueKg: 113.95 },
     { date: "20/07/2026", valueKg: 111.3 }
   ],
+  bodyComposition: [],
   applications: [
     { number: 1, date: "06/07/2026", time: "10:00", dose: "8 UI", location: "Abdômen, lado esquerdo do umbigo" },
     { number: 2, date: "13/07/2026", time: "18:50", dose: "8 UI", location: "Abdômen, lado direito do umbigo" },
@@ -47,7 +48,7 @@ const defaultData = {
   ],
   generalObservation: "Até 20/07/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico.",
-  visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
+  visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, composition: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
 };
 
 let appData = defaultData;
@@ -416,7 +417,7 @@ function setSectionVisible(element, visible) {
 }
 
 function applyVisibility(data) {
-  const v = { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true, ...(data.visibility || {}) };
+  const v = { header: true, profile: true, summary: true, treatment: true, weights: true, composition: true, applications: true, weeks: true, analysis: true, diary: true, notes: true, ...(data.visibility || {}) };
 
   // Usa contêineres fixos. Nenhuma seção é removida do DOM; ela apenas é ocultada.
   setSectionVisible($("publicHeader"), v.header);
@@ -424,6 +425,7 @@ function applyVisibility(data) {
   setSectionVisible($("summarySection"), v.summary);
   setSectionVisible($("treatmentSection"), v.treatment);
   setSectionVisible($("weightsSection"), v.weights);
+  setSectionVisible($("compositionSection"), v.composition && Array.isArray(data.bodyComposition) && data.bodyComposition.length > 0);
   setSectionVisible($("applicationsSection"), v.applications);
   setSectionVisible($("weeksSection"), v.weeks);
   setSectionVisible($("analysisSection"), v.analysis);
@@ -437,6 +439,50 @@ function applyVisibility(data) {
 
 function setText(id, value) { const el = $(id); if (el) el.textContent = value ?? ""; }
 function setHtml(id, value) { const el = $(id); if (el) el.innerHTML = value ?? ""; }
+function navyBodyFat(record, profile) {
+  const heightCm = Number(profile?.heightM) * 100;
+  const height = heightCm / 2.54;
+  const neck = Number(record?.neckCm) / 2.54, waist = Number(record?.waistCm) / 2.54, hip = Number(record?.hipCm) / 2.54;
+  if (!(heightCm > 0 && neck > 0 && waist > 0)) return null;
+  let value = null;
+  if (profile?.sex === "male" && waist > neck) value = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+  if (profile?.sex === "female" && hip > 0 && waist + hip > neck) value = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+  return Number.isFinite(value) && value > 0 && value < 75 ? Math.round(value * 10) / 10 : null;
+}
+
+function compositionWeight(record, data) {
+  const own = Number(record?.weightKg);
+  if (own > 0) return own;
+  const target = parseBrDate(record?.date);
+  const weights = (data.weights || []).map(w => ({...w, d: parseBrDate(w.date)})).filter(w => w.d && Number(w.valueKg) > 0).sort((a,b)=>a.d-b.d);
+  if (!weights.length) return null;
+  const prior = target ? weights.filter(w => w.d <= target) : weights;
+  return Number((prior.length ? prior[prior.length-1] : weights[0]).valueKg);
+}
+
+function compositionComputed(record, data) {
+  const manual = Number(record?.manualBodyFat);
+  const percent = manual > 0 ? manual : navyBodyFat(record, data.profile);
+  const weight = compositionWeight(record, data);
+  return { percent, weight, fat: percent > 0 && weight > 0 ? weight*percent/100 : null, lean: percent > 0 && weight > 0 ? weight*(100-percent)/100 : null, method: manual > 0 ? "Bioimpedância/manual" : "Estimativa pelo método da Marinha dos EUA" };
+}
+
+function renderComposition(data) {
+  const records = [...(data.bodyComposition || [])].sort((a,b)=>(parseBrDate(a.date)||0)-(parseBrDate(b.date)||0));
+  const valid = records.map(r => ({record:r, result:compositionComputed(r,data)})).filter(x => x.result.percent > 0);
+  if (!valid.length) { setSectionVisible($("compositionSection"), false); return; }
+  const latest = valid[valid.length-1];
+  const pct = `${latest.result.percent.toFixed(1).replace('.',',')}%`;
+  $("compositionMetrics").innerHTML = [
+    ["Gordura corporal", pct],
+    ["Massa gorda", latest.result.fat != null ? kg(latest.result.fat) : "—"],
+    ["Massa magra", latest.result.lean != null ? kg(latest.result.lean) : "—"],
+    ["Última medição", latest.record.date || "—"]
+  ].map(([l,v])=>`<div class="metric"><span>${escapeHtml(l)}</span><strong>${escapeHtml(v)}</strong></div>`).join('');
+  setText("compositionMethod", latest.result.method + ". Valores são estimativas e não substituem avaliação profissional.");
+  $("compositionHistory").innerHTML = `<div class="composition-table"><div class="composition-row composition-head"><span>Data</span><span>Gordura</span><span>Massa gorda</span><span>Massa magra</span></div>${valid.slice(-8).reverse().map(({record,result})=>`<div class="composition-row"><span>${escapeHtml(record.date||'-')}</span><span>${result.percent.toFixed(1).replace('.',',')}%</span><span>${result.fat!=null?kg(result.fat):'—'}</span><span>${result.lean!=null?kg(result.lean):'—'}</span></div>`).join('')}</div>`;
+}
+
 function renderAll() {
   const d = synchronizeWeightFields(appData);
   const summary = weightSummary(d);
@@ -478,6 +524,7 @@ function renderAll() {
   ];
   setHtml("treatmentDetails", treatmentRows.map(([k,v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join(""));
 
+  renderComposition(d);
   renderApplications();
   renderWeeks();
   renderAnalysis(d, stage);
