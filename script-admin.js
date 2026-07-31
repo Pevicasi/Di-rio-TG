@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.6.1";
+  const ADMIN_BUILD = "3.6.2";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -436,6 +436,18 @@
           <div><span>Massa magra</span><strong>${result.leanKg != null ? result.leanKg.toFixed(2).replace('.',',')+' kg' : '-'}</strong></div>
           <small>${result.percent != null ? result.method : 'Informe sexo, altura, pescoço e cintura'+(female?', além do quadril.':'.')}</small>
         </div>
+        ${(() => {
+          const measurementDate = dateFromBR(item.date);
+          const newerWeights = (appData.weights || []).filter(weight => {
+            const date = dateFromBR(weight.date);
+            return measurementDate && date && date > measurementDate && numeric(weight.valueKg) > 0;
+          });
+          if (!newerWeights.length || selectedCompositionIndex !== appData.bodyComposition.length - 1) return '';
+          return `<div class="composition-update-warning ${newerWeights.length >= 4 ? 'is-stale' : ''}">
+            <strong>${newerWeights.length >= 4 ? 'Medição corporal desatualizada' : 'Nova medição recomendada'}</strong>
+            <p>${newerWeights.length === 1 ? 'Existe 1 nova pesagem' : `Existem ${newerWeights.length} novas pesagens`} após esta medição. No site público, massa gorda e massa magra serão recalculadas com o peso mais recente, mas o percentual de gordura continuará baseado nesta medição até você cadastrar novas medidas.</p>
+          </div>`;
+        })()}
       </article>`;
     $("compositionSelector")?.addEventListener("change", event => { collectDataFromDOM(); selectedCompositionIndex = Number(event.target.value); renderBodyComposition(); });
   }

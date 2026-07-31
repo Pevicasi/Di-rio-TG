@@ -960,14 +960,14 @@ body.modal-open{overflow:hidden}
 }
 .composition-public-note { margin:16px 0; color:#687b78; font-size:.92rem; }
 .composition-table { overflow:hidden; border:1px solid #d7e5e2; border-radius:12px; }
-.composition-row { display:grid; grid-template-columns:1.1fr 1fr 1.2fr 1.2fr; }
+.composition-row { display:grid; grid-template-columns:1.05fr .85fr 1.05fr 1.05fr 1.1fr; }
 .composition-row span { padding:11px 12px; border-bottom:1px solid #e3ecea; }
 .composition-row span+span { border-left:1px solid #e3ecea; }
 .composition-row:last-child span { border-bottom:0; }
 .composition-head { background:#0f766e; color:white; font-weight:700; }
 @media (max-width: 760px) {
   .composition-result, .composition-public-metrics { grid-template-columns:1fr 1fr; }
-  .composition-row { grid-template-columns:1fr 1fr; }
+  .composition-row { grid-template-columns:1fr 1fr 1.1fr; }
   .composition-row span:nth-child(3), .composition-row span:nth-child(4) { display:none; }
 }
 
@@ -989,4 +989,49 @@ body.measure-guide-open { overflow: hidden; }
   .measure-guide-header .eyebrow { display: none; }
   .measure-guide-header h2 { font-size: 1.05rem; }
   .measure-guide-content { padding: 6px; }
+}
+
+
+/* TirzeTrack 3.6.2 — atualização da composição entre medições */
+.composition-update-warning,
+.composition-current-status {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  line-height: 1.45;
+}
+.composition-update-warning {
+  background: #fff8e6;
+  border: 1px solid #e8c66a;
+  color: #6b4d00;
+}
+.composition-update-warning.is-stale {
+  background: #fff1e8;
+  border-color: #e9a36c;
+  color: #713811;
+}
+.composition-update-warning strong,
+.composition-current-status strong { display:block; margin-bottom:6px; }
+.composition-update-warning p { margin:5px 0 0; }
+.composition-current-status {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  background:#edf9f5;
+  border:1px solid #a9d9ca;
+  color:#17604f;
+}
+.composition-origin {
+  display:inline-block;
+  padding:4px 8px !important;
+  border:0 !important;
+  border-radius:999px;
+  font-size:.76rem;
+  white-space:nowrap;
+}
+.composition-origin.measured { background:#eaf7f3; color:#17604f; }
+.composition-origin.recalculated { background:#fff5db; color:#725300; }
+@media (max-width: 640px) {
+  .composition-row span:nth-child(5) { display:block; }
+  .composition-origin { font-size:.7rem; padding:3px 6px !important; }
 }

@@ -467,20 +467,76 @@ function compositionComputed(record, data) {
   return { percent, weight, fat: percent > 0 && weight > 0 ? weight*percent/100 : null, lean: percent > 0 && weight > 0 ? weight*(100-percent)/100 : null, method: manual > 0 ? "Bioimpedância/manual" : "Estimativa pelo método da Marinha dos EUA" };
 }
 
+function latestWeightRecord(data) {
+  return (data.weights || [])
+    .map(weight => ({ ...weight, d: parseBrDate(weight.date), value: Number(weight.valueKg) }))
+    .filter(weight => weight.d && weight.value > 0)
+    .sort((a, b) => a.d - b.d)
+    .at(-1) || null;
+}
+
 function renderComposition(data) {
   const records = [...(data.bodyComposition || [])].sort((a,b)=>(parseBrDate(a.date)||0)-(parseBrDate(b.date)||0));
   const valid = records.map(r => ({record:r, result:compositionComputed(r,data)})).filter(x => x.result.percent > 0);
   if (!valid.length) { setSectionVisible($("compositionSection"), false); return; }
+
   const latest = valid[valid.length-1];
+  const latestMeasurementDate = parseBrDate(latest.record.date);
+  const latestWeight = latestWeightRecord(data);
+  const hasNewerWeight = Boolean(latestWeight && latestMeasurementDate && latestWeight.d > latestMeasurementDate);
+  const weightsAfterMeasurement = hasNewerWeight
+    ? (data.weights || []).filter(weight => {
+        const date = parseBrDate(weight.date);
+        return date && date > latestMeasurementDate && Number(weight.valueKg) > 0;
+      }).sort((a,b)=>parseBrDate(a.date)-parseBrDate(b.date))
+    : [];
+
+  // O percentual permanece baseado na última medição. Quando existe pesagem mais
+  // recente, apenas os valores em quilogramas são recalculados com o peso atual.
+  const currentWeight = hasNewerWeight ? latestWeight.value : latest.result.weight;
+  const currentFat = latest.result.percent > 0 && currentWeight > 0 ? currentWeight * latest.result.percent / 100 : null;
+  const currentLean = latest.result.percent > 0 && currentWeight > 0 ? currentWeight * (100 - latest.result.percent) / 100 : null;
   const pct = `${latest.result.percent.toFixed(1).replace('.',',')}%`;
+
   $("compositionMetrics").innerHTML = [
     ["Gordura corporal", pct],
-    ["Massa gorda", latest.result.fat != null ? kg(latest.result.fat) : "—"],
-    ["Massa magra", latest.result.lean != null ? kg(latest.result.lean) : "—"],
+    ["Massa gorda", currentFat != null ? kg(currentFat) : "—"],
+    ["Massa magra", currentLean != null ? kg(currentLean) : "—"],
     ["Última medição", latest.record.date || "—"]
   ].map(([l,v])=>`<div class="metric"><span>${escapeHtml(l)}</span><strong>${escapeHtml(v)}</strong></div>`).join('');
-  setText("compositionMethod", latest.result.method + ". Valores são estimativas e não substituem avaliação profissional.");
-  $("compositionHistory").innerHTML = `<div class="composition-table"><div class="composition-row composition-head"><span>Data</span><span>Gordura</span><span>Massa gorda</span><span>Massa magra</span></div>${valid.slice(-8).reverse().map(({record,result})=>`<div class="composition-row"><span>${escapeHtml(record.date||'-')}</span><span>${result.percent.toFixed(1).replace('.',',')}%</span><span>${result.fat!=null?kg(result.fat):'—'}</span><span>${result.lean!=null?kg(result.lean):'—'}</span></div>`).join('')}</div>`;
+
+  const status = hasNewerWeight
+    ? `<div class="composition-update-warning ${weightsAfterMeasurement.length >= 4 ? 'is-stale' : ''}">
+        <strong>${weightsAfterMeasurement.length >= 4 ? 'Medição corporal desatualizada' : 'Nova medição recomendada'}</strong>
+        <p>Sua última medição corporal foi realizada em <b>${escapeHtml(latest.record.date || 'data não informada')}</b>. Desde então, ${weightsAfterMeasurement.length === 1 ? 'foi registrada 1 nova pesagem' : `foram registradas ${weightsAfterMeasurement.length} novas pesagens`}.</p>
+        <p>Os valores de <b>massa gorda</b> e <b>massa magra</b> foram recalculados com o peso mais recente (${escapeHtml(latestWeight.date)}), mas o percentual de gordura continua baseado na última medição. Faça uma nova medição de pescoço e cintura${data.profile?.sex === 'female' ? ', além do quadril' : ''} para atualizar todos os indicadores.</p>
+      </div>`
+    : `<div class="composition-current-status"><strong>Medição atualizada</strong><span>Os indicadores estão baseados na medição corporal mais recente.</span></div>`;
+
+  $("compositionMethod").innerHTML = `${escapeHtml(latest.result.method)}. Valores são estimativas e não substituem avaliação profissional.${status}`;
+
+  const historyRows = valid.map(({record,result}) => ({
+    date: record.date || '-',
+    percent: result.percent,
+    fat: result.fat,
+    lean: result.lean,
+    origin: 'Medição'
+  }));
+
+  // Adiciona ao histórico as pesagens posteriores à última medição, deixando
+  // explícito que só os valores em kg foram recalculados.
+  weightsAfterMeasurement.forEach(weight => {
+    const value = Number(weight.valueKg);
+    historyRows.push({
+      date: weight.date || '-',
+      percent: latest.result.percent,
+      fat: value > 0 ? value * latest.result.percent / 100 : null,
+      lean: value > 0 ? value * (100 - latest.result.percent) / 100 : null,
+      origin: 'Recalculado'
+    });
+  });
+
+  $("compositionHistory").innerHTML = `<div class="composition-table"><div class="composition-row composition-head"><span>Data</span><span>Gordura</span><span>Massa gorda</span><span>Massa magra</span><span>Origem</span></div>${historyRows.slice(-8).reverse().map(row=>`<div class="composition-row"><span>${escapeHtml(row.date)}</span><span>${row.percent.toFixed(1).replace('.',',')}%</span><span>${row.fat!=null?kg(row.fat):'—'}</span><span>${row.lean!=null?kg(row.lean):'—'}</span><span><span class="composition-origin ${row.origin === 'Medição' ? 'measured' : 'recalculated'}">${row.origin === 'Medição' ? '📏 Medição' : '↻ Recalculado'}</span></span></div>`).join('')}</div>`;
 }
 
 function renderAll() {

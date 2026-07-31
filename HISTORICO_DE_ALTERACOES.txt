@@ -1,3 +1,16 @@
+VERSÃO 3.6.2 — COMPOSIÇÃO ATUALIZADA ENTRE MEDIÇÕES
+Data: 31/07/2026
+
+- O percentual de gordura permanece baseado na última medição corporal cadastrada.
+- Quando existe uma pesagem mais recente, massa gorda e massa magra são recalculadas automaticamente usando o peso atual.
+- Adicionado aviso de nova medição recomendada quando há pesagens após a última medição corporal.
+- Após 4 ou mais novas pesagens, o aviso passa a indicar que a medição corporal está desatualizada.
+- O aviso explica claramente quais valores foram recalculados e quais continuam baseados na última medição.
+- Adicionada a coluna Origem ao histórico da composição corporal.
+- Registros reais aparecem como “Medição” e atualizações baseadas apenas no peso aparecem como “Recalculado”.
+- Adicionado lembrete correspondente no painel administrativo.
+- Atualizados versão e identificadores de cache para 3.6.2.
+
 VERSÃO 3.6.1
 - Adicionado o botão “Como medir” na aba Composição corporal do painel admin.
 - Adicionado modal ilustrado mostrando exatamente onde medir pescoço, cintura e quadril em homens e mulheres.
