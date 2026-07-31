@@ -11,7 +11,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 85,
+    "currentWeightKg": 109.8,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -39,22 +39,6 @@
     {
       "date": "27/07/2026",
       "valueKg": 109.8
-    },
-    {
-      "date": "31/07/2026",
-      "valueKg": 108.25
-    },
-    {
-      "date": "03/08/2026",
-      "valueKg": 90
-    },
-    {
-      "date": "29/09/2026",
-      "valueKg": 87
-    },
-    {
-      "date": "30/09/2026",
-      "valueKg": 85
     }
   ],
   "bodyComposition": [
@@ -192,16 +176,16 @@
       "title": "Semana 4",
       "period": "Iniciada em 27/07",
       "current": true,
-      "weight": "109,80 → 108,25 kg",
-      "result": "-1,55 kg",
+      "weight": "109,80 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
       "hunger": "Sem fome",
       "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "109,80 → 108,25 kg",
-        "result": "-1,55 kg",
+        "weight": "109,80 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
         "hunger": "Sem fome",
         "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
@@ -209,8 +193,8 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 109,80 → 108,25 kg",
-        "Resultado: -1,55 kg",
+        "Peso: 109,80 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
         "Efeitos: Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça"
