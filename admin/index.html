@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f766e" />
   <title>Administração • TirzeTrack</title>
-  <link rel="stylesheet" href="../style.css?v=20260729-v3-5-1" />
+  <link rel="stylesheet" href="../style.css?v=20260730-v3-6-0" />
 </head>
 <body class="admin-editor-page">
   <header class="topbar">
@@ -61,6 +61,7 @@
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="treatment" checked><span><strong>Tratamento</strong><small>Medicamento, dose, início e aplicações</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="chart" checked><span><strong>Gráfico do peso</strong><small>Evolução visual das pesagens</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weights" checked><span><strong>Histórico de pesagens</strong><small>Data, peso e variação</small></span></label>
+          <label class="pdf-option"><input type="checkbox" name="pdfSection" value="composition" checked><span><strong>Composição corporal</strong><small>Gordura, massa gorda, massa magra e medidas</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="applications" checked><span><strong>Aplicações</strong><small>Data, hora, dose e local</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="weeks" checked><span><strong>Resumos semanais</strong><small>Resultados, fome, efeitos e observações</small></span></label>
           <label class="pdf-option"><input type="checkbox" name="pdfSection" value="diary"><span><strong>Registros diários</strong><small>Refeições, fome, efeitos colaterais e observações</small></span></label>
@@ -82,6 +83,7 @@
       <button type="button" data-admin-tab="goals">Metas</button>
       <button type="button" data-admin-tab="treatment">Tratamento</button>
       <button type="button" data-admin-tab="weights">Pesagens</button>
+      <button type="button" data-admin-tab="composition">Composição corporal</button>
       <button type="button" data-admin-tab="applications">Aplicações</button>
       <button type="button" data-admin-tab="weeks">Semanas</button>
       <button type="button" data-admin-tab="diary">Diário</button>
@@ -109,6 +111,7 @@
         <label>Data de nascimento<input id="fieldBirthDate" type="date" /></label>
         <label>Idade calculada<input id="fieldAge" type="text" readonly placeholder="Calculada automaticamente" /><small class="field-help">A idade é atualizada automaticamente pela data de nascimento.</small></label>
         <label>Altura (m)<input id="fieldHeight" type="number" min="0.5" max="2.5" step="0.01" inputmode="decimal" /></label>
+        <label>Sexo para cálculo corporal<select id="fieldSex"><option value="">Selecione</option><option value="male">Masculino</option><option value="female">Feminino</option></select><small class="field-help">Define a fórmula usada na estimativa de gordura corporal.</small></label>
       </div>
     </section>
 
@@ -162,6 +165,13 @@
     <section class="card admin-form-section" id="weights">
       <div class="section-header"><div><p class="eyebrow">Evolução</p><h2>Pesagens</h2></div><div class="section-header-actions"><label class="visibility-toggle"><input id="visibilityWeights" type="checkbox" checked> Exibir no site</label><button class="add-button" id="openNewWeight" type="button">+ Nova pesagem</button></div></div>
       <div id="weightsList" class="editable-list"></div>
+    </section>
+
+
+    <section class="card admin-form-section" id="composition">
+      <div class="section-header"><div><p class="eyebrow">Medidas</p><h2>Composição corporal</h2><p class="section-description">Estimativa pelo método da Marinha dos EUA ou registro manual de bioimpedância. Tudo é salvo no dados.json.</p></div><div class="section-header-actions"><label class="visibility-toggle"><input id="visibilityComposition" type="checkbox" checked> Exibir no site</label><button class="add-button" data-add="bodyComposition" type="button">+ Nova medição</button></div></div>
+      <div class="composition-info"><strong>Como funciona:</strong> para homens, o cálculo usa altura, cintura e pescoço. Para mulheres, usa também o quadril. O quadril masculino pode ser registrado para acompanhamento, mas é ignorado na fórmula.</div>
+      <div id="bodyCompositionList" class="editable-list"></div>
     </section>
 
     <section class="card admin-form-section" id="applications">
@@ -266,6 +276,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script-admin.js?v=20260729-v3-5-5"></script>
+  <script src="./script-admin.js?v=20260730-v3-6-0"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 
   const DRAFT_KEY = "tirzetrack-admin-draft-v2";
   const GITHUB_CONFIG_KEY = "tirzetrack-github-config-v1";
-  const ADMIN_BUILD = "3.5.5";
+  const ADMIN_BUILD = "3.6.0";
   const LIVE_PREVIEW_KEY = "tirzetrack-live-published-v1";
   const $ = id => document.getElementById(id);
   let appData = null;
@@ -13,23 +13,24 @@
   let selectedWeightIndex = -1;
   let selectedApplicationIndex = -1;
   let selectedWeekIndex = -1;
+  let selectedCompositionIndex = -1;
   let activeMealCard = null;
 
   const emptyData = () => ({
     schemaVersion: 1,
     title: "Acompanhamento com Tirzepatida",
     updatedAt: formatBRDate(new Date()),
-    profile: { name: "", birthDate: "", age: "", heightM: "" },
+    profile: { name: "", birthDate: "", age: "", heightM: "", sex: "" },
     goal: {
       initialWeightKg: "", currentWeightKg: "", targetWeightKg: "",
       history: [], stageStartWeightKg: "", stageStartDate: ""
     },
     treatment: { medication: "", concentration: "", weeklyDose: "", startDate: "" },
-    weights: [], applications: [], weeks: [], diary: [],
+    weights: [], bodyComposition: [], applications: [], weeks: [], diary: [],
     foods: ["Pão", "Arroz", "Feijão", "Macarrão", "Frango", "Carne bovina", "Peixe", "Ovo", "Banana", "Maçã", "Tomate", "Alface", "Cenoura", "Café", "Chá", "Água", "Suco"],
     generalObservation: "",
     medicalNotice: "Este site organiza os registros informados e não substitui acompanhamento médico.",
-    visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
+    visibility: { header: true, profile: true, summary: true, treatment: true, weights: true, composition: true, applications: true, weeks: true, analysis: true, diary: true, notes: true }
   });
 
   function normalizeData(raw) {
@@ -42,6 +43,7 @@
       goal: { ...base.goal, ...(data.goal || {}), history: Array.isArray(data?.goal?.history) ? data.goal.history : [] },
       treatment: { ...base.treatment, ...(data.treatment || {}) },
       weights: Array.isArray(data.weights) ? data.weights : [],
+      bodyComposition: Array.isArray(data.bodyComposition) ? data.bodyComposition : [],
       applications: Array.isArray(data.applications) ? data.applications : [],
       weeks: Array.isArray(data.weeks) ? data.weeks : [],
       diary: Array.isArray(data.diary) ? data.diary.map(normalizeDiaryItem) : [],
@@ -50,6 +52,42 @@
     };
   }
 
+
+  function bodyFatNavy(record = {}, profile = appData?.profile || {}) {
+    const heightCm = numeric(profile.heightM) * 100;
+    const height = heightCm / 2.54;
+    const neck = numeric(record.neckCm) / 2.54;
+    const waist = numeric(record.waistCm) / 2.54;
+    const hip = numeric(record.hipCm) / 2.54;
+    const sex = profile.sex;
+    if (!(heightCm > 0 && neck > 0 && waist > 0)) return null;
+    let result = null;
+    if (sex === "male" && waist > neck) result = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    if (sex === "female" && hip > 0 && waist + hip > neck) result = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    return Number.isFinite(result) && result > 0 && result < 75 ? Math.round(result * 10) / 10 : null;
+  }
+
+  function compositionResult(record = {}) {
+    const manual = numeric(record.manualBodyFat);
+    const percent = manual > 0 ? manual : bodyFatNavy(record);
+    const weight = numeric(record.weightKg) || currentWeightForDate(record.date);
+    return {
+      percent: Number.isFinite(percent) && percent > 0 ? percent : null,
+      weight: weight > 0 ? weight : null,
+      fatKg: percent > 0 && weight > 0 ? Math.round(weight * percent) / 100 : null,
+      leanKg: percent > 0 && weight > 0 ? Math.round(weight * (100 - percent)) / 100 : null,
+      method: manual > 0 ? "Bioimpedância/manual" : "Método da Marinha dos EUA"
+    };
+  }
+
+  function currentWeightForDate(date) {
+    const target = dateFromBR(date);
+    const weights = [...(appData?.weights || [])].filter(w => numeric(w.valueKg) > 0).sort((a,b) => dateFromBR(a.date)-dateFromBR(b.date));
+    if (!weights.length) return 0;
+    if (!target) return numeric(weights[weights.length-1].valueKg);
+    const prior = weights.filter(w => dateFromBR(w.date) <= target);
+    return numeric((prior.length ? prior[prior.length-1] : weights[0]).valueKg);
+  }
 
   function normalizeMeal(meal = {}) {
     return {
@@ -289,6 +327,7 @@
     setValue("fieldBirthDate", parseBRDate(appData.profile.birthDate));
     setValue("fieldAge", calculateAge(appData.profile.birthDate) || appData.profile.age);
     setValue("fieldHeight", appData.profile.heightM);
+    setValue("fieldSex", appData.profile.sex || "");
     setValue("fieldInitialWeight", appData.goal.initialWeightKg);
     setValue("fieldCurrentWeight", appData.goal.currentWeightKg);
     setValue("fieldTargetWeight", appData.goal.targetWeightKg);
@@ -300,7 +339,7 @@
     setValue("fieldGeneralObservation", appData.generalObservation);
     setValue("fieldMedicalNotice", appData.medicalNotice);
     const visibility = appData.visibility || {};
-    ["Header","Profile","Summary","Treatment","Weights","Applications","Weeks","Analysis","Diary","Notes"].forEach(name => {
+    ["Header","Profile","Summary","Treatment","Weights","Composition","Applications","Weeks","Analysis","Diary","Notes"].forEach(name => {
       const el = $(`visibility${name}`);
       if (el) el.checked = visibility[name.charAt(0).toLowerCase() + name.slice(1)] !== false;
     });
@@ -310,6 +349,7 @@
   function renderLists() {
     renderGoalHistory();
     renderWeights();
+    renderBodyComposition();
     renderApplications();
     renderWeeks();
     renderDiary();
@@ -358,6 +398,46 @@
           <label>Peso (kg)<input data-field="valueKg" type="number" step="0.01" inputmode="decimal" value="${escapeHtml(item.valueKg)}"></label>
         </div>
       </article>`;
+  }
+
+  function renderBodyComposition() {
+    const list = $("bodyCompositionList");
+    if (!list) return;
+    sortByDate(appData.bodyComposition);
+    if (!appData.bodyComposition.length) {
+      selectedCompositionIndex = -1;
+      list.innerHTML = '<div class="empty-state-action"><p>Nenhuma medição corporal cadastrada.</p><button type="button" class="add-button" data-add="bodyComposition">+ Cadastrar primeira medição</button></div>';
+      return;
+    }
+    if (selectedCompositionIndex < 0 || selectedCompositionIndex >= appData.bodyComposition.length) selectedCompositionIndex = appData.bodyComposition.length - 1;
+    const item = appData.bodyComposition[selectedCompositionIndex];
+    const result = compositionResult(item);
+    const female = appData.profile.sex === "female";
+    list.innerHTML = `
+      <div class="single-record-picker composition-finder">
+        <label>Selecionar medição<select id="compositionSelector">${appData.bodyComposition.map((r,i)=>`<option value="${i}" ${i===selectedCompositionIndex?'selected':''}>${escapeHtml(r.date || `Medição ${i+1}`)}</option>`).join('')}</select></label>
+      </div>
+      <article class="editable-item compact-item" data-type="bodyComposition" data-index="${selectedCompositionIndex}">
+        ${itemHeader(item.date ? `Medição de ${item.date}` : "Nova medição", selectedCompositionIndex, "bodyComposition")}
+        <div class="admin-grid four-columns">
+          <label>Data<input data-field="date" data-date="true" type="date" value="${escapeHtml(parseBRDate(item.date))}"></label>
+          <label>Peso no dia (kg)<input data-field="weightKg" type="number" step="0.01" value="${escapeHtml(item.weightKg ?? '')}" placeholder="Automático pela pesagem"></label>
+          <label>Pescoço (cm)<input data-field="neckCm" type="number" step="0.1" value="${escapeHtml(item.neckCm ?? '')}"></label>
+          <label>Cintura (cm)<input data-field="waistCm" type="number" step="0.1" value="${escapeHtml(item.waistCm ?? '')}"></label>
+          <label>Quadril (cm)<input data-field="hipCm" type="number" step="0.1" value="${escapeHtml(item.hipCm ?? '')}"><small class="field-help">${female ? 'Usado no cálculo feminino.' : 'Acompanhado, mas ignorado no cálculo masculino.'}</small></label>
+          <label>Tórax (cm)<input data-field="chestCm" type="number" step="0.1" value="${escapeHtml(item.chestCm ?? '')}"></label>
+          <label>Braço (cm)<input data-field="armCm" type="number" step="0.1" value="${escapeHtml(item.armCm ?? '')}"></label>
+          <label>Coxa (cm)<input data-field="thighCm" type="number" step="0.1" value="${escapeHtml(item.thighCm ?? '')}"></label>
+          <label>Gordura medida (%) — opcional<input data-field="manualBodyFat" type="number" min="1" max="75" step="0.1" value="${escapeHtml(item.manualBodyFat ?? '')}"><small class="field-help">Preencha apenas se tiver resultado de bioimpedância. Ele terá prioridade sobre a estimativa.</small></label>
+        </div>
+        <div class="composition-result">
+          <div><span>Gordura corporal</span><strong>${result.percent != null ? String(result.percent).replace('.',',')+'%' : 'Aguardando medidas'}</strong></div>
+          <div><span>Massa gorda</span><strong>${result.fatKg != null ? result.fatKg.toFixed(2).replace('.',',')+' kg' : '-'}</strong></div>
+          <div><span>Massa magra</span><strong>${result.leanKg != null ? result.leanKg.toFixed(2).replace('.',',')+' kg' : '-'}</strong></div>
+          <small>${result.percent != null ? result.method : 'Informe sexo, altura, pescoço e cintura'+(female?', além do quadril.':'.')}</small>
+        </div>
+      </article>`;
+    $("compositionSelector")?.addEventListener("change", event => { collectDataFromDOM(); selectedCompositionIndex = Number(event.target.value); renderBodyComposition(); });
   }
 
   function renderApplications() {
@@ -786,7 +866,7 @@
     } else appData.updatedAt = formatBRDate(getValue("fieldUpdatedAt"));
     appData.schemaVersion = numeric(getValue("fieldSchemaVersion")) || 1;
     appData.profile = {
-      name: getValue("fieldName"), birthDate: formatBRDate(getValue("fieldBirthDate")), age: syncCalculatedAge(), heightM: numeric(getValue("fieldHeight"))
+      name: getValue("fieldName"), birthDate: formatBRDate(getValue("fieldBirthDate")), age: syncCalculatedAge(), heightM: numeric(getValue("fieldHeight")), sex: getValue("fieldSex")
     };
     appData.goal = {
       ...appData.goal,
@@ -803,6 +883,8 @@
     };
     const visibleWeight = collectList("weights")[0];
     if (visibleWeight && selectedWeightIndex >= 0) appData.weights[selectedWeightIndex] = { ...(appData.weights[selectedWeightIndex] || {}), ...visibleWeight };
+    const visibleComposition = collectList("bodyComposition")[0];
+    if (visibleComposition && selectedCompositionIndex >= 0) appData.bodyComposition[selectedCompositionIndex] = { ...(appData.bodyComposition[selectedCompositionIndex] || {}), ...visibleComposition };
     const visibleApplication = collectList("applications")[0];
     if (visibleApplication && selectedApplicationIndex >= 0) appData.applications[selectedApplicationIndex] = { ...(appData.applications[selectedApplicationIndex] || {}), ...visibleApplication };
     const visibleWeek = collectList("weeks")[0];
@@ -822,6 +904,7 @@
       summary: $("visibilitySummary")?.checked !== false,
       treatment: $("visibilityTreatment")?.checked !== false,
       weights: $("visibilityWeights")?.checked !== false,
+      composition: $("visibilityComposition")?.checked !== false,
       applications: $("visibilityApplications")?.checked !== false,
       weeks: $("visibilityWeeks")?.checked !== false,
       analysis: $("visibilityAnalysis")?.checked !== false,
@@ -850,6 +933,7 @@
     collectDataFromDOM();
     if (type === "goalHistory") appData.goal.history.push({ targetWeightKg: "", startWeightKg: "", startDate: "", completedAt: "" });
     if (type === "weights") { appData.weights.push({ date: formatBRDate(new Date()), valueKg: "" }); selectedWeightIndex = appData.weights.length - 1; }
+    if (type === "bodyComposition") { const item = { date: formatBRDate(new Date()), weightKg: "", neckCm: "", waistCm: "", hipCm: "", chestCm: "", armCm: "", thighCm: "", manualBodyFat: "" }; appData.bodyComposition.push(item); sortByDate(appData.bodyComposition); selectedCompositionIndex = appData.bodyComposition.indexOf(item); }
     if (type === "applications") {
       const nextNumber = appData.applications.reduce((highest, application) => Math.max(highest, numeric(application.number) || 0), 0) + 1;
       const newApplication = { number: nextNumber, date: formatBRDate(new Date()), time: "", dose: appData.treatment.weeklyDose || "", location: "" };
@@ -884,6 +968,7 @@
     list.splice(index, 1);
     if (type === "diary") { selectedDiaryIndex = Math.min(index, list.length - 1); selectedMealIndex = 0; }
     if (type === "weights") selectedWeightIndex = Math.min(index, list.length - 1);
+    if (type === "bodyComposition") selectedCompositionIndex = Math.min(index, list.length - 1);
     if (type === "applications") { selectedApplicationIndex = Math.min(index, list.length - 1); list.forEach((item, i) => { if (!item.number) item.number = i + 1; }); }
     if (type === "weeks") selectedWeekIndex = Math.min(index, list.length - 1);
     renderLists();
@@ -1174,6 +1259,11 @@
         const coords=pts.map((p,i)=>({x:x0+i*w/Math.max(1,pts.length-1),y:y0+(max-p.v)*h/range,p})); coords.forEach((c,i)=>{if(i)doc.line(coords[i-1].x,coords[i-1].y,c.x,c.y,doc.teal,3);doc.rect(c.x-2,c.y-2,4,4,[255,255,255],doc.teal);doc.text(`${c.p.v.toFixed(2).replace(".",",")} kg`,c.x,c.y-8,8,true,doc.dark,"center");doc.text(String(c.p.d).replace(/\/\d{4}$/,"") ,c.x,y0+h+17,8,false,doc.gray,"center");}); doc.y=y0+h+44;
       }
       if(selectedSections.has("weights") && (data.weights||[]).length){doc.sectionTitle("Histórico de pesagens", 48);doc.table(["Data","Peso","Variação"],data.weights.map((item,i,list)=>{const v=Number(item.valueKg),p=i?Number(list[i-1].valueKg):v,d=v-p;return[item.date||"-",pdfKg(v),i?`${d>0?"+":""}${d.toFixed(2).replace(".",",")} kg`:"Início"]}),[170,170,171]);}
+      if(selectedSections.has("composition") && (data.bodyComposition||[]).length){
+        const rows=(data.bodyComposition||[]).map(item=>{const r=compositionResult(item);return [item.date||"-",r.percent!=null?`${String(r.percent).replace(".",",")}%`:"-",r.fatKg!=null?pdfKg(r.fatKg):"-",r.leanKg!=null?pdfKg(r.leanKg):"-",r.method];});
+        doc.sectionTitle("Composição corporal",48);
+        doc.table(["Data","Gordura","Massa gorda","Massa magra","Método"],rows,[76,70,90,90,185]);
+      }
       if(selectedSections.has("applications") && (data.applications||[]).length){doc.sectionTitle("Linha do tempo das aplicações", 48);doc.table(["Nº","Data","Hora","Dose","Local"],data.applications.map(i=>[String(i.number??"-"),i.date||"-",i.time||"-",i.dose||"-",pdfText(i.location)||"-"]),[38,82,62,64,265]);}
       if(selectedSections.has("weeks") && (data.weeks||[]).length){doc.sectionTitle("Resumo semanal");for(const week of data.weeks){const lines=(week.lines||[]).map(pdfText).filter(Boolean), title=`${week.title||"Semana"}${week.period?` - ${week.period}`:""}`, height=34+Math.max(1,lines.length)*15;doc.ensure(height+10);doc.rect(doc.margin,doc.y,doc.width-doc.margin*2,height,week.current?[228,245,242]:null,week.current?doc.teal:doc.border);doc.text(title,doc.margin+10,doc.y+20,12,true,[8,115,106]);let yy=doc.y+39;(lines.length?lines:["Sem informações registradas."]).forEach(line=>{doc.text(`• ${line}`,doc.margin+12,yy,9,false,doc.dark);yy+=15;});doc.y+=height+9;}}
       if(selectedSections.has("diary") && (data.diary||[]).length){doc.sectionTitle("Registros diários");const compact=$("pdfCompactDiary")?.checked!==false;for(const item of data.diary){doc.ensure(compact?92:112);doc.text(item.date||"Sem data",doc.margin,doc.y,12,true,[8,115,106]);doc.y+=10;doc.table(["Campo","Registro"],[["Refeições",pdfText(item.meals)||"-"],["Fome",pdfText(item.hunger)||"-"],["Efeitos colaterais",pdfText(item.effects)||"-"],["Observações",pdfText(item.notes)||"-"]],[85,426]);}}
@@ -1334,6 +1424,8 @@
   });
 
   $("fieldBirthDate")?.addEventListener("change", () => { syncCalculatedAge(); markDirty(); });
+  $("fieldSex")?.addEventListener("change", () => { collectDataFromDOM(); renderBodyComposition(); markDirty(); });
+  $("fieldHeight")?.addEventListener("change", () => { collectDataFromDOM(); renderBodyComposition(); markDirty(); });
   $("fieldMedicationSelect")?.addEventListener("change", event => {
     const custom = $("fieldMedication");
     custom.hidden = event.target.value !== "__custom__";
