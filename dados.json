@@ -41,10 +41,6 @@
       "valueKg": 109.8
     },
     {
-      "date": "31/07/2026",
-      "valueKg": 107.45
-    },
-    {
       "date": "01/08/2026",
       "valueKg": 106.9
     }
@@ -184,16 +180,16 @@
       "title": "Semana 4",
       "period": "Iniciada em 27/07",
       "current": true,
-      "weight": "109,80 → 107,45 kg",
-      "result": "-2,35 kg",
+      "weight": "109,80 → 106,90 kg",
+      "result": "-2,90 kg",
       "application": "27/07/2026 às 09:30",
       "hunger": "Sem fome",
       "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "109,80 → 107,45 kg",
-        "result": "-2,35 kg",
+        "weight": "109,80 → 106,90 kg",
+        "result": "-2,90 kg",
         "application": "27/07/2026 às 09:30",
         "hunger": "Sem fome",
         "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
@@ -201,8 +197,8 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 109,80 → 107,45 kg",
-        "Resultado: -2,35 kg",
+        "Peso: 109,80 → 106,90 kg",
+        "Resultado: -2,90 kg",
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
         "Efeitos: Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça"
