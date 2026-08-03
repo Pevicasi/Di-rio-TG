@@ -1,4 +1,4 @@
-VERSÃO 3.6.3 — TEMPO DE TRATAMENTO NO RESUMO GERAL
+VERSÃO 3.6.4 — TEMPO DE TRATAMENTO NO RESUMO GERAL
 Data: 03/08/2026
 
 - Adicionado o cartão “Tempo de tratamento” no Resumo geral do site público.
@@ -6,7 +6,7 @@ Data: 03/08/2026
 - Exibição em formato amigável, como “28 dias”, “1 mês e 5 dias” ou “1 ano e 2 meses”.
 - A data de início aparece abaixo do tempo decorrido.
 - Nenhuma outra funcionalidade foi alterada.
-- Atualizados versão e identificadores de cache para 3.6.3.
+- Atualizados versão e identificadores de cache para 3.6.4.
 
 VERSÃO 3.6.2 — COMPOSIÇÃO ATUALIZADA ENTRE MEDIÇÕES
 Data: 31/07/2026
