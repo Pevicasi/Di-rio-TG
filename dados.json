@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "01/08/2026",
+  "updatedAt": "03/08/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -11,7 +11,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 106.9,
+    "currentWeightKg": 106.4,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -41,8 +41,8 @@
       "valueKg": 109.8
     },
     {
-      "date": "01/08/2026",
-      "valueKg": 106.9
+      "date": "03/08/2026",
+      "valueKg": 106.4
     }
   ],
   "bodyComposition": [
@@ -178,18 +178,18 @@
     },
     {
       "title": "Semana 4",
-      "period": "Iniciada em 27/07",
-      "current": true,
-      "weight": "109,80 → 106,90 kg",
-      "result": "-2,90 kg",
+      "period": "27/07 a 02/08",
+      "current": false,
+      "weight": "109,80 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
       "application": "27/07/2026 às 09:30",
       "hunger": "Sem fome",
       "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "109,80 → 106,90 kg",
-        "result": "-2,90 kg",
+        "weight": "109,80 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
         "application": "27/07/2026 às 09:30",
         "hunger": "Sem fome",
         "effects": "Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça",
@@ -197,8 +197,8 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 109,80 → 106,90 kg",
-        "Resultado: -2,90 kg",
+        "Peso: 109,80 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
         "Aplicação: 27/07/2026 às 09:30",
         "Fome: Sem fome",
         "Efeitos: Nenhum • Náusea; Estufamento; Arrotos; Boca seca • Náusea; Boca seca; Dor de cabeça"
@@ -568,7 +568,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 01/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 03/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
