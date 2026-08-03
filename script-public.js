@@ -256,6 +256,41 @@ function parseBrDate(value) {
 }
 
 
+
+function treatmentElapsed(startValue, endDate = new Date()) {
+  const start = parseBrDate(startValue);
+  if (!start || Number.isNaN(start.getTime())) return null;
+
+  const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  if (start > end) return { text: "0 dias", days: 0 };
+
+  const totalDays = Math.floor((end - start) / 86400000);
+  if (totalDays < 30) return { text: `${totalDays} ${totalDays === 1 ? "dia" : "dias"}`, days: totalDays };
+
+  let cursor = new Date(start);
+  let years = 0;
+  let months = 0;
+
+  while (true) {
+    const next = new Date(cursor);
+    next.setFullYear(next.getFullYear() + 1);
+    if (next <= end) { years += 1; cursor = next; } else break;
+  }
+
+  while (true) {
+    const next = new Date(cursor);
+    next.setMonth(next.getMonth() + 1);
+    if (next <= end) { months += 1; cursor = next; } else break;
+  }
+
+  const days = Math.floor((end - cursor) / 86400000);
+  const parts = [];
+  if (years) parts.push(`${years} ${years === 1 ? "ano" : "anos"}`);
+  if (months) parts.push(`${months} ${months === 1 ? "mês" : "meses"}`);
+  if (days || !parts.length) parts.push(`${days} ${days === 1 ? "dia" : "dias"}`);
+  return { text: parts.join(" e "), days: totalDays };
+}
+
 function weightSummary(data) {
   const ordered = (Array.isArray(data?.weights) ? data.weights : [])
     .map(item => ({ ...item, parsedDate: parseBrDate(item?.date), valueKg: Number(item?.valueKg) }))
@@ -564,6 +599,9 @@ function renderAll() {
   setText("initialWeight", kg(initial));
   setText("currentWeight", kg(current));
   setText("totalLoss", kg(loss));
+  const elapsed = treatmentElapsed(d.treatment?.startDate, new Date());
+  setText("treatmentDuration", elapsed?.text || "—");
+  setText("treatmentStartedAt", d.treatment?.startDate ? `Iniciado em ${d.treatment.startDate}` : "Data de início não informada");
   setText("goalWeight", kg(target));
   setText("goalLabel", `Progresso até ${String(target).replace(".", ",")} kg`);
   setText("goalPercent", `${progress.toFixed(1).replace(".", ",")}%`);

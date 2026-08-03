@@ -153,6 +153,14 @@ main {
 
 .metric.highlight strong { color: var(--primary-dark); }
 
+.metric-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .goal-box {
   margin-top: 20px;
   background: #f8fbfa;
@@ -992,7 +1000,7 @@ body.measure-guide-open { overflow: hidden; }
 }
 
 
-/* TirzeTrack 3.6.2 — atualização da composição entre medições */
+/* TirzeTrack 3.6.3 — tempo de tratamento no resumo geral */
 .composition-update-warning,
 .composition-current-status {
   margin-top: 14px;
