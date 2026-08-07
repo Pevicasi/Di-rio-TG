@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "03/08/2026",
+  "updatedAt": "06/08/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -11,7 +11,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 106.4,
+    "currentWeightKg": 105.2,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -43,6 +43,10 @@
     {
       "date": "03/08/2026",
       "valueKg": 106.4
+    },
+    {
+      "date": "07/08/2026",
+      "valueKg": 105.2
     }
   ],
   "bodyComposition": [
@@ -612,7 +616,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 03/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 06/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
