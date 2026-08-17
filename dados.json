@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "15/08/2026",
+  "updatedAt": "17/08/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -11,7 +11,7 @@
   },
   "goal": {
     "initialWeightKg": 117.5,
-    "currentWeightKg": 102.85,
+    "currentWeightKg": 103.25,
     "targetWeightKg": 100,
     "history": [],
     "stageStartWeightKg": 117.5,
@@ -49,8 +49,8 @@
       "valueKg": 104.5
     },
     {
-      "date": "15/08/2026",
-      "valueKg": 102.85
+      "date": "17/08/2026",
+      "valueKg": 103.25
     }
   ],
   "bodyComposition": [
@@ -276,18 +276,18 @@
     },
     {
       "title": "Semana 6",
-      "period": "Iniciada em 10/08",
-      "current": true,
-      "weight": "104,50 → 102,85 kg",
-      "result": "-1,65 kg",
+      "period": "10/08 a 16/08",
+      "current": false,
+      "weight": "104,50 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
       "application": "10/08/2026 às 09:15",
       "hunger": "",
       "effects": "",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "104,50 → 102,85 kg",
-        "result": "-1,65 kg",
+        "weight": "104,50 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
         "application": "10/08/2026 às 09:15",
         "hunger": "",
         "effects": "",
@@ -295,8 +295,8 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 104,50 → 102,85 kg",
-        "Resultado: -1,65 kg",
+        "Peso: 104,50 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
         "Aplicação: 10/08/2026 às 09:15"
       ]
     }
@@ -664,7 +664,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 15/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 17/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
