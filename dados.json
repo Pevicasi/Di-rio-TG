@@ -145,7 +145,7 @@
     {
       "number": 7,
       "date": "17/08/2026",
-      "time": "09:30",
+      "time": "08:30",
       "dose": "8 UI",
       "location": "Parte de trás do braço esquerdo"
     }
@@ -324,7 +324,7 @@
       "current": true,
       "weight": "103,25 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
-      "application": "17/08/2026 às 09:30",
+      "application": "17/08/2026 às 08:30",
       "hunger": "",
       "effects": "",
       "observation": "",
@@ -332,7 +332,7 @@
       "generatedFields": {
         "weight": "103,25 → aguardando nova pesagem",
         "result": "aguardando nova pesagem",
-        "application": "17/08/2026 às 09:30",
+        "application": "17/08/2026 às 08:30",
         "hunger": "",
         "effects": "",
         "observation": ""
@@ -341,7 +341,7 @@
       "lines": [
         "Peso: 103,25 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
-        "Aplicação: 17/08/2026 às 09:30"
+        "Aplicação: 17/08/2026 às 08:30"
       ]
     }
   ],
