@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "24/08/2026",
+  "updatedAt": "25/08/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -152,6 +152,13 @@
       "time": "08:30",
       "dose": "8 UI",
       "location": "Parte de trás do braço esquerdo"
+    },
+    {
+      "number": 8,
+      "date": "24/08/2026",
+      "time": "09:30",
+      "dose": "8 UI",
+      "location": "Parte de cima da coxa direita"
     }
   ],
   "weeks": [
@@ -326,16 +333,16 @@
       "title": "Semana 7",
       "period": "17/08 a 23/08",
       "current": false,
-      "weight": "103,25 → aguardando nova pesagem",
-      "result": "aguardando nova pesagem",
+      "weight": "103,25 → 101,90 kg",
+      "result": "-1,35 kg",
       "application": "17/08/2026 às 08:30",
       "hunger": "",
       "effects": "",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "103,25 → aguardando nova pesagem",
-        "result": "aguardando nova pesagem",
+        "weight": "103,25 → 101,90 kg",
+        "result": "-1,35 kg",
         "application": "17/08/2026 às 08:30",
         "hunger": "",
         "effects": "",
@@ -343,9 +350,35 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 103,25 → aguardando nova pesagem",
-        "Resultado: aguardando nova pesagem",
+        "Peso: 103,25 → 101,90 kg",
+        "Resultado: -1,35 kg",
         "Aplicação: 17/08/2026 às 08:30"
+      ]
+    },
+    {
+      "title": "Semana 8",
+      "period": "Iniciada em 24/08",
+      "current": true,
+      "weight": "101,90 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
+      "application": "24/08/2026 às 09:30",
+      "hunger": "",
+      "effects": "",
+      "observation": "",
+      "additional": "",
+      "generatedFields": {
+        "weight": "101,90 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
+        "application": "24/08/2026 às 09:30",
+        "hunger": "",
+        "effects": "",
+        "observation": ""
+      },
+      "manualFields": {},
+      "lines": [
+        "Peso: 101,90 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
+        "Aplicação: 24/08/2026 às 09:30"
       ]
     }
   ],
@@ -712,7 +745,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 24/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 25/08/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
