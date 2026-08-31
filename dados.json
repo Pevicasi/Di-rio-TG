@@ -120,6 +120,17 @@
       "armCm": "",
       "thighCm": "",
       "manualBodyFat": ""
+    },
+    {
+      "date": "31/08/2026",
+      "weightKg": "",
+      "neckCm": 42,
+      "waistCm": 105,
+      "hipCm": "",
+      "chestCm": "",
+      "armCm": "",
+      "thighCm": "",
+      "manualBodyFat": ""
     }
   ],
   "applications": [
