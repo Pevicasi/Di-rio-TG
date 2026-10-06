@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "04/09/2026",
+  "updatedAt": "05/10/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -193,6 +193,13 @@
       "time": "09:30",
       "dose": "8 UI",
       "location": "Parte de cima da coxa direita"
+    },
+    {
+      "number": 9,
+      "date": "05/10/2026",
+      "time": "23:15",
+      "dose": "8 UI",
+      "location": "PARTE DE CIMA DA COXA DIREITA"
     }
   ],
   "weeks": [
@@ -391,7 +398,7 @@
     },
     {
       "title": "Semana 8",
-      "period": "24/08 a 30/08",
+      "period": "24/08 a 04/10",
       "current": false,
       "weight": "101,90 → 99,60 kg",
       "result": "-2,30 kg",
@@ -413,6 +420,32 @@
         "Peso: 101,90 → 99,60 kg",
         "Resultado: -2,30 kg",
         "Aplicação: 24/08/2026 às 09:30"
+      ]
+    },
+    {
+      "title": "Semana 9",
+      "period": "Iniciada em 05/10",
+      "current": true,
+      "weight": "97,30 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
+      "application": "05/10/2026 às 23:15",
+      "hunger": "",
+      "effects": "",
+      "observation": "",
+      "additional": "",
+      "generatedFields": {
+        "weight": "97,30 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
+        "application": "05/10/2026 às 23:15",
+        "hunger": "",
+        "effects": "",
+        "observation": ""
+      },
+      "manualFields": {},
+      "lines": [
+        "Peso: 97,30 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
+        "Aplicação: 05/10/2026 às 23:15"
       ]
     }
   ],
@@ -779,7 +812,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 04/09/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 05/10/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
