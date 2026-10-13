@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "title": "Acompanhamento com Tirzepatida",
-  "updatedAt": "09/10/2026",
+  "updatedAt": "13/10/2026",
   "profile": {
     "name": "Petrônio Vieira",
     "birthDate": "17/03/1984",
@@ -214,6 +214,13 @@
       "time": "23:10",
       "dose": "4 UI",
       "location": "Parte de cima da coxa esquerda"
+    },
+    {
+      "number": 11,
+      "date": "12/10/2026",
+      "time": "23:35",
+      "dose": "8 UI",
+      "location": "Parte de trás do braço direito"
     }
   ],
   "weeks": [
@@ -464,8 +471,8 @@
     },
     {
       "title": "Semana 10",
-      "period": "Iniciada em 09/10",
-      "current": true,
+      "period": "09/10 a 11/10",
+      "current": false,
       "weight": "97,30 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "09/10/2026 às 23:10",
@@ -486,6 +493,32 @@
         "Peso: 97,30 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
         "Aplicação: 09/10/2026 às 23:10"
+      ]
+    },
+    {
+      "title": "Semana 11",
+      "period": "Iniciada em 12/10",
+      "current": true,
+      "weight": "97,30 → aguardando nova pesagem",
+      "result": "aguardando nova pesagem",
+      "application": "12/10/2026 às 23:35",
+      "hunger": "",
+      "effects": "",
+      "observation": "",
+      "additional": "",
+      "generatedFields": {
+        "weight": "97,30 → aguardando nova pesagem",
+        "result": "aguardando nova pesagem",
+        "application": "12/10/2026 às 23:35",
+        "hunger": "",
+        "effects": "",
+        "observation": ""
+      },
+      "manualFields": {},
+      "lines": [
+        "Peso: 97,30 → aguardando nova pesagem",
+        "Resultado: aguardando nova pesagem",
+        "Aplicação: 12/10/2026 às 23:35"
       ]
     }
   ],
@@ -852,7 +885,7 @@
     "Suco",
     "Pepino"
   ],
-  "generalObservation": "Até 09/10/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
+  "generalObservation": "Até 13/10/2026, o tratamento apresenta perda de peso consistente, forte controle do apetite e melhor tolerância após a segunda aplicação.",
   "medicalNotice": "Este site organiza os registros informados e não substitui acompanhamento médico.",
   "visibility": {
     "header": true,
