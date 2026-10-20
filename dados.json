@@ -72,6 +72,10 @@
       "valueKg": 99.05
     },
     {
+      "date": "04/09/2026",
+      "valueKg": 97.3
+    },
+    {
       "date": "19/10/2026",
       "valueKg": 98.9
     }
@@ -454,7 +458,7 @@
       "title": "Semana 9",
       "period": "05/10 a 08/10",
       "current": false,
-      "weight": "99,05 → aguardando nova pesagem",
+      "weight": "97,30 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "05/10/2026 às 23:15",
       "hunger": "",
@@ -462,7 +466,7 @@
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "99,05 → aguardando nova pesagem",
+        "weight": "97,30 → aguardando nova pesagem",
         "result": "aguardando nova pesagem",
         "application": "05/10/2026 às 23:15",
         "hunger": "",
@@ -471,7 +475,7 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 99,05 → aguardando nova pesagem",
+        "Peso: 97,30 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
         "Aplicação: 05/10/2026 às 23:15"
       ]
@@ -480,7 +484,7 @@
       "title": "Semana 10",
       "period": "09/10 a 11/10",
       "current": false,
-      "weight": "99,05 → aguardando nova pesagem",
+      "weight": "97,30 → aguardando nova pesagem",
       "result": "aguardando nova pesagem",
       "application": "09/10/2026 às 23:10",
       "hunger": "",
@@ -488,7 +492,7 @@
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "99,05 → aguardando nova pesagem",
+        "weight": "97,30 → aguardando nova pesagem",
         "result": "aguardando nova pesagem",
         "application": "09/10/2026 às 23:10",
         "hunger": "",
@@ -497,7 +501,7 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 99,05 → aguardando nova pesagem",
+        "Peso: 97,30 → aguardando nova pesagem",
         "Resultado: aguardando nova pesagem",
         "Aplicação: 09/10/2026 às 23:10"
       ]
@@ -506,16 +510,16 @@
       "title": "Semana 11",
       "period": "12/10 a 18/10",
       "current": false,
-      "weight": "99,05 → 98,90 kg",
-      "result": "-0,15 kg",
+      "weight": "97,30 → 98,90 kg",
+      "result": "+1,60 kg",
       "application": "12/10/2026 às 23:35",
       "hunger": "",
       "effects": "",
       "observation": "",
       "additional": "",
       "generatedFields": {
-        "weight": "99,05 → 98,90 kg",
-        "result": "-0,15 kg",
+        "weight": "97,30 → 98,90 kg",
+        "result": "+1,60 kg",
         "application": "12/10/2026 às 23:35",
         "hunger": "",
         "effects": "",
@@ -523,8 +527,8 @@
       },
       "manualFields": {},
       "lines": [
-        "Peso: 99,05 → 98,90 kg",
-        "Resultado: -0,15 kg",
+        "Peso: 97,30 → 98,90 kg",
+        "Resultado: +1,60 kg",
         "Aplicação: 12/10/2026 às 23:35"
       ]
     },
