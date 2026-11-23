@@ -150,8 +150,8 @@
     {
       "date": "23/11/2026",
       "weightKg": "",
-      "neckCm": "",
-      "waistCm": "",
+      "neckCm": 41,
+      "waistCm": 182,
       "hipCm": "",
       "chestCm": "",
       "armCm": "",
